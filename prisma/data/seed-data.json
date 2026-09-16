@@ -1,0 +1,2788 @@
+{
+  "products": [
+    {
+      "slug": "abacate",
+      "name": "Abacate",
+      "pricePerKg": 15.57
+    },
+    {
+      "slug": "abobrinha",
+      "name": "Abobrinha",
+      "pricePerKg": 7.7
+    },
+    {
+      "slug": "agriao",
+      "name": "Agrião",
+      "pricePerKg": 16.94
+    },
+    {
+      "slug": "alface-lisa",
+      "name": "Alface lisa",
+      "pricePerKg": 14.62
+    },
+    {
+      "slug": "banana-prata",
+      "name": "Banana prata",
+      "pricePerKg": 12.05
+    },
+    {
+      "slug": "batata-inglesa",
+      "name": "Batata inglesa",
+      "pricePerKg": 11.59
+    },
+    {
+      "slug": "beterraba",
+      "name": "Beterraba",
+      "pricePerKg": 9.87
+    },
+    {
+      "slug": "brocolis",
+      "name": "Brócolis",
+      "pricePerKg": 13.67
+    },
+    {
+      "slug": "cenoura",
+      "name": "Cenoura",
+      "pricePerKg": 10.2
+    },
+    {
+      "slug": "cheiro-verde",
+      "name": "Cheiro verde",
+      "pricePerKg": 25.1
+    },
+    {
+      "slug": "chuchu",
+      "name": "Chuchu",
+      "pricePerKg": 8.56
+    },
+    {
+      "slug": "couve-manteiga",
+      "name": "Couve manteiga",
+      "pricePerKg": 14.6
+    },
+    {
+      "slug": "couve-flor",
+      "name": "Couve-flor",
+      "pricePerKg": 19.11
+    },
+    {
+      "slug": "espinafre",
+      "name": "Espinafre",
+      "pricePerKg": 11.22
+    },
+    {
+      "slug": "maca-gala",
+      "name": "Maçã gala",
+      "pricePerKg": 16.63
+    },
+    {
+      "slug": "mel",
+      "name": "Mel",
+      "pricePerKg": 65.68
+    },
+    {
+      "slug": "ovos",
+      "name": "Ovos",
+      "pricePerKg": 15.45
+    },
+    {
+      "slug": "repolho",
+      "name": "Repolho",
+      "pricePerKg": 10.24
+    },
+    {
+      "slug": "tangerina-ponkan",
+      "name": "Tangerina ponkan",
+      "pricePerKg": 13.55
+    }
+  ],
+  "schools": [
+    {
+      "code": "1001",
+      "name": "E M ABELARDO DE LAMARE",
+      "neighborhood": "CAXAMBU",
+      "address": "JOSÉ ALMEIDA AMADO, 1302 - CEP 25615-081",
+      "phone": "(24) 2291-0223, (24) 98139-3119"
+    },
+    {
+      "code": "1003",
+      "name": "E M BATAILLARD",
+      "neighborhood": "MOSELA",
+      "address": "RUA BATAILLARD, S/N - CEP 25675-160",
+      "phone": "(24) 2248-7603"
+    },
+    {
+      "code": "1004",
+      "name": "E M LEONARDO BOFF",
+      "neighborhood": "BINGEN",
+      "address": "RODOVIA BR 040 KM, 81 - CEP 25665-060",
+      "phone": "(24) 98849-3570, (24) 99983-5235"
+    },
+    {
+      "code": "1005",
+      "name": "E M CLEMENTE FERNANDES",
+      "neighborhood": "ALTO DA SERRA",
+      "address": "24 DE MAIO, 517 - CEP 25640-550",
+      "phone": "(24) 2246-3970, (24) 99952-1663"
+    },
+    {
+      "code": "1006",
+      "name": "E M DOM PEDRO DE ALCÂNTARA",
+      "neighborhood": "SANTA ROSA DE LIMA",
+      "address": "RODOVIA WASHINGTHON LUIZ, 94 - CEP 25655-000",
+      "phone": "(21) 99352-4970"
+    },
+    {
+      "code": "1008",
+      "name": "E M DUQUE DE CAXIAS",
+      "neighborhood": "QUISSAMÃ",
+      "address": "TRAVESSA LUCIANO CAMAROTA, 78 - CEP 25615-390",
+      "phone": "(24) 2247-0070, (24) 98816-4280"
+    },
+    {
+      "code": "1009",
+      "name": "E M LUIZ CARLOS SOARES",
+      "neighborhood": "MORIN",
+      "address": "RUA EUVALDO LODDI, S/N - CEP 25630-110",
+      "phone": "(24) 2231-9813"
+    },
+    {
+      "code": "1010",
+      "name": "E M GENERAL HEITOR BORGES",
+      "neighborhood": "BINGEN",
+      "address": "RUA CAPITÃO CARLOS AGOSTINI, S/N - CEP 25660-100",
+      "phone": "(24) 2247-8354"
+    },
+    {
+      "code": "1011",
+      "name": "E M JOÃO KOPKE",
+      "neighborhood": "FAZENDA INGLESA",
+      "address": "ESTRADA DA FAZENDA INGLESA, 4695 - CEP 25670-070",
+      "phone": "(24) 2245-7626"
+    },
+    {
+      "code": "1013",
+      "name": "E M ODETTE FONSECA",
+      "neighborhood": "DUQUES",
+      "address": "ESTRADA RIO PETRÓPOLIS KM 85, 5 - CEP 25650-001",
+      "phone": "(24) 2249-2123"
+    },
+    {
+      "code": "1017",
+      "name": "E M GOVERNADOR MARCELLO ALENCAR",
+      "neighborhood": "QUITANDINHA",
+      "address": "RUA AMARAL PEIXOTO, S/N - CEP 25651-010",
+      "phone": "(24) 2245-7780"
+    },
+    {
+      "code": "1018",
+      "name": "E M PROF JOAQUIM DEISTER",
+      "neighborhood": "FLORESTA",
+      "address": "RUA DR. JOÃO GLASS VEIGA, 112 - CEP 25615-111",
+      "phone": "(24) 2242-4760"
+    },
+    {
+      "code": "1020",
+      "name": "E M ROBERT KENNEDY",
+      "neighborhood": "CASTELÂNEA",
+      "address": "RUA CRISTOVÃO COLOMBO, 783 - CEP 25640-322",
+      "phone": "(24) 2020-8959"
+    },
+    {
+      "code": "1021",
+      "name": "E M ROTARY",
+      "neighborhood": "CENTRO",
+      "address": "RUA BARÃO DO RIO BRANCO, 1967 - CEP 25680-275",
+      "phone": "(24) 2244-9148, (24) 98817-7903"
+    },
+    {
+      "code": "1022",
+      "name": "E M ROSALINA NICOLAY",
+      "neighborhood": "SIMÉRIA",
+      "address": "PRESIDENTE SODRE, 1026 - CEP 25645-026",
+      "phone": "(24) 2020-2919"
+    },
+    {
+      "code": "1023",
+      "name": "E M DE EDUCAÇÃO ESPECIAL SANTOS DUMONT",
+      "neighborhood": "CENTRO",
+      "address": "RUA MONTECASEROS, 520 - CEP 25685-080",
+      "phone": "(24) 2242-5906, (24) 98829-6926"
+    },
+    {
+      "code": "1024",
+      "name": "E M SOROPTIMISTA",
+      "neighborhood": "MOSELA",
+      "address": "TEOFILO JOSE DA SILVA, S/N - CEP 25670-020",
+      "phone": "(24) 2246-5708"
+    },
+    {
+      "code": "1026",
+      "name": "LICEU MUN PREFEITO CORDOLINO AMBROSIO",
+      "neighborhood": "CENTRO",
+      "address": "RUA MONTECASEROS, 240 - CEP 25680-004",
+      "phone": "(24) 2017-9500, (24) 2019-2187"
+    },
+    {
+      "code": "1028",
+      "name": "E M ANTÔNIO LEITE GARCIA",
+      "neighborhood": "SAMAMBAIA",
+      "address": "ESTRADA DO SAMAMBAIA, 44 - CEP 25710-372",
+      "phone": "(24) 2280-4336"
+    },
+    {
+      "code": "1030",
+      "name": "E M JORGE AMADO",
+      "neighborhood": "CASCATINHA",
+      "address": "ESTRADA DA SAUDADE, 1397 - CEP 25610-351",
+      "phone": "(24) 2242-1234, (24) 98845-1441"
+    },
+    {
+      "code": "1033",
+      "name": "E M LÚCIA DE ALMEIDA BRAGA",
+      "neighborhood": "CARANGOLA",
+      "address": "WALDEMAR VIEIRA AFONSO, 7 - CEP 25715-402",
+      "phone": "(24) 99218-8513, (24) 2231-4691"
+    },
+    {
+      "code": "1034",
+      "name": "E M MAGDALENA TAGLIAFERRO",
+      "neighborhood": "CASTELO SÃO MANOEL",
+      "address": "CAPITÃO JOÃO AMÂNCIO DE S.COUTINHO, S/N - CEP 25720-210",
+      "phone": "(24) 2221-5955, (24) 99255-8706"
+    },
+    {
+      "code": "1035",
+      "name": "E M MAJOR JÚLIO FREDERICO KOELER",
+      "neighborhood": "RETIRO",
+      "address": "RUA FELIPE CAMARÃO, 374 - CEP 25680-510",
+      "phone": "(24) 2017-0495"
+    },
+    {
+      "code": "1036",
+      "name": "E M MARIETA GONÇALVES",
+      "neighborhood": "CORRÊAS",
+      "address": "RUA NOSSA SENHORA DA GLÓRIA, 1329 - CEP 25720-265",
+      "phone": "(24) 2221-1839"
+    },
+    {
+      "code": "1037",
+      "name": "E M ODETTE YOUNG MONTEIRO",
+      "neighborhood": "CORRÊAS",
+      "address": "ALEXANDRE ALVES ANTUNES, 133 - CEP 25730-005",
+      "phone": "(24) 99271-6764, (24) 2017-3899"
+    },
+    {
+      "code": "1038",
+      "name": "E M FÁBRICA DO SABER",
+      "neighborhood": "CASCATINHA",
+      "address": "RUA MACHADO FAGUNDES, 269 - CEP 25716-001",
+      "phone": "(24) 2291-6160, (24) 2231-6591"
+    },
+    {
+      "code": "1040",
+      "name": "E M PROFESSOR PAULO MONTE",
+      "neighborhood": "ARARAS",
+      "address": "ESTRADA BERNARDO COUTINHO, SN - CEP 25725-020",
+      "phone": "(24) 2291-7383"
+    },
+    {
+      "code": "1042",
+      "name": "E M ROSEMIRA DE OLIVEIRA CAVALCANTI",
+      "neighborhood": "ITAMARATI",
+      "address": "RUA JOÃO DE FARIAS, S/N - CEP 25710-094",
+      "phone": "(24) 2242-3013, (24) 98810-0009"
+    },
+    {
+      "code": "1043",
+      "name": "E M AMÉLIA ANTUNES RABELLO",
+      "neighborhood": "MADAME MACHADO",
+      "address": "RUA JOSÉ DA GAMA MACHADO, S/N - CEP 25745-700",
+      "phone": "(24) 2222-5113"
+    },
+    {
+      "code": "1044",
+      "name": "E M AUGUSTO PUGNALONI",
+      "neighborhood": "ITAIPAVA",
+      "address": "ESTRADA DO CATOBIRA, S/N - CEP 25740-100",
+      "phone": "(24) 2246-9103"
+    },
+    {
+      "code": "1045",
+      "name": "E M CELINA SCHECHNER",
+      "neighborhood": "ITAIPAVA",
+      "address": "ESTRADA UNIÃO INDÚSTRIA, 11976 - CEP 25750-226",
+      "phone": "(24) 2235-7349"
+    },
+    {
+      "code": "1046",
+      "name": "E M DARCY CORREA DA VEIGA",
+      "neighborhood": "ITAIPAVA",
+      "address": "ESTRADA CORREA DA VEIGA, 1595 - CEP 25745-260",
+      "phone": "(24) 99253-0879, (24) 2246-9319"
+    },
+    {
+      "code": "1048",
+      "name": "E M DR PAULA BUARQUE",
+      "neighborhood": "ITAIPAVA",
+      "address": "ESTR. PHILÚVIO CERQUEIRA RODRIGUES-VL CO, KM 2 - CEP 25745-001",
+      "phone": "(24) 2222-6445, (24) 98821-8414"
+    },
+    {
+      "code": "1049",
+      "name": "E M DR THEODORO MACHADO",
+      "neighborhood": "CUIABÁ",
+      "address": "ESTRADA MINISTRO SALGADO FILHO, S/N - CEP 25745-690",
+      "phone": "(24) 2222-9172"
+    },
+    {
+      "code": "1052",
+      "name": "E M ARNALDO DYCKERHOFF",
+      "neighborhood": "POSSE",
+      "address": "ESTRADA ARNALDO DYCKERHOFF, 4110 - CEP 25770-130",
+      "phone": "(24) 2246-9326"
+    },
+    {
+      "code": "1055",
+      "name": "E M CARLOS CANEDO",
+      "neighborhood": "POSSE",
+      "address": "ESTRADA UNIÃO INDÚSTRIA, 24681 - CEP 25750-222",
+      "phone": "(24) 98812-4591"
+    },
+    {
+      "code": "1057",
+      "name": "E M DR BARROS FRANCO",
+      "neighborhood": "SECRETÁRIO",
+      "address": "ESTRADA DE FAGUNDES, S/N - CEP 25755-090",
+      "phone": "(24) 98838-3200, (24) 97835-9019"
+    },
+    {
+      "code": "1060",
+      "name": "E M MAJOR THEÓFILO DE CARVALHO",
+      "neighborhood": "SECRETÁRIO",
+      "address": "ROCINHA, S/N - CEP 25755-340",
+      "phone": "(24) 2228-1276"
+    },
+    {
+      "code": "1065",
+      "name": "E M TAQUARIL",
+      "neighborhood": "PEDRO DO RIO",
+      "address": "RUA MANOEL BATISTA ANDRADE, S/N - CEP 25750-280",
+      "phone": "(24) 2236-2770, (24) 99206-0546"
+    },
+    {
+      "code": "1067",
+      "name": "E M BEATRIZ ZALESKI",
+      "neighborhood": "POSSE",
+      "address": "ESTRADA UNIÃO INDÚSTRIA - KM 89, RETA DA POSSE - CEP 25770-000",
+      "phone": "(24) 2259-2730"
+    },
+    {
+      "code": "1068",
+      "name": "E M ANTÔNIO JOSÉ DE LIMA",
+      "neighborhood": "POSSE",
+      "address": "ESTRADA DOS ALBERTOS-BREJAL, S/N - CEP 25770-090",
+      "phone": "(24) 2241-0984"
+    },
+    {
+      "code": "1069",
+      "name": "E M FELIX WAN ERVEN DE BARROS",
+      "neighborhood": "POSSE",
+      "address": "ESTRADA SILVEIRA DA MOTTA, KM 2,5, S/N, KM 4 - CEP 25770-460",
+      "phone": "(24) 99202-5067, (24) 2246-8797"
+    },
+    {
+      "code": "1070",
+      "name": "E M HILDEBRANDO DE CARVALHO",
+      "neighborhood": "POSSE",
+      "address": "ESTRADA SILVEIRA DA MOTTA, KM 2,5, S/N, KM 2,5 - CEP 25770-460",
+      "phone": "(24) 2246-9123"
+    },
+    {
+      "code": "1073",
+      "name": "E M OSWALDO DA COSTA FRIAS",
+      "neighborhood": "POSSE",
+      "address": "ESTRADA DO JURUÁ, N SRA DE FATIMA - CEP 25770-330",
+      "phone": "(24) 2246-9087"
+    },
+    {
+      "code": "1075",
+      "name": "E MZDA CARMEM NUNES MARTINS",
+      "neighborhood": "ITAMARATI",
+      "address": "RUA DR. JOÃO BARCELOS, 687 - CEP 25615-171",
+      "phone": "(24) 2244-7848, (24) 98815-3826"
+    },
+    {
+      "code": "1076",
+      "name": "E MZDA AVELINO DE CARVALHO",
+      "neighborhood": "POSSE",
+      "address": "ESTRADA DO BREJAL, SBREJAL S/N - CEP 25770-090",
+      "phone": "(24) 98829-9830, (24) 2246-4278"
+    },
+    {
+      "code": "1078",
+      "name": "E M GERALDO VENTURA DIAS",
+      "neighborhood": "ALTO DA SERRA",
+      "address": "ESTRADA VELHA DA ESTRELA, 3100 - CEP 25635-114",
+      "phone": "(24) 2247-6112, (24) 93300-1607"
+    },
+    {
+      "code": "1079",
+      "name": "E M SALVADOR KLING",
+      "neighborhood": "MOSELA",
+      "address": "RUA MOSELA, 995 - CEP 25675-016",
+      "phone": "(24) 2231-3651"
+    },
+    {
+      "code": "1080",
+      "name": "E M PREFEITO JAMIL SABRÁ",
+      "neighborhood": "CENTRO",
+      "address": "RUA CORONEL VEIGA, 1130 - CEP 25655-171",
+      "phone": "(24) 2019-0494"
+    },
+    {
+      "code": "1081",
+      "name": "LICEU MUNICIPAL CARLOS CHAGAS FILHO",
+      "neighborhood": "CENTRO",
+      "address": "RUA BARÃO DO RIO BRANCO, 2053 - CEP 25680-275",
+      "phone": "(24) 2242-1062"
+    },
+    {
+      "code": "1083",
+      "name": "E M ANA MOHAMMAD",
+      "neighborhood": "CASTELÂNEA",
+      "address": "ESTRADA DO PARAÍSO, 701 - CEP 25635-410",
+      "phone": "(24) 2248-6206"
+    },
+    {
+      "code": "1084",
+      "name": "E M ALTO INDEPENDÊNCIA",
+      "neighborhood": "ALTO INDEPENDÊNCIA",
+      "address": "LEONOR MAIA, 1670 - CEP 25645-420",
+      "phone": "(24) 2246-9094, (24) 2247-2235"
+    },
+    {
+      "code": "1085",
+      "name": "E M ALMIRANTE TAMANDARÉ",
+      "neighborhood": "RETIRO",
+      "address": "DR. HERMOGÊNEO SILVA, S/N - CEP 25715-059",
+      "phone": "(24) 2246-0794, (24) 97400-1730"
+    },
+    {
+      "code": "1086",
+      "name": "ESCOLA MUNICIPALIZADA FREI ANICETO",
+      "neighborhood": "MOSELA",
+      "address": "RUA MOSELA, 1445 - CEP 25675-017",
+      "phone": "(24) 2291-7304"
+    },
+    {
+      "code": "1088",
+      "name": "E M PEDRO AMADO",
+      "neighborhood": "MEIO DA SERRA",
+      "address": "ESTRADA VELHA DA ESTRELA, 436 - CEP 25635-114",
+      "phone": "(24) 2235-1735"
+    },
+    {
+      "code": "1089",
+      "name": "E M PROFª MARIA DA GLÓRIA QUEIROZ DE VASCONCELLOS",
+      "neighborhood": "INDEPENDÊNCIA",
+      "address": "RUA A, S/N - CEP 25645-420",
+      "phone": "(24) 2291-2476, (24) 2246-5803"
+    },
+    {
+      "code": "1090",
+      "name": "E M SEBASTIÃO LACERDA",
+      "neighborhood": "ROCIO",
+      "address": "ESTR. DA VARGEM GRANDE, S/N - CEP 25725-621",
+      "phone": "(24) 2246-8464"
+    },
+    {
+      "code": "1093",
+      "name": "E M PROFESSOR FLÁVIO MACIEL",
+      "neighborhood": "QUITANDINHA",
+      "address": "RUA AMARAL PEIXOTO, S/N - CEP 25651-010",
+      "phone": "(24) 2237-2567"
+    },
+    {
+      "code": "1094",
+      "name": "E M PAULO SALDANHA",
+      "neighborhood": "ESTRADA DA SAUDADE",
+      "address": "ESTRADA DA SAUDADE, S/N PROX AO 941 - CEP 25610-106",
+      "phone": "(24) 2020-4309"
+    },
+    {
+      "code": "1095",
+      "name": "E M PROFESSOR JOSEMAR CONTAGE",
+      "neighborhood": "CORRÊAS",
+      "address": "RUA CASTRO ALVES, 80 - CEP 25730-730",
+      "phone": "(24) 2221-4289, (24) 2236-2433"
+    },
+    {
+      "code": "1096",
+      "name": "E M MONSENHOR CIRILLO CALAON",
+      "neighborhood": "JARDIM SALVADOR",
+      "address": "RUA AROLDO MANO, S/N - CEP 25720-045",
+      "phone": "(24) 2291-5163, (24) 2291-5173"
+    },
+    {
+      "code": "1097",
+      "name": "E M AMÉRICO FERNANDES RIBEIRO",
+      "neighborhood": "VALE DAS VIDEIRAS",
+      "address": "ESTR. ALMIRANTE PAULO MEIRA, 8400 - CEP 25725-029",
+      "phone": "(24) 3199-0100"
+    },
+    {
+      "code": "1098",
+      "name": "E M PROFª JANDIRA PEIXOTO BORDIGNON",
+      "neighborhood": "QUITANDINHA",
+      "address": "GETULIO VARGAS, 2200 - CEP 25651-078",
+      "phone": "(24) 2242-9167, (24) 99270-3951"
+    },
+    {
+      "code": "1099",
+      "name": "E M MONSENHOR JOÃO DE DEUS RODRIGUES",
+      "neighborhood": "PEDRO DO RIO",
+      "address": "DR. BARROS FRANCO, S/N - CEP 25750-290",
+      "phone": "(24) 2223-2857"
+    },
+    {
+      "code": "1100",
+      "name": "E M DOM MANOEL PEDRO DA CUNHA CINTRA",
+      "neighborhood": "CARANGOLA",
+      "address": "DR. JACOB BORDIGNOM, S/N - CEP 25715-280",
+      "phone": "(24) 2017-3542"
+    },
+    {
+      "code": "1101",
+      "name": "E M JOHANN NOEL",
+      "neighborhood": "BINGEN",
+      "address": "RUA BINGEN, 843 - CEP 25660-003",
+      "phone": "(24) 2246-9037"
+    },
+    {
+      "code": "1102",
+      "name": "E MZDA SANTA TEREZINHA",
+      "neighborhood": "VILA RICA",
+      "address": "RUA C, S/N - CEP 25750-990",
+      "phone": "(24) 2235-1608"
+    },
+    {
+      "code": "1103",
+      "name": "E M PAPA JOÃO PAULO II",
+      "neighborhood": "SÃO SEBASTIÃO",
+      "address": "SÃO SEBASTIÃO, 625 - CEP 25645-045",
+      "phone": "(24) 2291-2244"
+    },
+    {
+      "code": "1105",
+      "name": "E M STEFAN ZWEIG",
+      "neighborhood": "QUITANDINHA",
+      "address": "RUA SERGIPE, 49 - CEP 25730-710",
+      "phone": "(24) 2245-6737"
+    },
+    {
+      "code": "1106",
+      "name": "E M SENADOR MARIO MARTINS",
+      "neighborhood": "CAXAMBU",
+      "address": "RUA FLAVIO CAVALCANTI, S/N - CEP 25615-060",
+      "phone": "(24) 2235-5478"
+    },
+    {
+      "code": "1107",
+      "name": "E M DR RUBENS DE CASTRO BOMTEMPO",
+      "neighborhood": "CHÁCARA FLORA",
+      "address": "PERMINIO SCHMITH, S/N - CEP 25635-370",
+      "phone": "(24) 2246-0113, (24) 2245-8732"
+    },
+    {
+      "code": "1108",
+      "name": "E M PAULO FREIRE",
+      "neighborhood": "CENTRO",
+      "address": "RUA BUARQUE DE MACEDO, 53 - CEP 25625-290",
+      "phone": "(24) 2246-1790, (24) 99258-1541"
+    },
+    {
+      "code": "1109",
+      "name": "E M PROFª MARIA CAMPOS DA SILVA",
+      "neighborhood": "CENTRO",
+      "address": "RUA BUENOS AIRES, 108 - CEP 25610-141",
+      "phone": "(24) 2246-8649, (24) 2231-6398"
+    },
+    {
+      "code": "1110",
+      "name": "E M HERCÍLIA HENRIQUES MORET",
+      "neighborhood": "CORRÊAS",
+      "address": "RUA VIGÁRIO CORRÊA, 238 - CEP 25720-322",
+      "phone": "(24) 2221-1922"
+    },
+    {
+      "code": "1111",
+      "name": "ESCOLA MUNICIPALIZADA MOYSÉS FURTADO BRAVO",
+      "neighborhood": "POSSE",
+      "address": "PRAÇA FLÁVIO CASTRIOTO, S/N - CEP 25770-200",
+      "phone": "(24) 2221-4030"
+    },
+    {
+      "code": "1112",
+      "name": "CIEP BRIZOLÃO 474 MAESTRO GUERRA PEIXE - MUNICIPALIZADO",
+      "neighborhood": "CASCATINHA",
+      "address": "RUA BERNARDO PROENÇA, 809 - CEP 25710-082",
+      "phone": "(24) 2237-9893"
+    },
+    {
+      "code": "1113",
+      "name": "CENTRO DE ENSINO PROF DARCY RIBEIRO",
+      "neighborhood": "CASCATINHA",
+      "address": "RUA MACHADO FAGUNDES, 326 - CEP 25761-001",
+      "phone": "(24) 2246-2392"
+    },
+    {
+      "code": "1114",
+      "name": "CASA DA EDUCAÇÃO VISCONDE DE MAUÁ",
+      "neighborhood": "CENTRO",
+      "address": "RUA BARÃO DO RIO BRANCO, 3 - CEP 25680-150",
+      "phone": "(24) 2246-8661, (24) 2291-3799"
+    },
+    {
+      "code": "1115",
+      "name": "CENTRO DE REFERÊNCIA EM EDUCAÇÃO INCLUSIVA JOÃO PEDRO DE SOUZA ROSA",
+      "neighborhood": "CENTRO",
+      "address": "RUA BUENOS AIRES, 155 - CEP 25685-350",
+      "phone": "(24) 2242-9531, (24) 2246-3169"
+    },
+    {
+      "code": "1116",
+      "name": "E M PROF NILTON COSTA PEREIRA DE SÃO THIAGO",
+      "neighborhood": "NOGUEIRA",
+      "address": "AV.LEOPOLDINA, 561 - CEP 25730-203",
+      "phone": "(24) 2221-4724"
+    },
+    {
+      "code": "1117",
+      "name": "COLÉGIO GUNNAR VINGREN DE PETRÓPOLIS",
+      "neighborhood": "VALPARAÍSO",
+      "address": "RUA PADRE MOREIRA, 65 - CEP 25685-132",
+      "phone": "(24) 2249-2781"
+    },
+    {
+      "code": "1119",
+      "name": "CENTRO DE REFERÊNCIA EM EDUCAÇÃO INCLUSIVA ALINE DE SOUZA CORREA",
+      "neighborhood": "PEDRO DO RIO",
+      "address": "RUA EUGENIO ZANATTA, 247 - CEP 25750-300",
+      "phone": "(24) 2246-6577"
+    },
+    {
+      "code": "1120",
+      "name": "ESCOLA SANTA LUIZA DE MARILLAC",
+      "neighborhood": "CENTRO",
+      "address": "RUA BUENOS AIRES, 71 - CEP 25610-141",
+      "phone": "(24) 2244-9546"
+    },
+    {
+      "code": "2002",
+      "name": "CENTRO EDUCACIONAL COMUNIDADE SÃO JORGE",
+      "neighborhood": "INDEPENDÊNCIA",
+      "address": "RUA LEONOR MAIA, 99 - CEP 25645-420",
+      "phone": "(24) 99221-5056"
+    },
+    {
+      "code": "2005",
+      "name": "EDUCANDÁRIO TERRA SANTA",
+      "neighborhood": "VALPARAÍSO",
+      "address": "RUA MONSENHOR BACELAR, 590 - CEP 25685-113",
+      "phone": "(24) 2245-3474"
+    },
+    {
+      "code": "2008",
+      "name": "ESCOLA GERMANO VALENTE",
+      "neighborhood": "MORIN",
+      "address": "RUA DR. SÁ EARP, 88 - CEP 25625-073",
+      "phone": "(24) 2231-6831, (24) 2242-5196"
+    },
+    {
+      "code": "2009",
+      "name": "ESCOLA DAS COMUNIDADES SANTO ANTÔNIO",
+      "neighborhood": "ALTO DA SERRA",
+      "address": "RUA CORONEL ALBINO SIQUEIRA, 197 - CEP 25635-130",
+      "phone": "(24) 2245-9634, (24) 2242-4802"
+    },
+    {
+      "code": "2010",
+      "name": "ESCOLA DOMÉSTICA NOSSA SENHORA DO AMPARO",
+      "neighborhood": "CENTRO",
+      "address": "AVENIDA ROBERTO SILVEIRA, 150 - CEP 25685-040",
+      "phone": "(24) 2242-0868"
+    },
+    {
+      "code": "2013",
+      "name": "ESCOLA PAROQUIAL NOSSA SENHORA DA GLÓRIA",
+      "neighborhood": "MORIN",
+      "address": "RUA AUGUSTO SEVERO, - CEP 25630-050",
+      "phone": "(24) 2245-8243"
+    },
+    {
+      "code": "2014",
+      "name": "ESCOLA MONSENHOR GENTIL",
+      "neighborhood": "CENTRO",
+      "address": "RUA MARECHAL FLORIANO PEIXOTO, S/N - CEP 25610-970",
+      "phone": "(24) 2244-9156"
+    },
+    {
+      "code": "2015",
+      "name": "ESCOLA PAROQUIAL BOM JESUS",
+      "neighborhood": "QUITANDINHA",
+      "address": "RUA DR. THOUZET, 820 - CEP 25650-061",
+      "phone": "(24) 2243-0980, (24) 99330-6600"
+    },
+    {
+      "code": "2016",
+      "name": "ESCOLA PAROQUIAL CARLOS DEMIÁ",
+      "neighborhood": "RETIRO",
+      "address": "RUA FERNANDES VIEIRA, 110 - CEP 25680-386",
+      "phone": "(24) 2017-6633"
+    },
+    {
+      "code": "2017",
+      "name": "ESCOLA PAROQUIAL NOSSA SENHORA DAS GRAÇAS",
+      "neighborhood": "QUARTEIRÃO BRASILEIRO",
+      "address": "RUA PROFESSOR JOÃO DE DEUS, 345 - CEP 25680-192",
+      "phone": "(24) 2248-4534, (24) 98847-1980"
+    },
+    {
+      "code": "2018",
+      "name": "ESCOLA PAROQUIAL NOSSA SENHORA DO CARMO",
+      "neighborhood": "CENTRO",
+      "address": "RUA BARÃO DO RIO BRANCO, 2053 - CEP 25680-275",
+      "phone": "(24) 2245-6119"
+    },
+    {
+      "code": "2019",
+      "name": "ESCOLA PAROQUIAL SÃO PEDRO DE ALCÂNTARA",
+      "neighborhood": "CENTRO",
+      "address": "RUA IPIRANGA, 182 - CEP 25685-250",
+      "phone": "(24) 2245-6599"
+    },
+    {
+      "code": "2023",
+      "name": "ESCOLA SANTA MARIA GORETTI",
+      "neighborhood": "BINGEN",
+      "address": "RUA DR. PAULO HERVÊ, 1539 - CEP 25665-135",
+      "phone": "(24) 2244-8436, (24) 98818-6823"
+    },
+    {
+      "code": "2024",
+      "name": "ESCOLA SANTA RITA DE CASSIA",
+      "neighborhood": "BINGEN",
+      "address": "RUA CORONEL DUARTE DA SILVEIRA, 940 - CEP 25665-473",
+      "phone": "(24) 2247-8163"
+    },
+    {
+      "code": "2025",
+      "name": "ESCOLA SÃO CRISTÓVÃO",
+      "neighborhood": "CASTELÂNEA",
+      "address": "PRAÇA PASTEUR, 79 - CEP 25640-040",
+      "phone": "(24) 2245-9752"
+    },
+    {
+      "code": "2026",
+      "name": "ESCOLA PAROQUIAL SÃO FRANCISCO DE ASSIS - BV",
+      "neighborhood": "BELA VISTA",
+      "address": "RUA MARCOLINO SIMÕES FERREIRA, 254 - CEP 25710-165",
+      "phone": "(24) 2280-1174, (24) 2020-4881"
+    },
+    {
+      "code": "2027",
+      "name": "ESCOLA SAO FRANCISCO DE ASSIS",
+      "neighborhood": "MOINHO PRETO",
+      "address": "JOÃO XAVIER, S/N - CEP 25665-442",
+      "phone": "(24) 99271-7947, (24) 2235-3818"
+    },
+    {
+      "code": "2028",
+      "name": "ESCOLA SÃO JOÃO BATISTA",
+      "neighborhood": "BINGEN",
+      "address": "RUA LUIZ WINTER, S/N - CEP 25665-431",
+      "phone": "(24) 2019-1828, (24) 2019-1828"
+    },
+    {
+      "code": "2029",
+      "name": "ESCOLA SÃO JUDAS TADEU",
+      "neighborhood": "MOSELA",
+      "address": "RUA MOSELA, 1445 - CEP 25675-012",
+      "phone": "(24) 2231-6934, (24) 99276-8304"
+    },
+    {
+      "code": "2030",
+      "name": "ESCOLA PAROQUIAL SÃO PIO X",
+      "neighborhood": "CAXAMBU",
+      "address": "RUA LUÍS IMBROISI, 107 - CEP 25610-041",
+      "phone": "(24) 2235-6740, (24) 99871-2999"
+    },
+    {
+      "code": "2033",
+      "name": "COLÉGIO ANGLICANO DE ARARAS",
+      "neighborhood": "ARARAS",
+      "address": "ESTRADA BERNARDO COUTINHO, 1643 - CEP 25725-022",
+      "phone": "(24) 2225-1226"
+    },
+    {
+      "code": "2034",
+      "name": "COLEGIO VICENTINO PADRE CORRÊA",
+      "neighborhood": "CORRÊAS",
+      "address": "ALVARES DE AZEVEDO, 24 - CEP 25730-020",
+      "phone": "(24) 2221-2046, (24) 2221-1970"
+    },
+    {
+      "code": "2036",
+      "name": "ESCOLA NOSSA SENHORA DE FÁTIMA",
+      "neighborhood": "RIO DA CIDADE",
+      "address": "RODOVIA BR040 KM66, KM 66 - CEP 25725-580",
+      "phone": "(24) 2243-9660"
+    },
+    {
+      "code": "2037",
+      "name": "ESCOLA PAROQUIAL DA ALCOBAÇA",
+      "neighborhood": "SAMAMBAIA",
+      "address": "LUIZ SALOMÃO VIANA, 128 - CEP 25710-332",
+      "phone": "(24) 98112-1309, (24) 98839-3055"
+    },
+    {
+      "code": "2038",
+      "name": "ESCOLA PAROQUIAL DO LOTEAMENTO SAMAMBAIA",
+      "neighborhood": "LOTEAMENTO SAMAMBAIA",
+      "address": "JOÃO AUGUSTO DE OLIVEIRA FILHO, 28 - CEP 25710-259",
+      "phone": "(24) 2247-0517, (24) 98843-5217"
+    },
+    {
+      "code": "2039",
+      "name": "ESCOLA PAROQUIAL SANTA BERNADETE",
+      "neighborhood": "ARARAS",
+      "address": "RUA BERNARDO COUTINHO, 1845 - CEP 25725-022",
+      "phone": "(24) 2225-0471"
+    },
+    {
+      "code": "2041",
+      "name": "ESCOLA SÃO GERALDO",
+      "neighborhood": "CARANGOLA",
+      "address": "ESTRADA DIVINO ESPÍRITO SANTO, 740 - CEP 25715-410",
+      "phone": "(24) 2020-4604"
+    },
+    {
+      "code": "2044",
+      "name": "ESCOLA SANTO ANTÔNIO",
+      "neighborhood": "CUIABÁ",
+      "address": "ESTRADA MINISTRO SALGADO FILHO, 4839 - CEP 25745-450",
+      "phone": "(24) 99204-1496, (24) 2246-8796"
+    },
+    {
+      "code": "2045",
+      "name": "LICEU SÃO JOSÉ DE ITAIPAVA",
+      "neighborhood": "ITAIPAVA",
+      "address": "ESTRADA UNIÃO INDÚSTRIA, 1449 - CEP 25740-365",
+      "phone": "(24) 2222-1210, (24) 2222-1443"
+    },
+    {
+      "code": "2049",
+      "name": "ESCOLA SÃO JOSÉ DO CAETITU",
+      "neighborhood": "CASTELO SÃO MANOEL",
+      "address": "ESTRADA DO RIBEIRAO, 490 - CEP 25730-970",
+      "phone": "(24) 2249-1909"
+    },
+    {
+      "code": "3001",
+      "name": "CEI ASSOCIAÇÃO BENEFICENTE FAZENDA INGLESA",
+      "neighborhood": "FAZENDA INGLESA",
+      "address": "ESTRADA DA FAZENDA INGLESA, 340 - CEP 25670-070",
+      "phone": "(24) 99819-5307, (24) 2249-1184"
+    },
+    {
+      "code": "3003",
+      "name": "CEI CASA DA SOLIDARIEDADE DE NOSSA SENHORA APARECIDA",
+      "neighborhood": "BINGEN",
+      "address": "DR. MOACYR M. NETTO, S/N - CEP 25665-442",
+      "phone": "(24) 2247-6344, (24) 2006-0789"
+    },
+    {
+      "code": "3004",
+      "name": "CEI LULU MONTEIRO DE CASTRO",
+      "neighborhood": "CARANGOLA",
+      "address": "RUA DA CRECHE, 1 - CEP 25715-408",
+      "phone": "(24) 99214-9514, (24) 2291-8324"
+    },
+    {
+      "code": "3005",
+      "name": "CEI SÃO JOÃO BATISTA",
+      "neighborhood": "DUARTE DA SILVEIRA",
+      "address": "RUA LUIZ WINTER, 123 - CEP 25665-431",
+      "phone": "(24) 2248-9959"
+    },
+    {
+      "code": "3006",
+      "name": "CEI SÃO FRANCISCO ASSIS",
+      "neighborhood": "MOINHO PRETO",
+      "address": "ESTRADA DA FAZENDA INGLESA, 25 - CEP 25670-070",
+      "phone": "(24) 98802-0473, (24) 2020-6093"
+    },
+    {
+      "code": "3007",
+      "name": "CEI A SEMENTEIRA",
+      "neighborhood": "BINGEN",
+      "address": "RUA MANOEL TORRES, 395 - CEP 25660-313",
+      "phone": "(24) 2249-7294, (24) 98854-5909"
+    },
+    {
+      "code": "3008",
+      "name": "CEI FREI LEÃO",
+      "neighborhood": "CHÁCARA FLORA",
+      "address": "PERMINIO SCHMITH, S/N - CEP 25635-370",
+      "phone": "(24) 2248-6005"
+    },
+    {
+      "code": "3011",
+      "name": "CEI ROMANO CANAVESE",
+      "neighborhood": "INDEPENDÊNCIA",
+      "address": "RUA JOSÉ CHAVES, S/N - CEP 25645-255",
+      "phone": "(24) 2019-5360"
+    },
+    {
+      "code": "3012",
+      "name": "CEI ANDRÉ VANZAN",
+      "neighborhood": "CASCATINHA",
+      "address": "RUA BERNARDO PROENÇA, 809 - CEP 25710-082",
+      "phone": "(24) 99254-2954, (24) 2280-4330"
+    },
+    {
+      "code": "3013",
+      "name": "CEI CRIANÇA SANTA EDWIGES",
+      "neighborhood": "VILA RICA",
+      "address": "RUA AUGUSTO FRANCISCO DA SILVA, 1010 - CEP 25750-361",
+      "phone": "(24) 2223-4639"
+    },
+    {
+      "code": "3015",
+      "name": "CENTRO DE EDUCAÇÃO INFANTIL IRMÃ DULCE",
+      "neighborhood": "QUARTEIRÃO BRASILEIRO",
+      "address": "RUA ATÍLIO MAROTTI, 1011 - CEP 25680-290",
+      "phone": "(24) 2017-5664"
+    },
+    {
+      "code": "3016",
+      "name": "CEI PEDRAS BRANCAS",
+      "neighborhood": "MOSELA",
+      "address": "RUA PEDRAS BRANCAS, S/N - CEP 25670-221",
+      "phone": "(24) 2019-0042"
+    },
+    {
+      "code": "3017",
+      "name": "CEI INÊS BELARMINO DE SOUZA",
+      "neighborhood": "SIMÉRIA",
+      "address": "RUA MANOEL FRANCISCO DE PAULA, PROX AO PSF - CEP 25645-090",
+      "phone": "(24) 2247-5789, (24) 98831-8813"
+    },
+    {
+      "code": "3019",
+      "name": "CEI PROFª ROSANGELA DA SILVA LEONARDO",
+      "neighborhood": "ALTO DA SERRA",
+      "address": "ESTRADA VELHA DA ESTRELA, 3100 - CEP 25635-114",
+      "phone": "(24) 98832-2147, (24) 2020-7337"
+    },
+    {
+      "code": "3020",
+      "name": "CEI VILA SAO JOSE",
+      "neighborhood": "BINGEN",
+      "address": "RUA PAULINO AFONSO, 267 - CEP 25680-003",
+      "phone": "(24) 2249-7206"
+    },
+    {
+      "code": "3021",
+      "name": "CEI MARIA THEREZA KLING DO VALLE",
+      "neighborhood": "MOSELA",
+      "address": "RUA CANDIDO PORTINARI, 56 - CEP 25675-130",
+      "phone": "(24) 2237-4037"
+    },
+    {
+      "code": "3022",
+      "name": "CEI DEISE ELOY GOMES",
+      "neighborhood": "ALTO DA SERRA",
+      "address": "CARMEM DA PONTE MARCOLINO, 823 - CEP 25635-240",
+      "phone": "(24) 2243-9459"
+    },
+    {
+      "code": "3024",
+      "name": "CENTRO PAROQUIAL DE EDUCAÇÃO INFANTIL NOSSA SENHORA APARECIDA",
+      "neighborhood": "RETIRO",
+      "address": "DR HANS BISTRISCHAN, S/N - CEP 25680-400",
+      "phone": "(24) 2020-5311"
+    },
+    {
+      "code": "3025",
+      "name": "CEI VISTA ALEGRE",
+      "neighborhood": "ARARAS",
+      "address": "AGNELLO BARREIROS, S/N - CEP 25725-000",
+      "phone": "(24) 2235-2553"
+    },
+    {
+      "code": "3026",
+      "name": "CEI ALDEIA DA CRIANCA",
+      "neighborhood": "CONTORNO",
+      "address": "BR-040 KM-81, 195 - CEP 25725-592",
+      "phone": "(24) 2248-9915, (24) 2248-9960"
+    },
+    {
+      "code": "3027",
+      "name": "CEI DÉA LÚCIA CORDEIRO",
+      "neighborhood": "CASTELÂNEA",
+      "address": "RUA CRISTOVÃO COLOMBO, 153 - CEP 25640-322",
+      "phone": "(24) 2231-0268"
+    },
+    {
+      "code": "3028",
+      "name": "CENTRO DE EDUCAÇÃO INFANTIL CAROLINA AMORIM",
+      "neighborhood": "CASCATINHA",
+      "address": "RUA MACHADO FAGUNDES, 326 - CEP 25716-001",
+      "phone": "(24) 2020-2062"
+    },
+    {
+      "code": "3029",
+      "name": "CEI IRMÃ SILVANA",
+      "neighborhood": "RETIRO",
+      "address": "RUA FELIPE CAMARÃO, 310 - CEP 25680-995",
+      "phone": "(24) 2020-1037, (24) 98867-9639"
+    },
+    {
+      "code": "3030",
+      "name": "CEI MARLI SOARES FERREIRA NETTO",
+      "neighborhood": "QUITANDINHA",
+      "address": "DR.THOUZET/SRV.DHÁLIA J.SILVA, S/N - CEP 25650-061",
+      "phone": "(24) 2019-7367"
+    },
+    {
+      "code": "3031",
+      "name": "CEI PROFª SONIA REGINA SCUDESE DESSIMONI PINTO",
+      "neighborhood": "ALTO DA SERRA",
+      "address": "IRINEU CORREA, 48 - CEP 25635-070",
+      "phone": "(24) 2019-0860"
+    },
+    {
+      "code": "3032",
+      "name": "CEI DONA ESPERANZA DE BOURBON DE ORLEANS E BRAGANÇA",
+      "neighborhood": "MOSELA",
+      "address": "PARQUE RESIDENCIAL MOSELA, S/N - CEP 25675-160",
+      "phone": "(24) 2019-2325"
+    },
+    {
+      "code": "3033",
+      "name": "CEI PREFEITO SÉRGIO FADEL",
+      "neighborhood": "MADAME MACHADO",
+      "address": "GERALDO LOURENÇO DIAS, 33 - CEP 25745-710",
+      "phone": "(24) 2246-9433"
+    },
+    {
+      "code": "3034",
+      "name": "CEI ANDRÉ REBOUÇAS",
+      "neighborhood": "SÃO SEBASTIÃO",
+      "address": "RUA FRANKLIN ROOSEVELT, 11 - CEP 25645-123",
+      "phone": "(24) 2020-2818"
+    },
+    {
+      "code": "3035",
+      "name": "CENTRO DE EDUCAÇÃO INFANTIL CHIQUINHA ROLLA",
+      "neighborhood": "QUITANDINHA",
+      "address": "RUA CAMPOS, 1 - CEP 25651-030",
+      "phone": "(24) 2242-7437"
+    },
+    {
+      "code": "3036",
+      "name": "CEI TIA ALICE",
+      "neighborhood": "ALTO DA SERRA",
+      "address": "RUA CORONEL ALBINO SIQUEIRA, 114 - CEP 25635-130",
+      "phone": "(24) 2246-1815, (24) 98801-6690"
+    },
+    {
+      "code": "3037",
+      "name": "CEI TERRA SANTA",
+      "neighborhood": "CENTRO",
+      "address": "RUA MONSENHOR BACELAR, 590 - CEP 25685-113",
+      "phone": "(24) 2231-1403, (24) 98854-7557"
+    },
+    {
+      "code": "3038",
+      "name": "CEI JORGE ROLANDO DA SILVA",
+      "neighborhood": "MORIN",
+      "address": "RUA ANÉSIO DE OLIVEIRA, 111 - CEP 25630-080",
+      "phone": "(24) 2249-2571, (24) 98803-4864"
+    },
+    {
+      "code": "3039",
+      "name": "CEI CARANGOLA",
+      "neighborhood": "CARANGOLA",
+      "address": "ESTRADA DO CARANGOLA, 933 - CEP 25715-221",
+      "phone": "(24) 2246-9229"
+    },
+    {
+      "code": "3040",
+      "name": "CEI CÉLIA LÔBO PAULO",
+      "neighborhood": "INDEPENDÊNCIA",
+      "address": "ESTRADA DO INDEPENDÊNCIA, 1230 - CEP 25645-343",
+      "phone": "(24) 2020-2683, (24) 99986-5289"
+    },
+    {
+      "code": "3041",
+      "name": "CEI LIONS CLUBE DE PETRÓPOLIS",
+      "neighborhood": "VALPARAÍSO",
+      "address": "RUA ROCKFELLER, 243 - CEP 25655-090",
+      "phone": "(24) 2243-2886, (24) 98182-7588"
+    },
+    {
+      "code": "3043",
+      "name": "CEI PROFª GRAÇA COSTA",
+      "neighborhood": "PEDRO DO RIO",
+      "address": "RUA EMÍLIO ZANATTA, 767 - CEP 25750-100",
+      "phone": "(24) 2223-5289, (24) 98808-6118"
+    },
+    {
+      "code": "3044",
+      "name": "CEI ANGELA MARIA DA CONCEIÇÃO SILVA",
+      "neighborhood": "POSSE",
+      "address": "ESTRADA UNIÃO INDÚSTRIA, 33666 - CEP 25770-480",
+      "phone": "(24) 2246-9324, (24) 99259-4303"
+    },
+    {
+      "code": "3045",
+      "name": "CEI LUIZ MARCHIORI",
+      "neighborhood": "ITAIPAVA",
+      "address": "DO GENTIL, 1906 - CEP 25745-060",
+      "phone": "(24) 2020-0750, (24) 99968-2860"
+    },
+    {
+      "code": "3047",
+      "name": "CEI PROFª MARLUCE DE SOUZA PESTANA",
+      "neighborhood": "CORRÊAS",
+      "address": "BONFIM, 3046 - CEP 25730-010",
+      "phone": "(24) 2236-0202"
+    },
+    {
+      "code": "3048",
+      "name": "CEI OLÍVIA MACHADO DA COSTA NOGUEIRA",
+      "neighborhood": "RETIRO",
+      "address": "RUA HENRIQUE DIAS, 100 - CEP 25680-301",
+      "phone": "(24) 2246-8737, (24) 2020-9938"
+    },
+    {
+      "code": "3049",
+      "name": "CEI VILA IPANEMA",
+      "neighborhood": "QUITANDINHA",
+      "address": "RUA VASSOURAS, S/N - CEP 25650-500",
+      "phone": "(24) 2235-1036"
+    },
+    {
+      "code": "3050",
+      "name": "CEI VILA LEOPOLDINA",
+      "neighborhood": "PEDRO DO RIO",
+      "address": "RUA EUGENIO ZANATTA, S/N - CEP 25750-300",
+      "phone": "(24) 98844-5754"
+    },
+    {
+      "code": "3051",
+      "name": "CENTRO DE EDUCAÇÃO INFANTIL CASA DA PAZ",
+      "neighborhood": "VALE DO CARANGOLA",
+      "address": "RUA DA CRECHE, 14 - CEP 25715-408",
+      "phone": "(24) 2006-0195, (24) 98812-1821"
+    },
+    {
+      "code": "3052",
+      "name": "CEI PRIMEIRA INFÂNCIA",
+      "neighborhood": "CENTRO",
+      "address": "RUA BUARQUE DE MACEDO, 63 - CEP 25625-290",
+      "phone": "(24) 2244-7492"
+    },
+    {
+      "code": "3053",
+      "name": "CEI PROFª DORA KILLER",
+      "neighborhood": "INDEPENDÊNCIA",
+      "address": "RUA EMÍLIO ZALUAR, 314 - CEP 25645-280",
+      "phone": "(24) 2244-7248"
+    },
+    {
+      "code": "3054",
+      "name": "CEI PROFª PATRÍCIA FERREIRA E SILVA FREITAS",
+      "neighborhood": "CENTRO",
+      "address": "CASIMIRO DE ABREU, 26 - CEP 25615-002",
+      "phone": "(24) 2243-7762, (24) 2019-0962"
+    },
+    {
+      "code": "3055",
+      "name": "CEI DRA ZILDA ARNS NEUMANN",
+      "neighborhood": "CENTRO",
+      "address": "SANTOS DUMONT, 786 - CEP 25625-090",
+      "phone": "(24) 2245-6869"
+    },
+    {
+      "code": "3056",
+      "name": "CEI DENISE BESSA DE OLIVA MAYA",
+      "neighborhood": "ARARAS",
+      "address": "ESTRADA BERNARDO COUTINHO, 526 - CEP 25725-020",
+      "phone": "(24) 2225-1136"
+    },
+    {
+      "code": "3057",
+      "name": "CEI GIUSEPPE-NEVA VOLONTERIO",
+      "neighborhood": "MOSELA",
+      "address": "RUA CARLOS GOMES, 180 - CEP 25680-020",
+      "phone": "(24) 2242-6607, (24) 2017-3874"
+    },
+    {
+      "code": "3058",
+      "name": "CENTRO DE EDUCAÇÃO INFANTIL LOTA MACEDO SOARES",
+      "neighborhood": "SAMAMBAIA",
+      "address": "ENGENHEIRO DURVAL DE SOUZA, 142 - CEP 25710-320",
+      "phone": "(24) 2291-3344, (24) 2245-4731"
+    },
+    {
+      "code": "3059",
+      "name": "CEI IRINEU MARINHO",
+      "neighborhood": "CORRÊAS",
+      "address": "ALVARES DE AZEVEDO, 83 - CEP 25730-020",
+      "phone": "(24) 2017-8623"
+    },
+    {
+      "code": "3060",
+      "name": "CEI OSWALDO CRUZ",
+      "neighborhood": "QUARTEIRÃO INGELHEIM",
+      "address": "RUA INGELHEIM, 643 - CEP 25675-540",
+      "phone": "(24) 2243-4721, (24) 99920-5057"
+    },
+    {
+      "code": "3061",
+      "name": "CEI ANA CAROLINA TELLES",
+      "neighborhood": "DUQUES",
+      "address": "ESTRADA RIO PETRÓPOLIS KM 85, S/N - CEP 25650-001",
+      "phone": "(24) 2242-1643"
+    },
+    {
+      "code": "3062",
+      "name": "CEI JOSÉ GONÇALVES DA MOTTA",
+      "neighborhood": "POSSE",
+      "address": "RUA JOÃO DE FARIAS, S/N - CEP 25770-090",
+      "phone": "(24) 2247-9762"
+    },
+    {
+      "code": "3064",
+      "name": "CEI SAGRADA FAMÍLIA",
+      "neighborhood": "CASTELÂNEA",
+      "address": "ESTRADA DO PARAÍSO, PROX AO 715 - CEP 25635-410",
+      "phone": "(24) 98821-2940, (24) 2248-6309"
+    },
+    {
+      "code": "3065",
+      "name": "CEI PROFª HERMÍNIA MATHEUS",
+      "neighborhood": "SÃO SEBASTIÃO",
+      "address": "RUA FLORINDO DUARTE, S/N - CEP 25645-707",
+      "phone": "(24) 2291-6426, (24) 2020-5903"
+    },
+    {
+      "code": "3066",
+      "name": "CENTRO DE EDUCAÇÃO INFANTIL PROFESSORA TINA GRAZINOLI",
+      "neighborhood": "CENTRO",
+      "address": "RUA VISCONDE DO BOM RETIRO, 165 - CEP 25625-023",
+      "phone": "(24) 2246-3494"
+    },
+    {
+      "code": "3068",
+      "name": "CEI MONSENHOR PAULO ELIAS DAHER CHÉDIER",
+      "neighborhood": "CENTRO",
+      "address": "RUA BENJAMIN CONSTANT, 272 - CEP 25610-130",
+      "phone": "(24) 2020-9441, (24) 99974-9662"
+    },
+    {
+      "code": "3069",
+      "name": "CEI DAGMAR ROLANDO DE OLIVEIRA",
+      "neighborhood": "CORRÊAS",
+      "address": "PRINCESA DONA PAULA, 25 - CEP 25730-100",
+      "phone": "(24) 2019-3680"
+    },
+    {
+      "code": "3070",
+      "name": "CENTRO DE EDUCAÇÃO INFANTIL PROFESSORA ANNA MARIA NARDI",
+      "neighborhood": "QUISSAMÃ",
+      "address": "QUISSAMÃ, 375 - CEP 25615-411",
+      "phone": "(24) 2246-2656, (24) 99319-8398"
+    },
+    {
+      "code": "3072",
+      "name": "CEI BOA VISTA",
+      "neighborhood": "CASCATINHA",
+      "address": "SERV. FRANCISCO JACINTO DO AMARAL, LOTE 11 - CEP 25716-242",
+      "phone": "(24) 2235-1057"
+    },
+    {
+      "code": "3074",
+      "name": "CEI NILO PEÇANHA",
+      "neighborhood": "PEDRO DO RIO",
+      "address": "RUA EUGENIO ZANATTA, 247 - CEP 25750-300",
+      "phone": "(24) 99313-4013, (24) 2246-8660"
+    },
+    {
+      "code": "3075",
+      "name": "CENTRO DE EDUCAÇÃO INFANTIL AUGUSTO PUGNALONI",
+      "neighborhood": "ITAIPAVA",
+      "address": "ESTRADA DO CATOBIRA, S/N - CEP 25740-100",
+      "phone": "(24) 2246-9104"
+    },
+    {
+      "code": "3076",
+      "name": "CEI THEREZINHA DE JESUS LIMA",
+      "neighborhood": "BONFIM",
+      "address": "ALEXANDRE ALVES ANTUNES, 80 - CEP 25730-005",
+      "phone": "(24) 2246-4262"
+    },
+    {
+      "code": "3077",
+      "name": "CEI VIDEIRINHA",
+      "neighborhood": "ARARAS",
+      "address": "ESTR. ALMIRANTE PAULO MEIRA, 8201 - CEP 25725-029",
+      "phone": "(24) 99269-4949, (24) 99310-6988"
+    },
+    {
+      "code": "3078",
+      "name": "CEI PROFª ADRIANA CONSTÂNCIO TRINDADE",
+      "neighborhood": "ITAIPAVA",
+      "address": "ESTRADA UNIÃO INDÚSTRIA, 11990 - CEP 25750-220",
+      "phone": "(24) 2235-7398"
+    },
+    {
+      "code": "3079",
+      "name": "CENTRO DE EDUCAÇÃO INFANTIL SÉRGIO RIBEIRO ROCHA",
+      "neighborhood": "NOGUEIRA",
+      "address": "ESTRADA DO PALMITAL, - CEP 25730-500",
+      "phone": "(24) 2231-7404"
+    },
+    {
+      "code": "3080",
+      "name": "CEI JURACI PINTO DO AMARAL DE CASTRO",
+      "neighborhood": "DUARTE DA SILVEIRA",
+      "address": "RUA LUIZ WINTER, 1305 - CEP 25665-430",
+      "phone": "(24) 98161-0682, (24) 2019-3597"
+    },
+    {
+      "code": "3081",
+      "name": "CEI NOSSA SENHORA DA GLÓRIA",
+      "neighborhood": "CORRÊAS",
+      "address": "RUA NOSSA SENHORA DA GLÓRIA, 1370 - CEP 25720-265",
+      "phone": "(24) 2221-7590"
+    },
+    {
+      "code": "4001",
+      "name": "CEI ALTO INDEPENDÊNCIA",
+      "neighborhood": "INDEPENDÊNCIA",
+      "address": "RUA LEONOR MAIA, 56 - CEP 25645-420",
+      "phone": "(24) 99281-9360, (24) 2020-3699"
+    },
+    {
+      "code": "4002",
+      "name": "CEI SÃO JOSÉ DAS OBLATAS DE NAZARÉ",
+      "neighborhood": "CASTELÂNEA",
+      "address": "RUA OLAVO BILAC, 815 - CEP 25640-511",
+      "phone": "(24) 2231-0256, (24) 98819-1505"
+    },
+    {
+      "code": "4003",
+      "name": "CEI SANTO ANTÔNIO AGOSTINHO",
+      "neighborhood": "NOGUEIRA",
+      "address": "LEOPOLDINA, 590 - CEP 25730-203",
+      "phone": "(24) 2221-5545"
+    },
+    {
+      "code": "4004",
+      "name": "CEI SÃO CHARBEL",
+      "neighborhood": "CAXAMBU",
+      "address": "RUA FLAVIO CAVALCANTI, S/N - CEP 25615-060",
+      "phone": "(24) 2242-0027"
+    },
+    {
+      "code": "4005",
+      "name": "ASSOCIAÇÃO DA CRECHE SÃO FRANCISCO DE ASSIS",
+      "neighborhood": "CASCATINHA",
+      "address": "RUA VERIDIANO FELIX, 79 - CEP 25610-200",
+      "phone": "(24) 2243-0629"
+    },
+    {
+      "code": "4006",
+      "name": "CEI SÃO JOSÉ DO ITAMARATI",
+      "neighborhood": "ITAMARATI",
+      "address": "QUISSAMÃ, 2012 - CEP 25615-532",
+      "phone": "(24) 2249-3816"
+    },
+    {
+      "code": "4007",
+      "name": "ASSOCIAÇÃO RECREAR",
+      "neighborhood": "CARANGOLA",
+      "address": "ESTRADA DIVINO ESPÍRITO SANTO, 377 - CEP 25715-410",
+      "phone": "(24) 2242-4376, (24) 98856-3757"
+    },
+    {
+      "code": "4019",
+      "name": "CRECHE-ESCOLA CASTELO SÃO MANOEL",
+      "neighborhood": "CASTELO SÃO MANOEL",
+      "address": "RUA VISCONDE DE TAUNAY, 641 - CEP 25720-200",
+      "phone": "(24) 2221-5830, (24) 98876-0610"
+    },
+    {
+      "code": "4021",
+      "name": "CENTRO DE EDUCAÇÃO INFANTIL SÃO JUDAS TADEU",
+      "neighborhood": "MOSELA",
+      "address": "RUA CANDIDO PORTINARI, 230 - CEP 25675-130",
+      "phone": "(24) 2291-7386, (24) 98828-0197"
+    }
+  ],
+  "producers": [
+    {
+      "internalId": "P01",
+      "name": "Ana Claudia Correa Ruas de Souza",
+      "phone": null
+    },
+    {
+      "internalId": "P02",
+      "name": "Anderson de Mello Quimas",
+      "phone": null
+    },
+    {
+      "internalId": "P03",
+      "name": "Armando Jose da Silva",
+      "phone": null
+    },
+    {
+      "internalId": "P04",
+      "name": "Arnaldo da Silva",
+      "phone": null
+    },
+    {
+      "internalId": "P05",
+      "name": "Claudeni Rodrigues Xavier",
+      "phone": null
+    },
+    {
+      "internalId": "P06",
+      "name": "Edson Jose da Silva",
+      "phone": null
+    },
+    {
+      "internalId": "P07",
+      "name": "Gabriel Adriano de Souza",
+      "phone": null
+    },
+    {
+      "internalId": "P08",
+      "name": "Gustavo de Mello Rodrigues",
+      "phone": null
+    },
+    {
+      "internalId": "P09",
+      "name": "Joaquim Sergio Lage",
+      "phone": null
+    },
+    {
+      "internalId": "P10",
+      "name": "Jorge Gabriel Pereira Diniz",
+      "phone": null
+    },
+    {
+      "internalId": "P11",
+      "name": "Jose Gilmar Santana de Mello",
+      "phone": null
+    },
+    {
+      "internalId": "P12",
+      "name": "Jose Rodrigues de Melo",
+      "phone": null
+    },
+    {
+      "internalId": "P13",
+      "name": "Lucio Mauro Felix da Silva",
+      "phone": null
+    },
+    {
+      "internalId": "P14",
+      "name": "Luiz Ailton de Oliveira Pinto",
+      "phone": null
+    },
+    {
+      "internalId": "P15",
+      "name": "Marcelo Marcos Delgado",
+      "phone": null
+    },
+    {
+      "internalId": "P16",
+      "name": "Marcio Azevedo de Souza",
+      "phone": null
+    },
+    {
+      "internalId": "P17",
+      "name": "Marco Antonio Coelho",
+      "phone": null
+    },
+    {
+      "internalId": "P18",
+      "name": "Marcos Marcelo Delgado",
+      "phone": null
+    },
+    {
+      "internalId": "P19",
+      "name": "Miguel Fernando de Almeida",
+      "phone": null
+    },
+    {
+      "internalId": "P20",
+      "name": "Nilson Ferreira da Silva",
+      "phone": null
+    },
+    {
+      "internalId": "P21",
+      "name": "Renato Jose da Silva",
+      "phone": null
+    },
+    {
+      "internalId": "P22",
+      "name": "Rodolfo Azevedo de Andrade",
+      "phone": null
+    }
+  ],
+  "returnReasons": [
+    {
+      "code": 1,
+      "description": "Mercadoria fora do padrão"
+    },
+    {
+      "code": 2,
+      "description": "Falta no peso"
+    },
+    {
+      "code": 3,
+      "description": "Sobra no peso"
+    },
+    {
+      "code": 4,
+      "description": "Mercadoria estragada"
+    },
+    {
+      "code": 5,
+      "description": "Folha amarelada"
+    },
+    {
+      "code": 6,
+      "description": "Faltou"
+    },
+    {
+      "code": 7,
+      "description": "Muito pequeno"
+    },
+    {
+      "code": 8,
+      "description": "Fora do padrão de tamanho"
+    },
+    {
+      "code": 9,
+      "description": "Fora do pedido"
+    },
+    {
+      "code": 10,
+      "description": "Muito grande"
+    },
+    {
+      "code": 11,
+      "description": "Aparência ruim"
+    },
+    {
+      "code": 12,
+      "description": "Verde/imaturo"
+    },
+    {
+      "code": 13,
+      "description": "Passado/murcho"
+    },
+    {
+      "code": 14,
+      "description": "Manchado/pintado"
+    }
+  ],
+  "productionMap": [
+    {
+      "productSlug": "abacate",
+      "producerInternalId": "P09",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 856,
+        "jun": 856,
+        "jul": 856,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 2568
+    },
+    {
+      "productSlug": "abacate",
+      "producerInternalId": "P21",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 250,
+        "jul": 250,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 500
+    },
+    {
+      "productSlug": "abacate",
+      "producerInternalId": "P04",
+      "monthly": {
+        "out": 300,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 300,
+        "jun": 340,
+        "jul": 350,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 1290
+    },
+    {
+      "productSlug": "abobrinha",
+      "producerInternalId": "P13",
+      "monthly": {
+        "out": 200,
+        "nov": 200,
+        "dez": 130,
+        "jan": 0,
+        "fev": 0,
+        "mar": 200,
+        "abr": 200,
+        "mai": 200,
+        "jun": 200,
+        "jul": 200,
+        "ago": 200,
+        "set": 200
+      },
+      "totalYear": 1930
+    },
+    {
+      "productSlug": "agriao",
+      "producerInternalId": "P07",
+      "monthly": {
+        "out": 40,
+        "nov": 40,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 0,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 80
+    },
+    {
+      "productSlug": "alface-lisa",
+      "producerInternalId": "P01",
+      "monthly": {
+        "out": 150,
+        "nov": 150,
+        "dez": 100,
+        "jan": 0,
+        "fev": 0,
+        "mar": 96,
+        "abr": 96,
+        "mai": 96,
+        "jun": 96,
+        "jul": 96,
+        "ago": 96,
+        "set": 93
+      },
+      "totalYear": 1069
+    },
+    {
+      "productSlug": "alface-lisa",
+      "producerInternalId": "P16",
+      "monthly": {
+        "out": 350,
+        "nov": 350,
+        "dez": 200,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 150,
+        "jun": 100,
+        "jul": 150,
+        "ago": 350,
+        "set": 350
+      },
+      "totalYear": 2000
+    },
+    {
+      "productSlug": "alface-lisa",
+      "producerInternalId": "P22",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 75,
+        "abr": 75,
+        "mai": 75,
+        "jun": 75,
+        "jul": 75,
+        "ago": 75,
+        "set": 75
+      },
+      "totalYear": 525
+    },
+    {
+      "productSlug": "alface-lisa",
+      "producerInternalId": "P10",
+      "monthly": {
+        "out": 150,
+        "nov": 100,
+        "dez": 100,
+        "jan": 0,
+        "fev": 0,
+        "mar": 50,
+        "abr": 50,
+        "mai": 50,
+        "jun": 50,
+        "jul": 0,
+        "ago": 150,
+        "set": 150
+      },
+      "totalYear": 850
+    },
+    {
+      "productSlug": "alface-lisa",
+      "producerInternalId": "P07",
+      "monthly": {
+        "out": 200,
+        "nov": 200,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 0,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 400
+    },
+    {
+      "productSlug": "alface-lisa",
+      "producerInternalId": "P15",
+      "monthly": {
+        "out": 75,
+        "nov": 75,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 75,
+        "abr": 75,
+        "mai": 75,
+        "jun": 75,
+        "jul": 75,
+        "ago": 75,
+        "set": 75
+      },
+      "totalYear": 675
+    },
+    {
+      "productSlug": "alface-lisa",
+      "producerInternalId": "P18",
+      "monthly": {
+        "out": 75,
+        "nov": 75,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 75,
+        "abr": 75,
+        "mai": 75,
+        "jun": 75,
+        "jul": 75,
+        "ago": 75,
+        "set": 75
+      },
+      "totalYear": 675
+    },
+    {
+      "productSlug": "alface-lisa",
+      "producerInternalId": "P14",
+      "monthly": {
+        "out": 150,
+        "nov": 200,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 100,
+        "mai": 200,
+        "jun": 200,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 850
+    },
+    {
+      "productSlug": "alface-lisa",
+      "producerInternalId": "P21",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 150,
+        "jun": 150,
+        "jul": 150,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 450
+    },
+    {
+      "productSlug": "alface-lisa",
+      "producerInternalId": "P20",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 200,
+        "abr": 200,
+        "mai": 200,
+        "jun": 200,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 800
+    },
+    {
+      "productSlug": "batata-inglesa",
+      "producerInternalId": "P05",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 0,
+        "jul": 500,
+        "ago": 500,
+        "set": 0
+      },
+      "totalYear": 1000
+    },
+    {
+      "productSlug": "beterraba",
+      "producerInternalId": "P14",
+      "monthly": {
+        "out": 400,
+        "nov": 340,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 50,
+        "mai": 50,
+        "jun": 50,
+        "jul": 50,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 940
+    },
+    {
+      "productSlug": "beterraba",
+      "producerInternalId": "P05",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 0,
+        "jul": 200,
+        "ago": 200,
+        "set": 0
+      },
+      "totalYear": 400
+    },
+    {
+      "productSlug": "beterraba",
+      "producerInternalId": "P20",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 200,
+        "mai": 200,
+        "jun": 200,
+        "jul": 200,
+        "ago": 200,
+        "set": 0
+      },
+      "totalYear": 1000
+    },
+    {
+      "productSlug": "brocolis",
+      "producerInternalId": "P22",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 85,
+        "mai": 85,
+        "jun": 85,
+        "jul": 85,
+        "ago": 85,
+        "set": 85
+      },
+      "totalYear": 510
+    },
+    {
+      "productSlug": "brocolis",
+      "producerInternalId": "P07",
+      "monthly": {
+        "out": 50,
+        "nov": 50,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 0,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 100
+    },
+    {
+      "productSlug": "brocolis",
+      "producerInternalId": "P21",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 180,
+        "mai": 180,
+        "jun": 0,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 360
+    },
+    {
+      "productSlug": "brocolis",
+      "producerInternalId": "P20",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 150,
+        "mai": 150,
+        "jun": 150,
+        "jul": 140,
+        "ago": 100,
+        "set": 0
+      },
+      "totalYear": 690
+    },
+    {
+      "productSlug": "cenoura",
+      "producerInternalId": "P05",
+      "monthly": {
+        "out": 470,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 400,
+        "jul": 400,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 1270
+    },
+    {
+      "productSlug": "cheiro-verde",
+      "producerInternalId": "P01",
+      "monthly": {
+        "out": 20,
+        "nov": 20,
+        "dez": 20,
+        "jan": 0,
+        "fev": 0,
+        "mar": 20,
+        "abr": 20,
+        "mai": 20,
+        "jun": 20,
+        "jul": 20,
+        "ago": 20,
+        "set": 20
+      },
+      "totalYear": 200
+    },
+    {
+      "productSlug": "cheiro-verde",
+      "producerInternalId": "P16",
+      "monthly": {
+        "out": 100,
+        "nov": 100,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 0,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 200
+    },
+    {
+      "productSlug": "cheiro-verde",
+      "producerInternalId": "P22",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 19,
+        "jul": 19,
+        "ago": 19,
+        "set": 19
+      },
+      "totalYear": 76
+    },
+    {
+      "productSlug": "cheiro-verde",
+      "producerInternalId": "P07",
+      "monthly": {
+        "out": 60,
+        "nov": 60,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 0,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 120
+    },
+    {
+      "productSlug": "cheiro-verde",
+      "producerInternalId": "P15",
+      "monthly": {
+        "out": 22,
+        "nov": 22,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 22,
+        "abr": 22,
+        "mai": 22,
+        "jun": 22,
+        "jul": 22,
+        "ago": 22,
+        "set": 22
+      },
+      "totalYear": 198
+    },
+    {
+      "productSlug": "cheiro-verde",
+      "producerInternalId": "P18",
+      "monthly": {
+        "out": 22,
+        "nov": 22,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 22,
+        "abr": 22,
+        "mai": 22,
+        "jun": 22,
+        "jul": 22,
+        "ago": 22,
+        "set": 22
+      },
+      "totalYear": 198
+    },
+    {
+      "productSlug": "chuchu",
+      "producerInternalId": "P08",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 1168,
+        "abr": 1168,
+        "mai": 1168,
+        "jun": 1168,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 4672
+    },
+    {
+      "productSlug": "chuchu",
+      "producerInternalId": "P02",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 1168,
+        "abr": 1168,
+        "mai": 1168,
+        "jun": 1168,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 4672
+    },
+    {
+      "productSlug": "chuchu",
+      "producerInternalId": "P11",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 200,
+        "abr": 205,
+        "mai": 205,
+        "jun": 205,
+        "jul": 205,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 1020
+    },
+    {
+      "productSlug": "chuchu",
+      "producerInternalId": "P12",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 200,
+        "abr": 205,
+        "mai": 205,
+        "jun": 205,
+        "jul": 205,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 1020
+    },
+    {
+      "productSlug": "chuchu",
+      "producerInternalId": "P13",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 300,
+        "abr": 300,
+        "mai": 300,
+        "jun": 300,
+        "jul": 300,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 1500
+    },
+    {
+      "productSlug": "couve-manteiga",
+      "producerInternalId": "P01",
+      "monthly": {
+        "out": 170,
+        "nov": 170,
+        "dez": 100,
+        "jan": 0,
+        "fev": 0,
+        "mar": 96,
+        "abr": 96,
+        "mai": 96,
+        "jun": 96,
+        "jul": 96,
+        "ago": 96,
+        "set": 93
+      },
+      "totalYear": 1109
+    },
+    {
+      "productSlug": "couve-manteiga",
+      "producerInternalId": "P16",
+      "monthly": {
+        "out": 100,
+        "nov": 100,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 0,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 200
+    },
+    {
+      "productSlug": "couve-manteiga",
+      "producerInternalId": "P22",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 100,
+        "mai": 100,
+        "jun": 100,
+        "jul": 100,
+        "ago": 91,
+        "set": 91
+      },
+      "totalYear": 582
+    },
+    {
+      "productSlug": "couve-manteiga",
+      "producerInternalId": "P10",
+      "monthly": {
+        "out": 200,
+        "nov": 200,
+        "dez": 200,
+        "jan": 0,
+        "fev": 0,
+        "mar": 150,
+        "abr": 150,
+        "mai": 100,
+        "jun": 100,
+        "jul": 0,
+        "ago": 200,
+        "set": 200
+      },
+      "totalYear": 1500
+    },
+    {
+      "productSlug": "couve-manteiga",
+      "producerInternalId": "P07",
+      "monthly": {
+        "out": 130,
+        "nov": 130,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 0,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 260
+    },
+    {
+      "productSlug": "couve-manteiga",
+      "producerInternalId": "P15",
+      "monthly": {
+        "out": 76,
+        "nov": 76,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 76,
+        "abr": 76,
+        "mai": 76,
+        "jun": 76,
+        "jul": 76,
+        "ago": 76,
+        "set": 76
+      },
+      "totalYear": 684
+    },
+    {
+      "productSlug": "couve-manteiga",
+      "producerInternalId": "P18",
+      "monthly": {
+        "out": 76,
+        "nov": 76,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 76,
+        "abr": 76,
+        "mai": 76,
+        "jun": 76,
+        "jul": 76,
+        "ago": 76,
+        "set": 76
+      },
+      "totalYear": 684
+    },
+    {
+      "productSlug": "couve-manteiga",
+      "producerInternalId": "P14",
+      "monthly": {
+        "out": 200,
+        "nov": 200,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 150,
+        "abr": 150,
+        "mai": 200,
+        "jun": 200,
+        "jul": 0,
+        "ago": 0,
+        "set": 150
+      },
+      "totalYear": 1250
+    },
+    {
+      "productSlug": "couve-manteiga",
+      "producerInternalId": "P21",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 250,
+        "abr": 250,
+        "mai": 250,
+        "jun": 200,
+        "jul": 150,
+        "ago": 150,
+        "set": 150
+      },
+      "totalYear": 1400
+    },
+    {
+      "productSlug": "couve-manteiga",
+      "producerInternalId": "P04",
+      "monthly": {
+        "out": 350,
+        "nov": 350,
+        "dez": 350,
+        "jan": 0,
+        "fev": 0,
+        "mar": 310,
+        "abr": 0,
+        "mai": 0,
+        "jun": 0,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 1360
+    },
+    {
+      "productSlug": "couve-flor",
+      "producerInternalId": "P22",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 91,
+        "jul": 91,
+        "ago": 91,
+        "set": 91
+      },
+      "totalYear": 364
+    },
+    {
+      "productSlug": "couve-flor",
+      "producerInternalId": "P05",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 200,
+        "jun": 200,
+        "jul": 200,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 600
+    },
+    {
+      "productSlug": "espinafre",
+      "producerInternalId": "P01",
+      "monthly": {
+        "out": 28,
+        "nov": 28,
+        "dez": 28,
+        "jan": 0,
+        "fev": 0,
+        "mar": 28,
+        "abr": 28,
+        "mai": 28,
+        "jun": 28,
+        "jul": 28,
+        "ago": 28,
+        "set": 28
+      },
+      "totalYear": 280
+    },
+    {
+      "productSlug": "espinafre",
+      "producerInternalId": "P16",
+      "monthly": {
+        "out": 50,
+        "nov": 50,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 50,
+        "jul": 50,
+        "ago": 50,
+        "set": 0
+      },
+      "totalYear": 250
+    },
+    {
+      "productSlug": "espinafre",
+      "producerInternalId": "P22",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 178,
+        "jul": 178,
+        "ago": 178,
+        "set": 178
+      },
+      "totalYear": 712
+    },
+    {
+      "productSlug": "espinafre",
+      "producerInternalId": "P10",
+      "monthly": {
+        "out": 100,
+        "nov": 100,
+        "dez": 100,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 0,
+        "jul": 0,
+        "ago": 100,
+        "set": 100
+      },
+      "totalYear": 500
+    },
+    {
+      "productSlug": "espinafre",
+      "producerInternalId": "P07",
+      "monthly": {
+        "out": 50,
+        "nov": 50,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 0,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 100
+    },
+    {
+      "productSlug": "espinafre",
+      "producerInternalId": "P15",
+      "monthly": {
+        "out": 49,
+        "nov": 49,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 49,
+        "abr": 49,
+        "mai": 49,
+        "jun": 49,
+        "jul": 49,
+        "ago": 49,
+        "set": 49
+      },
+      "totalYear": 441
+    },
+    {
+      "productSlug": "espinafre",
+      "producerInternalId": "P18",
+      "monthly": {
+        "out": 49,
+        "nov": 49,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 49,
+        "abr": 49,
+        "mai": 49,
+        "jun": 49,
+        "jul": 49,
+        "ago": 49,
+        "set": 49
+      },
+      "totalYear": 441
+    },
+    {
+      "productSlug": "espinafre",
+      "producerInternalId": "P20",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 200,
+        "abr": 200,
+        "mai": 200,
+        "jun": 200,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 800
+    },
+    {
+      "productSlug": "repolho",
+      "producerInternalId": "P11",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 1525,
+        "jul": 1525,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 3050
+    },
+    {
+      "productSlug": "repolho",
+      "producerInternalId": "P12",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 1525,
+        "jul": 1525,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 3050
+    },
+    {
+      "productSlug": "repolho",
+      "producerInternalId": "P13",
+      "monthly": {
+        "out": 200,
+        "nov": 200,
+        "dez": 100,
+        "jan": 0,
+        "fev": 0,
+        "mar": 100,
+        "abr": 100,
+        "mai": 100,
+        "jun": 100,
+        "jul": 100,
+        "ago": 100,
+        "set": 100
+      },
+      "totalYear": 1200
+    },
+    {
+      "productSlug": "repolho",
+      "producerInternalId": "P15",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 244,
+        "abr": 244,
+        "mai": 244,
+        "jun": 244,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 976
+    },
+    {
+      "productSlug": "repolho",
+      "producerInternalId": "P18",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 244,
+        "abr": 244,
+        "mai": 244,
+        "jun": 244,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 976
+    },
+    {
+      "productSlug": "tangerina-ponkan",
+      "producerInternalId": "P17",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 0,
+        "mai": 0,
+        "jun": 500,
+        "jul": 500,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 1000
+    },
+    {
+      "productSlug": "tangerina-ponkan",
+      "producerInternalId": "P07",
+      "monthly": {
+        "out": 0,
+        "nov": 0,
+        "dez": 0,
+        "jan": 0,
+        "fev": 0,
+        "mar": 0,
+        "abr": 330,
+        "mai": 600,
+        "jun": 800,
+        "jul": 0,
+        "ago": 0,
+        "set": 0
+      },
+      "totalYear": 1730
+    }
+  ]
+}
