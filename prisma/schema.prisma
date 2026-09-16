@@ -1,6 +1,8 @@
 // Colheita — Cooperativa dos Produtores Rurais de Petropolis
-// Schema do ciclo semanal do PNAE: pedido das escolas, pedido/entrega dos
-// produtores, devolucoes, balanco financeiro e historico semanal.
+// Sistema de gestao do ciclo PNAE. Modelo normalizado conforme
+// especificacao formal: pedido, entrega e devolucao sao SEMPRE tabelas
+// independentes (nunca a mesma linha), precos tem historico, semanas
+// nunca sao apagadas, e toda alteracao relevante e auditavel.
 
 generator client {
   provider = "prisma-client-js"
@@ -12,21 +14,52 @@ datasource db {
 }
 
 // -----------------------------------------------------------------------
-// Cadastros base (nao mudam toda semana)
+// Usuarios e permissoes
+// -----------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  OPERADOR
+  CONSULTA
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(OPERADOR)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs      AuditLog[]
+  closedWeeks    Week[]        @relation("WeekClosedBy")
+  weekReopenings WeekReopening[]
+
+  @@map("users")
+}
+
+// -----------------------------------------------------------------------
+// Cadastros base
 // -----------------------------------------------------------------------
 
 model Product {
-  id          String   @id @default(cuid())
-  slug        String   @unique
-  name        String
-  pricePerKg  Decimal  @db.Decimal(10, 2)
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  schoolOrders       SchoolOrder[]
-  producerOrders     ProducerOrder[]
-  productionEntries  ProductionMapEntry[]
+  prices            Price[]
+  productionEntries ProductionMapEntry[]
+  schoolOrders      SchoolOrder[]
+  schoolReturns     SchoolReturn[]
+  producerOrders    ProducerOrder[]
+  producerDeliveries ProducerDelivery[]
+  producerReturns   ProducerReturn[]
+  allocations       ProducerAllocation[]
 
   @@map("products")
 }
@@ -42,7 +75,9 @@ model School {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  orders SchoolOrder[]
+  orders     SchoolOrder[]
+  deliveries SchoolDelivery[]
+  returns    SchoolReturn[]
 
   @@map("schools")
 }
@@ -56,8 +91,11 @@ model Producer {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  orders            ProducerOrder[]
   productionEntries ProductionMapEntry[]
+  orders            ProducerOrder[]
+  deliveries        ProducerDelivery[]
+  returns           ProducerReturn[]
+  allocations       ProducerAllocation[]
 
   @@map("producers")
 }
@@ -70,15 +108,37 @@ model ReturnReason {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  schoolOrders   SchoolOrder[]
-  producerOrders ProducerOrder[]
+  schoolReturns   SchoolReturn[]
+  producerReturns ProducerReturn[]
 
   @@map("return_reasons")
 }
 
+// Historico de precos por produto. "Preco vigente" = a linha sem validTo
+// (ou cujo periodo [validFrom, validTo) contem a data de referencia).
+// Nunca sobrescrever: uma alteracao de preco fecha a linha atual
+// (seta validTo) e cria uma nova a partir da data informada.
+model Price {
+  id         String    @id @default(cuid())
+  productId  String
+  price      Decimal   @db.Decimal(10, 2)
+  validFrom  DateTime
+  validTo    DateTime?
+  createdAt  DateTime  @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  schoolOrders       SchoolOrder[]
+  producerOrders     ProducerOrder[]
+  producerDeliveries ProducerDelivery[]
+
+  @@index([productId, validFrom])
+  @@map("prices")
+}
+
 // Mapa de Producao: referencia anual (ciclo PNAE out-set) de quanto cada
 // produtor planeja produzir de cada produto, por mes. Somente consulta —
-// nao e editado no ciclo semanal.
+// alterar isto nunca afeta semanas ja lancadas (CA-MAPA-04).
 model ProductionMapEntry {
   id         String @id @default(cuid())
   productId  String
@@ -104,64 +164,93 @@ model ProductionMapEntry {
   @@map("production_map_entries")
 }
 
-// Constante de logistica (R$/kg) subtraida do preco somente no pagamento
-// ao produtor. Editavel, mas cada ProducerOrder guarda o valor vigente no
-// momento (snapshot) para nao alterar semanas ja fechadas.
+// Constante de logistica (R$/kg), regra absoluta #7. Nao tem historico
+// dedicado (nao e um "preco" no sentido do CA-PRECO-*), mas cada
+// ProducerDelivery grava o valor vigente no momento (snapshot) para
+// nunca alterar retroativamente um pagamento ja calculado.
 model Settings {
-  id                     Int     @id @default(1)
+  id                      Int     @id @default(1)
   logisticsDeductionPerKg Decimal @db.Decimal(10, 2) @default(3.67)
 
   @@map("settings")
 }
 
 // -----------------------------------------------------------------------
-// Ciclo semanal
+// Semana operacional
 // -----------------------------------------------------------------------
 
 enum WeekStatus {
-  OPEN
-  CLOSED
+  ABERTA
+  FECHADA
 }
 
 model Week {
-  id        String     @id @default(cuid())
-  number    Int        @unique @default(autoincrement())
-  startDate DateTime
-  endDate   DateTime
-  status    WeekStatus @default(OPEN)
-  closedAt  DateTime?
-  createdAt DateTime   @default(now())
+  id            String     @id @default(cuid())
+  number        Int        @unique @default(autoincrement())
+  referenceDate DateTime // data de referencia do ciclo (ex.: domingo da semana)
+  startDate     DateTime
+  endDate       DateTime
+  status        WeekStatus @default(ABERTA)
+  notes         String?
 
-  schoolOrders   SchoolOrder[]
-  producerOrders ProducerOrder[]
-  costs          WeeklyCost[]
+  createdAt DateTime  @default(now())
+  closedAt  DateTime?
+  closedById String?
+
+  closedBy    User?           @relation("WeekClosedBy", fields: [closedById], references: [id])
+  reopenings  WeekReopening[]
+
+  schoolOrders        SchoolOrder[]
+  schoolDeliveries    SchoolDelivery[]
+  schoolReturns       SchoolReturn[]
+  producerAllocations ProducerAllocation[]
+  producerOrders      ProducerOrder[]
+  producerDeliveries  ProducerDelivery[]
+  producerReturns     ProducerReturn[]
+  costs               WeeklyCost[]
 
   @@map("weeks")
 }
 
-// Pedido + devolucao de cada escola, por produto, na semana.
-// Linha so existe se algum valor foi lancado (grid esparso).
+// Toda reabertura de uma semana fechada precisa de usuario, data/hora e
+// motivo (CA-SEM-06, CA-AUD-03). Pode acontecer mais de uma vez.
+model WeekReopening {
+  id        String   @id @default(cuid())
+  weekId    String
+  userId    String
+  reason    String
+  createdAt DateTime @default(now())
+
+  week Week @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("week_reopenings")
+}
+
+// -----------------------------------------------------------------------
+// Escolas: pedido, entrega (data) e devolucao SEMPRE em tabelas separadas
+// -----------------------------------------------------------------------
+
+// PEDIDO da escola. Formula (regra absoluta #5): liquido = pedido - devolucao
+// (a devolucao vem de SchoolReturn, nunca desta tabela).
 model SchoolOrder {
-  id       String @id @default(cuid())
-  weekId   String
-  schoolId String
+  id        String  @id @default(cuid())
+  weekId    String
+  schoolId  String
   productId String
 
-  orderedQty  Decimal @db.Decimal(10, 2) @default(0)
-  returnedQty Decimal @db.Decimal(10, 2) @default(0)
+  orderedQty Decimal @db.Decimal(10, 2) @default(0)
 
-  returnReasonId String?
-
-  // preco/kg vigente no momento do lancamento — congela o historico
-  pricePerKgSnapshot Decimal @db.Decimal(10, 2)
+  // preco vigente no momento do lancamento — rastreavel (CA-PRECO-05)
+  priceId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  week         Week          @relation(fields: [weekId], references: [id], onDelete: Cascade)
-  school       School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
-  returnReason ReturnReason? @relation(fields: [returnReasonId], references: [id])
+  week    Week    @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  school  School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  price   Price   @relation(fields: [priceId], references: [id])
 
   @@unique([weekId, schoolId, productId])
   @@index([weekId])
@@ -169,37 +258,160 @@ model SchoolOrder {
   @@map("school_orders")
 }
 
-// Pedido + entrega + devolucao de cada produtor, por produto, na semana.
-// deliveredQty nulo = entrega ainda nao registrada (pendencia).
+// Confirmacao operacional de ENTREGA a escola (nao entra na formula
+// financeira — so registra quando/qual dia a escola foi atendida).
+enum DeliveryWeekday {
+  SEGUNDA
+  TERCA
+  EXCEPCIONAL
+}
+
+model SchoolDelivery {
+  id         String          @id @default(cuid())
+  weekId     String
+  schoolId   String
+  weekday    DeliveryWeekday
+  deliveredAt DateTime
+  note       String?
+  createdAt  DateTime        @default(now())
+
+  week   Week   @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  @@unique([weekId, schoolId])
+  @@index([weekId])
+  @@map("school_deliveries")
+}
+
+model SchoolReturn {
+  id        String @id @default(cuid())
+  weekId    String
+  schoolId  String
+  productId String
+
+  returnedQty    Decimal @db.Decimal(10, 2)
+  returnReasonId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  week         Week         @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  school       School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  returnReason ReturnReason @relation(fields: [returnReasonId], references: [id])
+
+  @@index([weekId])
+  @@index([schoolId])
+  @@map("school_returns")
+}
+
+// -----------------------------------------------------------------------
+// Produtores: divisao (planejamento), pedido, entrega e devolucao —
+// quatro conceitos, quatro tabelas, todas independentes entre si.
+// -----------------------------------------------------------------------
+
+// Etapa de planejamento: como a demanda das escolas foi dividida entre
+// produtores, ANTES de o pedido efetivo ser colocado (CA-DIV-*).
+// Alterar isto nunca alcanca pedido/entrega automaticamente.
+model ProducerAllocation {
+  id         String @id @default(cuid())
+  weekId     String
+  productId  String
+  producerId String
+
+  allocatedQty Decimal @db.Decimal(10, 2) @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  week     Week     @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  producer Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+
+  @@unique([weekId, productId, producerId])
+  @@index([weekId])
+  @@map("producer_allocations")
+}
+
+// PEDIDO ao produtor — independente da entrega (regra absoluta #1).
 model ProducerOrder {
   id         String @id @default(cuid())
   weekId     String
   producerId String
   productId  String
 
-  orderedQty   Decimal  @db.Decimal(10, 2) @default(0)
-  deliveredQty Decimal? @db.Decimal(10, 2)
-  returnedQty  Decimal  @db.Decimal(10, 2) @default(0)
-
-  returnReasonId String?
-
-  // valores vigentes no momento do lancamento — congela o historico
-  pricePerKgSnapshot          Decimal @db.Decimal(10, 2)
-  logisticsDeductionSnapshot  Decimal @db.Decimal(10, 2)
+  orderedQty Decimal @db.Decimal(10, 2) @default(0)
+  priceId    String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  week         Week          @relation(fields: [weekId], references: [id], onDelete: Cascade)
-  producer     Producer      @relation(fields: [producerId], references: [id], onDelete: Cascade)
-  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
-  returnReason ReturnReason? @relation(fields: [returnReasonId], references: [id])
+  week     Week     @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  producer Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  price    Price    @relation(fields: [priceId], references: [id])
 
   @@unique([weekId, producerId, productId])
   @@index([weekId])
   @@index([producerId])
   @@map("producer_orders")
 }
+
+// ENTREGA real do produtor (normalmente domingo). E esta tabela — nunca
+// o pedido — que alimenta o pagamento (regra absoluta #4).
+model ProducerDelivery {
+  id         String   @id @default(cuid())
+  weekId     String
+  producerId String
+  productId  String
+
+  deliveredQty Decimal  @db.Decimal(10, 2)
+  deliveredAt  DateTime
+
+  // valores vigentes no momento do lancamento — rastreavel e congela o
+  // pagamento historico mesmo que preco/deducao mudem depois
+  priceId                    String
+  logisticsDeductionSnapshot Decimal @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  week     Week     @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  producer Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  price    Price    @relation(fields: [priceId], references: [id])
+
+  @@unique([weekId, producerId, productId])
+  @@index([weekId])
+  @@index([producerId])
+  @@map("producer_deliveries")
+}
+
+model ProducerReturn {
+  id         String @id @default(cuid())
+  weekId     String
+  producerId String
+  productId  String
+
+  returnedQty    Decimal @db.Decimal(10, 2)
+  returnReasonId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  week         Week         @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  producer     Producer     @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  product      Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  returnReason ReturnReason @relation(fields: [returnReasonId], references: [id])
+
+  @@index([weekId])
+  @@index([producerId])
+  @@map("producer_returns")
+}
+
+// -----------------------------------------------------------------------
+// Financeiro da semana
+// -----------------------------------------------------------------------
 
 enum CostCategory {
   TRANSPORTE
@@ -222,4 +434,26 @@ model WeeklyCost {
 
   @@unique([weekId, category])
   @@map("weekly_costs")
+}
+
+// -----------------------------------------------------------------------
+// Auditoria (secao 49-50): quem, quando, o que mudou
+// -----------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  reason     String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
 }

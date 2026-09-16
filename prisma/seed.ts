@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import seedData from "./data/seed-data.json";
 
 const prisma = new PrismaClient();
@@ -18,6 +19,10 @@ const MONTH_KEYS = [
   "set",
 ] as const;
 
+// Data "epoch" para o preco inicial: qualquer semana lancada a partir de
+// hoje encontra um preco vigente. Nao representa uma data real do Excel.
+const PRICE_EPOCH = new Date("2020-01-01T00:00:00.000Z");
+
 async function main() {
   await prisma.settings.upsert({
     where: { id: 1 },
@@ -25,12 +30,51 @@ async function main() {
     create: { id: 1, logisticsDeductionPerKg: 3.67 },
   });
 
+  const adminEmail = process.env.ADMIN_EMAIL ?? "admin@colheita.local";
+  const adminPassword = process.env.ADMIN_PASSWORD ?? "colheita2026";
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {},
+    create: {
+      name: "Administrador",
+      email: adminEmail,
+      passwordHash: await bcrypt.hash(adminPassword, 10),
+      role: "ADMIN",
+    },
+  });
+  console.log(`Usuario admin: ${adminEmail} (senha inicial: ${adminPassword})`);
+
   for (const p of seedData.products) {
-    await prisma.product.upsert({
+    const product = await prisma.product.upsert({
       where: { slug: p.slug },
-      update: { name: p.name, pricePerKg: p.pricePerKg },
-      create: { slug: p.slug, name: p.name, pricePerKg: p.pricePerKg },
+      update: { name: p.name },
+      create: { slug: p.slug, name: p.name },
     });
+
+    const currentPrice = await prisma.price.findFirst({
+      where: { productId: product.id, validTo: null },
+    });
+    if (!currentPrice) {
+      await prisma.price.create({
+        data: {
+          productId: product.id,
+          price: p.pricePerKg,
+          validFrom: PRICE_EPOCH,
+          validTo: null,
+        },
+      });
+    } else if (Number(currentPrice.price) !== p.pricePerKg) {
+      // seed rodado de novo com preco diferente no JSON: fecha o antigo
+      // e abre um novo a partir de agora, preservando o historico.
+      const now = new Date();
+      await prisma.price.update({
+        where: { id: currentPrice.id },
+        data: { validTo: now },
+      });
+      await prisma.price.create({
+        data: { productId: product.id, price: p.pricePerKg, validFrom: now, validTo: null },
+      });
+    }
   }
   console.log(`Produtos: ${seedData.products.length}`);
 
