@@ -1,0 +1,55 @@
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { getOpenWeek } from "@/lib/week";
+import { EscolasTable } from "./EscolasTable";
+
+export default async function EscolasPage() {
+  const week = await getOpenWeek();
+
+  if (!week) {
+    return (
+      <>
+        <div className="page-head">
+          <div>
+            <div className="page-eyebrow">SEM SEMANA ABERTA</div>
+            <div className="page-title display">Pedido das Escolas</div>
+          </div>
+        </div>
+        <p>
+          Não há nenhuma semana aberta. <Link className="link-action" href="/semanas">Crie uma semana</Link> antes de lançar pedidos.
+        </p>
+      </>
+    );
+  }
+
+  const [schools, products, orders] = await Promise.all([
+    prisma.school.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
+    prisma.product.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
+    prisma.schoolOrder.findMany({ where: { weekId: week.id } }),
+  ]);
+
+  const orderMap: Record<string, number> = {};
+  for (const o of orders) {
+    orderMap[`${o.schoolId}:${o.productId}`] = Number(o.orderedQty);
+  }
+
+  return (
+    <>
+      <div className="page-head">
+        <div>
+          <div className="page-eyebrow">SEMANA {week.number}</div>
+          <div className="page-title display">Pedido das Escolas</div>
+        </div>
+        <span className={`badge ${week.status === "ABERTA" ? "aberta" : "fechada"}`}>{week.status}</span>
+      </div>
+
+      <EscolasTable
+        weekId={week.id}
+        schools={schools.map((s) => ({ id: s.id, code: s.code, name: s.name, neighborhood: s.neighborhood }))}
+        products={products.map((p) => ({ id: p.id, name: p.name }))}
+        orders={orderMap}
+        editable={week.status === "ABERTA"}
+      />
+    </>
+  );
+}
