@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@prisma/client";
 
 interface WriteAuditParams {
   userId: string | null;
@@ -13,8 +13,11 @@ interface WriteAuditParams {
 
 // Registro generico de auditoria (secao 49-50). Chamado por toda action
 // que cria, altera ou fecha/reabre algo relevante.
-export async function writeAudit(params: WriteAuditParams) {
-  await prisma.auditLog.create({
+export async function writeAudit(
+  params: WriteAuditParams,
+  client: PrismaClient | Prisma.TransactionClient = prisma,
+) {
+  await client.auditLog.create({
     data: {
       userId: params.userId,
       action: params.action,

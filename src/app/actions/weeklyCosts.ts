@@ -23,19 +23,24 @@ export async function saveWeeklyCost(
     const week = await prisma.week.findUniqueOrThrow({ where: { id: weekId } });
     assertWeekEditable(week);
 
-    const existing = await prisma.weeklyCost.findUnique({ where: { weekId_category: { weekId, category } } });
-    const saved = await prisma.weeklyCost.upsert({
-      where: { weekId_category: { weekId, category } },
-      update: { amount },
-      create: { weekId, category, amount },
-    });
-    await writeAudit({
-      userId: user.id,
-      action: existing ? "WEEKLY_COST_UPDATE" : "WEEKLY_COST_CREATE",
-      entityType: "WeeklyCost",
-      entityId: saved.id,
-      before: existing,
-      after: saved,
+    await prisma.$transaction(async (tx) => {
+      const existing = await tx.weeklyCost.findUnique({ where: { weekId_category: { weekId, category } } });
+      const saved = await tx.weeklyCost.upsert({
+        where: { weekId_category: { weekId, category } },
+        update: { amount },
+        create: { weekId, category, amount },
+      });
+      await writeAudit(
+        {
+          userId: user.id,
+          action: existing ? "WEEKLY_COST_UPDATE" : "WEEKLY_COST_CREATE",
+          entityType: "WeeklyCost",
+          entityId: saved.id,
+          before: existing,
+          after: saved,
+        },
+        tx,
+      );
     });
     revalidatePath("/balanco");
     return { ok: true };

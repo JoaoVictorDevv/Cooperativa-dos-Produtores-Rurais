@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
 import { getWeekFinancialSummary, getPendingProducerDeliveries } from "@/lib/weekSummary";
 import { getProducerPnaeUsage } from "@/lib/pnae";
+import { Icon } from "@/components/Icon";
 
 function fmtMoney(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -29,15 +30,35 @@ export default async function DashboardPage() {
         <div className="page-head">
           <div>
             <div className="page-eyebrow">VISÃO GERAL</div>
-            <div className="page-title display">Nenhuma semana aberta</div>
+            <div className="page-title display">Painel operacional</div>
           </div>
         </div>
-        <p>
-          <Link className="link-action" href="/semanas">
-            Crie a semana operacional
-          </Link>{" "}
-          para começar o ciclo (pedido das escolas, divisão entre produtores, entregas e balanço).
-        </p>
+
+        <section className="dashboard-welcome">
+          <div className="welcome-copy">
+            <span className="welcome-icon"><Icon name="calendar" size={22} /></span>
+            <div className="page-eyebrow">PRÓXIMO CICLO</div>
+            <h2>Comece uma nova semana de operação.</h2>
+            <p>Abra o período para liberar pedidos das escolas, distribuição entre produtores, entregas e o fechamento financeiro.</p>
+            <div className="welcome-actions">
+              <Link className="btn-primary" href="/semanas">Criar semana operacional <Icon name="arrow-right" size={17} /></Link>
+              <Link className="btn-ghost" href="/historico">Consultar histórico</Link>
+            </div>
+          </div>
+          <div className="welcome-summary">
+            <div><span>Produtores ativos</span><strong>{producers.length}</strong></div>
+            <div><span>Alertas PNAE</span><strong>{pnaeAlerts.length}</strong></div>
+            <div><span>Status atual</span><strong className="status-copy">Aguardando abertura</strong></div>
+          </div>
+        </section>
+
+        <div className="section-title">Fluxo da operação</div>
+        <div className="onboarding-grid">
+          <Link href="/semanas" className="onboarding-card"><span>01</span><Icon name="calendar" /><strong>Abra a semana</strong><p>Defina o período que receberá todos os lançamentos.</p></Link>
+          <Link href="/escolas" className="onboarding-card"><span>02</span><Icon name="school" /><strong>Consolide os pedidos</strong><p>Registre a demanda enviada por cada escola.</p></Link>
+          <Link href="/produtores" className="onboarding-card"><span>03</span><Icon name="users" /><strong>Distribua a produção</strong><p>Organize volumes, entregas e pagamentos.</p></Link>
+          <Link href="/balanco" className="onboarding-card"><span>04</span><Icon name="balance" /><strong>Feche o balanço</strong><p>Confira receitas, custos e o resultado semanal.</p></Link>
+        </div>
         {pnaeAlerts.length > 0 && <PnaeAlertsPanel alerts={pnaeAlerts} />}
       </>
     );
@@ -106,15 +127,19 @@ export default async function DashboardPage() {
       <div className="section-title">Ir direto para</div>
       <div className="quick-grid">
         <Link className="quick-btn" href="/escolas">
+          <Icon name="school" size={19} />
           <div className="qb-label">Pedido das Escolas</div>
         </Link>
         <Link className="quick-btn" href="/produtores">
+          <Icon name="users" size={19} />
           <div className="qb-label">Divisão / Pedido / Entrega</div>
         </Link>
         <Link className="quick-btn" href="/balanco">
+          <Icon name="balance" size={19} />
           <div className="qb-label">Fechar Balanço</div>
         </Link>
         <Link className="quick-btn" href="/historico">
+          <Icon name="history" size={19} />
           <div className="qb-label">Histórico</div>
         </Link>
       </div>

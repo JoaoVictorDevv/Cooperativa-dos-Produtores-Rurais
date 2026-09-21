@@ -25,21 +25,26 @@ export async function saveProducerOrder(
     assertWeekEditable(week);
     const price = await getCurrentPrice(productId, week.referenceDate);
 
-    const existing = await prisma.producerOrder.findUnique({
-      where: { weekId_producerId_productId: { weekId, producerId, productId } },
-    });
-    const saved = await prisma.producerOrder.upsert({
-      where: { weekId_producerId_productId: { weekId, producerId, productId } },
-      update: { orderedQty, priceId: price.id },
-      create: { weekId, producerId, productId, orderedQty, priceId: price.id },
-    });
-    await writeAudit({
-      userId: user.id,
-      action: existing ? "PRODUCER_ORDER_UPDATE" : "PRODUCER_ORDER_CREATE",
-      entityType: "ProducerOrder",
-      entityId: saved.id,
-      before: existing,
-      after: saved,
+    await prisma.$transaction(async (tx) => {
+      const existing = await tx.producerOrder.findUnique({
+        where: { weekId_producerId_productId: { weekId, producerId, productId } },
+      });
+      const saved = await tx.producerOrder.upsert({
+        where: { weekId_producerId_productId: { weekId, producerId, productId } },
+        update: { orderedQty, priceId: price.id },
+        create: { weekId, producerId, productId, orderedQty, priceId: price.id },
+      });
+      await writeAudit(
+        {
+          userId: user.id,
+          action: existing ? "PRODUCER_ORDER_UPDATE" : "PRODUCER_ORDER_CREATE",
+          entityType: "ProducerOrder",
+          entityId: saved.id,
+          before: existing,
+          after: saved,
+        },
+        tx,
+      );
     });
     revalidatePath("/produtores");
     return { ok: true };

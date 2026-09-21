@@ -30,8 +30,15 @@ async function main() {
     create: { id: 1, logisticsDeductionPerKg: 3.67 },
   });
 
-  const adminEmail = process.env.ADMIN_EMAIL ?? "admin@colheita.local";
-  const adminPassword = process.env.ADMIN_PASSWORD ?? "colheita2026";
+  const isProduction = process.env.NODE_ENV === "production";
+  const adminEmail = process.env.ADMIN_EMAIL ?? (isProduction ? undefined : "admin@colheita.local");
+  const adminPassword = process.env.ADMIN_PASSWORD ?? (isProduction ? undefined : "colheita-dev-2026");
+  if (!adminEmail || !adminPassword) {
+    throw new Error("ADMIN_EMAIL e ADMIN_PASSWORD sao obrigatorios em producao.");
+  }
+  if (adminPassword.length < 12) {
+    throw new Error("ADMIN_PASSWORD precisa ter no minimo 12 caracteres.");
+  }
   await prisma.user.upsert({
     where: { email: adminEmail },
     update: {},
@@ -42,7 +49,7 @@ async function main() {
       role: "ADMIN",
     },
   });
-  console.log(`Usuario admin: ${adminEmail} (senha inicial: ${adminPassword})`);
+  console.log(`Usuario admin configurado: ${adminEmail}`);
 
   for (const p of seedData.products) {
     const product = await prisma.product.upsert({

@@ -29,21 +29,26 @@ export async function saveSchoolOrder(
     assertWeekEditable(week);
     const price = await getCurrentPrice(productId, week.referenceDate);
 
-    const existing = await prisma.schoolOrder.findUnique({
-      where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
-    });
-    const saved = await prisma.schoolOrder.upsert({
-      where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
-      update: { orderedQty, priceId: price.id },
-      create: { weekId, schoolId, productId, orderedQty, priceId: price.id },
-    });
-    await writeAudit({
-      userId: user.id,
-      action: existing ? "SCHOOL_ORDER_UPDATE" : "SCHOOL_ORDER_CREATE",
-      entityType: "SchoolOrder",
-      entityId: saved.id,
-      before: existing,
-      after: saved,
+    await prisma.$transaction(async (tx) => {
+      const existing = await tx.schoolOrder.findUnique({
+        where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
+      });
+      const saved = await tx.schoolOrder.upsert({
+        where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
+        update: { orderedQty, priceId: price.id },
+        create: { weekId, schoolId, productId, orderedQty, priceId: price.id },
+      });
+      await writeAudit(
+        {
+          userId: user.id,
+          action: existing ? "SCHOOL_ORDER_UPDATE" : "SCHOOL_ORDER_CREATE",
+          entityType: "SchoolOrder",
+          entityId: saved.id,
+          before: existing,
+          after: saved,
+        },
+        tx,
+      );
     });
     revalidatePath("/escolas");
     return { ok: true };

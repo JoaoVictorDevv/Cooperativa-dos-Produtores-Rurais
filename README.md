@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Colheita
 
-## Getting Started
+Sistema de gestão do ciclo semanal da Cooperativa dos Produtores Rurais de Petrópolis para o PNAE. Substitui o fluxo operacional mantido em uma grande planilha por lançamentos rastreáveis de pedido, divisão, entrega, devolução e financeiro.
 
-First, run the development server:
+## Estado do produto
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+O projeto está em preparação para o primeiro piloto. Ainda não deve ser publicado como produção sem:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- aplicar as migrações em um PostgreSQL de homologação;
+- executar os testes de integração nesse banco isolado;
+- validar um ciclo semanal completo em paralelo com a planilha;
+- confirmar backup, responsáveis e credenciais de produção.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+As decisões e os critérios de aceite ficam em [`specs/`](./specs/README.md). A especificação ativa é [`SPEC-001 — Integridade operacional`](./specs/001-integridade-operacional/spec.md).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Módulos existentes
 
-## Learn More
+- autenticação com papéis `ADMIN`, `OPERADOR` e `CONSULTA`;
+- semanas operacionais, fechamento e reabertura auditada;
+- pedidos e entregas das escolas;
+- divisão, pedidos, entregas e devoluções dos produtores;
+- histórico de preços;
+- custos, resumo, balanço e conferência financeira;
+- mapa de produção e acompanhamento anual PNAE.
 
-To learn more about Next.js, take a look at the following resources:
+## Ambiente local
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Requisitos: Node.js, npm e PostgreSQL.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Instale as dependências com `npm ci`.
+2. Copie `.env.example` para `.env` e preencha valores locais.
+3. Aplique as migrações com `npx prisma migrate deploy`.
+4. Carregue os cadastros iniciais com `npm run db:seed`.
+5. Inicie com `npm run dev`.
 
-## Deploy on Vercel
+Nesta máquina, o banco isolado de desenvolvimento fica em `.local/` e usa a porta 5433. Depois de reiniciar o Windows, execute `npm run db:local:start` antes de `npm run dev`. Para encerrá-lo manualmente, use `npm run db:local:stop`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Nunca use um banco de produção para testes. Os testes de integração limpam completamente o banco indicado em `.env.test`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Verificações
+
+- `npm test`: testes unitários, sem necessidade de banco;
+- `npm run test:integration`: testes de persistência; exige um PostgreSQL isolado em `.env.test`;
+- `npm run lint`: análise estática;
+- `npm run build`: build de produção;
+- `npx prisma validate`: validação do modelo de dados.
+
+## Dados e segurança
+
+O arquivo de seed contém dados operacionais de escolas. O repositório deve permanecer privado enquanto esses dados não forem substituídos por uma amostra anonimizada. Em produção, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `DATABASE_URL` e `SESSION_SECRET` são obrigatórios; não reutilize os valores de exemplo.

@@ -5,7 +5,7 @@ import { decryptSession, COOKIE_NAME } from "@/lib/session";
 // Checagem OTIMISTA (nao substitui o verifySession() do DAL, que confere
 // no banco se o usuario ainda esta ativo). So evita que uma pagina
 // protegida chegue a renderizar sem nenhum cookie de sessao.
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = ["/", "/login", "/images"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -20,8 +20,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (isPublic && session) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (pathname === "/login" && session) {
+    return NextResponse.redirect(new URL("/painel", request.url));
   }
 
   return NextResponse.next();

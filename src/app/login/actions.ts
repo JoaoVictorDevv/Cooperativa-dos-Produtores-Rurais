@@ -35,5 +35,5 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
   }
 
   await createSession({ userId: user.id, name: user.name, email: user.email, role: user.role });
-  redirect("/");
+  redirect("/painel");
 }
