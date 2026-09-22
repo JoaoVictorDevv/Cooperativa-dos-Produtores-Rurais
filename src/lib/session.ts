@@ -11,6 +11,9 @@ function getSecretKey() {
   if (!secret) {
     throw new Error("SESSION_SECRET nao configurado");
   }
+  if (secret.length < 32) {
+    throw new Error("SESSION_SECRET precisa ter no minimo 32 caracteres");
+  }
   return new TextEncoder().encode(secret);
 }
 

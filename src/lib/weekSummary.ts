@@ -35,7 +35,8 @@ export async function getTreasuryLines(weekId: string): Promise<TreasuryLine[]> 
   const returns = await prisma.schoolReturn.findMany({ where: { weekId } });
   const returnedByKey = new Map<string, number>();
   for (const r of returns) {
-    returnedByKey.set(`${r.schoolId}:${r.productId}`, Number(r.returnedQty));
+    const key = `${r.schoolId}:${r.productId}`;
+    returnedByKey.set(key, (returnedByKey.get(key) ?? 0) + Number(r.returnedQty));
   }
 
   return orders.map((o) => {
@@ -78,7 +79,8 @@ export async function getProducerPaymentLines(weekId: string): Promise<ProducerP
   const returns = await prisma.producerReturn.findMany({ where: { weekId } });
   const returnedByKey = new Map<string, number>();
   for (const r of returns) {
-    returnedByKey.set(`${r.producerId}:${r.productId}`, Number(r.returnedQty));
+    const key = `${r.producerId}:${r.productId}`;
+    returnedByKey.set(key, (returnedByKey.get(key) ?? 0) + Number(r.returnedQty));
   }
 
   return deliveries.map((d) => {

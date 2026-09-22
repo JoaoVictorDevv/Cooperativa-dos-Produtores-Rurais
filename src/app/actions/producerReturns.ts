@@ -39,23 +39,29 @@ export async function saveProducerReturn(
       };
     }
 
-    const existing = await prisma.producerReturn.findFirst({ where: { weekId, producerId, productId } });
-    const saved = existing
-      ? await prisma.producerReturn.update({
-          where: { id: existing.id },
-          data: { returnedQty, returnReasonId },
-        })
-      : await prisma.producerReturn.create({
-          data: { weekId, producerId, productId, returnedQty, returnReasonId },
-        });
+    const reason = await prisma.returnReason.findFirst({ where: { id: returnReasonId, active: true } });
+    if (!reason) return { ok: false, error: "Selecione um motivo de devolucao ativo." };
 
-    await writeAudit({
-      userId: user.id,
-      action: existing ? "PRODUCER_RETURN_UPDATE" : "PRODUCER_RETURN_CREATE",
-      entityType: "ProducerReturn",
-      entityId: saved.id,
-      before: existing,
-      after: saved,
+    await prisma.$transaction(async (tx) => {
+      const existing = await tx.producerReturn.findUnique({
+        where: { weekId_producerId_productId: { weekId, producerId, productId } },
+      });
+      const saved = await tx.producerReturn.upsert({
+        where: { weekId_producerId_productId: { weekId, producerId, productId } },
+        update: { returnedQty, returnReasonId },
+        create: { weekId, producerId, productId, returnedQty, returnReasonId },
+      });
+      await writeAudit(
+        {
+          userId: user.id,
+          action: existing ? "PRODUCER_RETURN_UPDATE" : "PRODUCER_RETURN_CREATE",
+          entityType: "ProducerReturn",
+          entityId: saved.id,
+          before: existing,
+          after: saved,
+        },
+        tx,
+      );
     });
     revalidatePath("/produtores");
     return { ok: true };

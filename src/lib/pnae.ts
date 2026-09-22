@@ -17,11 +17,16 @@ export async function getProducerAnnualTotal(
     where: { producerId, deliveredAt: { gte: start, lt: end } },
     include: { price: true },
   });
+  if (deliveries.length === 0) return 0;
+
+  const deliveryWeekIds = [...new Set(deliveries.map((delivery) => delivery.weekId))];
   const returnsByKey = new Map<string, number>();
   const returns = await prisma.producerReturn.findMany({
     where: {
       producerId,
-      createdAt: { gte: start, lt: end },
+      // SPEC-001 CA-05.2: a devolucao pertence ao periodo operacional da
+      // entrega, mesmo quando foi digitada posteriormente.
+      weekId: { in: deliveryWeekIds },
     },
   });
   for (const r of returns) {

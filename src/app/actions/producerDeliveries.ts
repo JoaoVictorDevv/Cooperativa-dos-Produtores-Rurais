@@ -25,42 +25,54 @@ export async function saveProducerDelivery(
     if (!deliveredAtRaw) {
       return { ok: false, error: "Informe a data da entrega." };
     }
+    const deliveredAt = new Date(deliveredAtRaw);
+    if (Number.isNaN(deliveredAt.getTime())) {
+      return { ok: false, error: "Informe uma data de entrega valida." };
+    }
 
     const week = await prisma.week.findUniqueOrThrow({ where: { id: weekId } });
     assertWeekEditable(week);
+    if (deliveredAt < week.startDate || deliveredAt > week.endDate) {
+      return { ok: false, error: "A entrega precisa estar dentro do periodo da semana." };
+    }
     const [price, settings] = await Promise.all([
       getCurrentPrice(productId, week.referenceDate),
       getSettings(),
     ]);
 
-    const existing = await prisma.producerDelivery.findUnique({
-      where: { weekId_producerId_productId: { weekId, producerId, productId } },
-    });
-    const saved = await prisma.producerDelivery.upsert({
-      where: { weekId_producerId_productId: { weekId, producerId, productId } },
-      update: {
-        deliveredQty,
-        deliveredAt: new Date(deliveredAtRaw),
-        priceId: price.id,
-        logisticsDeductionSnapshot: settings.logisticsDeductionPerKg,
-      },
-      create: {
-        weekId,
-        producerId,
-        productId,
-        deliveredQty,
-        deliveredAt: new Date(deliveredAtRaw),
-        priceId: price.id,
-        logisticsDeductionSnapshot: settings.logisticsDeductionPerKg,
-      },
-    });
-    await writeAudit({
-      userId: user.id,
-      action: existing ? "PRODUCER_DELIVERY_UPDATE" : "PRODUCER_DELIVERY_CREATE",
-      entityType: "ProducerDelivery",
-      entityId: saved.id,
-      before: existing,
-      after: saved,
+    await prisma.$transaction(async (tx) => {
+      const existing = await tx.producerDelivery.findUnique({
+        where: { weekId_producerId_productId: { weekId, producerId, productId } },
+      });
+      const saved = await tx.producerDelivery.upsert({
+        where: { weekId_producerId_productId: { weekId, producerId, productId } },
+        update: {
+          deliveredQty,
+          deliveredAt,
+          priceId: price.id,
+          logisticsDeductionSnapshot: settings.logisticsDeductionPerKg,
+        },
+        create: {
+          weekId,
+          producerId,
+          productId,
+          deliveredQty,
+          deliveredAt,
+          priceId: price.id,
+          logisticsDeductionSnapshot: settings.logisticsDeductionPerKg,
+        },
+      });
+      await writeAudit(
+        {
+          userId: user.id,
+          action: existing ? "PRODUCER_DELIVERY_UPDATE" : "PRODUCER_DELIVERY_CREATE",
+          entityType: "ProducerDelivery",
+          entityId: saved.id,
+          before: existing,
+          after: saved,
+        },
+        tx,
+      );
     });
     revalidatePath("/produtores");
     return { ok: true };

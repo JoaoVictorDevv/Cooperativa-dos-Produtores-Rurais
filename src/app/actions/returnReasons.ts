@@ -28,13 +28,18 @@ export async function createReturnReason(_prev: ReasonFormState, formData: FormD
     return { error: `Ja existe o motivo de codigo ${parsed.data.code}.` };
   }
 
-  const reason = await prisma.returnReason.create({ data: parsed.data });
-  await writeAudit({
-    userId: user.id,
-    action: "RETURN_REASON_CREATE",
-    entityType: "ReturnReason",
-    entityId: reason.id,
-    after: reason,
+  await prisma.$transaction(async (tx) => {
+    const reason = await tx.returnReason.create({ data: parsed.data });
+    await writeAudit(
+      {
+        userId: user.id,
+        action: "RETURN_REASON_CREATE",
+        entityType: "ReturnReason",
+        entityId: reason.id,
+        after: reason,
+      },
+      tx,
+    );
   });
   revalidatePath("/motivos");
   return {};
@@ -42,15 +47,20 @@ export async function createReturnReason(_prev: ReasonFormState, formData: FormD
 
 export async function setReturnReasonActive(id: string, active: boolean) {
   const user = await requireRole(["ADMIN", "OPERADOR"]);
-  const before = await prisma.returnReason.findUniqueOrThrow({ where: { id } });
-  const after = await prisma.returnReason.update({ where: { id }, data: { active } });
-  await writeAudit({
-    userId: user.id,
-    action: active ? "RETURN_REASON_ACTIVATE" : "RETURN_REASON_DEACTIVATE",
-    entityType: "ReturnReason",
-    entityId: id,
-    before,
-    after,
+  await prisma.$transaction(async (tx) => {
+    const before = await tx.returnReason.findUniqueOrThrow({ where: { id } });
+    const after = await tx.returnReason.update({ where: { id }, data: { active } });
+    await writeAudit(
+      {
+        userId: user.id,
+        action: active ? "RETURN_REASON_ACTIVATE" : "RETURN_REASON_DEACTIVATE",
+        entityType: "ReturnReason",
+        entityId: id,
+        before,
+        after,
+      },
+      tx,
+    );
   });
   revalidatePath("/motivos");
 }

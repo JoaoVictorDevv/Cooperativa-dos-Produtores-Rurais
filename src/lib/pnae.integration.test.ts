@@ -68,6 +68,13 @@ describe("Teste 7 — historico: fechar semana e criar outra", () => {
 
     await prisma.week.update({ where: { id: weekA.id }, data: { status: "FECHADA", closedAt: new Date() } });
 
+    await expect(
+      prisma.schoolOrder.update({
+        where: { weekId_schoolId_productId: { weekId: weekA.id, schoolId: school.id, productId: product.id } },
+        data: { orderedQty: 999 },
+      }),
+    ).rejects.toThrow("Semana fechada nao pode receber alteracoes");
+
     const weekB = await prisma.week.create({
       data: {
         referenceDate: new Date("2026-09-20"),
@@ -105,12 +112,15 @@ describe("Teste 8 — preco historico", () => {
         referenceDate: new Date("2026-01-01"),
         startDate: new Date("2026-01-01"),
         endDate: new Date("2026-01-03"),
-        status: "FECHADA",
-        closedAt: new Date(),
+        status: "ABERTA",
       },
     });
     await prisma.schoolOrder.create({
       data: { weekId: weekOld.id, schoolId: school.id, productId: product.id, orderedQty: 10, priceId: oldPrice.id },
+    });
+    await prisma.week.update({
+      where: { id: weekOld.id },
+      data: { status: "FECHADA", closedAt: new Date() },
     });
 
     // "altera" o preco: fecha o antigo e abre um novo a partir de agora
@@ -154,24 +164,16 @@ describe("Teste 9 — PNAE acumula automaticamente entre semanas", () => {
     });
     const producer = await prisma.producer.create({ data: { internalId: "P01", name: "Produtor Teste" } });
 
-    const weeks = await Promise.all(
-      [
-        new Date("2026-10-04"),
-        new Date("2026-10-11"),
-        new Date("2026-10-18"),
-      ].map((d, i) =>
-        prisma.week.create({
-          data: {
-            referenceDate: d,
-            startDate: d,
-            endDate: d,
-            status: i < 2 ? "FECHADA" : "ABERTA",
-          },
-        }),
-      ),
-    );
-
-    for (const week of weeks) {
+    const dates = [new Date("2026-10-04"), new Date("2026-10-11"), new Date("2026-10-18")];
+    for (const [index, date] of dates.entries()) {
+      const week = await prisma.week.create({
+        data: {
+          referenceDate: date,
+          startDate: date,
+          endDate: date,
+          status: "ABERTA",
+        },
+      });
       await prisma.producerDelivery.create({
         data: {
           weekId: week.id,
@@ -183,11 +185,57 @@ describe("Teste 9 — PNAE acumula automaticamente entre semanas", () => {
           logisticsDeductionSnapshot: 3.67,
         },
       });
+      if (index < dates.length - 1) {
+        await prisma.week.update({
+          where: { id: week.id },
+          data: { status: "FECHADA", closedAt: new Date() },
+        });
+      }
     }
 
     // cada semana: 450 * (8 - 3,67) = 1948,50 -> 3 semanas = 5845,50
     const total = await getProducerAnnualTotal(prisma, producer.id, new Date("2026-11-01"));
     expect(total).toBe(5845.5);
+  });
+
+  it("associa devolucao ao ciclo da entrega mesmo quando digitada depois", async () => {
+    const product = await prisma.product.create({ data: { slug: "tomate", name: "Tomate" } });
+    const price = await prisma.price.create({
+      data: { productId: product.id, price: 10, validFrom: new Date("2020-01-01") },
+    });
+    const producer = await prisma.producer.create({ data: { internalId: "P02", name: "Produtor Dois" } });
+    const reason = await prisma.returnReason.create({ data: { code: 1, description: "Qualidade" } });
+    const week = await prisma.week.create({
+      data: {
+        referenceDate: new Date("2026-10-04"),
+        startDate: new Date("2026-10-04"),
+        endDate: new Date("2026-10-06"),
+      },
+    });
+    await prisma.producerDelivery.create({
+      data: {
+        weekId: week.id,
+        producerId: producer.id,
+        productId: product.id,
+        deliveredQty: 100,
+        deliveredAt: week.startDate,
+        priceId: price.id,
+        logisticsDeductionSnapshot: 3.67,
+      },
+    });
+    await prisma.producerReturn.create({
+      data: {
+        weekId: week.id,
+        producerId: producer.id,
+        productId: product.id,
+        returnedQty: 10,
+        returnReasonId: reason.id,
+        createdAt: new Date("2027-10-10"),
+      },
+    });
+
+    const total = await getProducerAnnualTotal(prisma, producer.id, new Date("2026-11-01"));
+    expect(total).toBe(569.7);
   });
 });
 

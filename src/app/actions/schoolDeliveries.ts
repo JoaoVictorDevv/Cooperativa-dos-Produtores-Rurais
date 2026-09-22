@@ -24,23 +24,35 @@ export async function saveSchoolDelivery(
     if (!deliveredAtRaw) {
       return { ok: false, error: "Informe a data da entrega." };
     }
+    const deliveredAt = new Date(deliveredAtRaw);
+    if (Number.isNaN(deliveredAt.getTime())) {
+      return { ok: false, error: "Informe uma data de entrega valida." };
+    }
 
     const week = await prisma.week.findUniqueOrThrow({ where: { id: weekId } });
     assertWeekEditable(week);
+    if (deliveredAt < week.startDate || deliveredAt > week.endDate) {
+      return { ok: false, error: "A entrega precisa estar dentro do periodo da semana." };
+    }
 
-    const existing = await prisma.schoolDelivery.findUnique({ where: { weekId_schoolId: { weekId, schoolId } } });
-    const saved = await prisma.schoolDelivery.upsert({
-      where: { weekId_schoolId: { weekId, schoolId } },
-      update: { weekday, deliveredAt: new Date(deliveredAtRaw) },
-      create: { weekId, schoolId, weekday, deliveredAt: new Date(deliveredAtRaw) },
-    });
-    await writeAudit({
-      userId: user.id,
-      action: existing ? "SCHOOL_DELIVERY_UPDATE" : "SCHOOL_DELIVERY_CREATE",
-      entityType: "SchoolDelivery",
-      entityId: saved.id,
-      before: existing,
-      after: saved,
+    await prisma.$transaction(async (tx) => {
+      const existing = await tx.schoolDelivery.findUnique({ where: { weekId_schoolId: { weekId, schoolId } } });
+      const saved = await tx.schoolDelivery.upsert({
+        where: { weekId_schoolId: { weekId, schoolId } },
+        update: { weekday, deliveredAt },
+        create: { weekId, schoolId, weekday, deliveredAt },
+      });
+      await writeAudit(
+        {
+          userId: user.id,
+          action: existing ? "SCHOOL_DELIVERY_UPDATE" : "SCHOOL_DELIVERY_CREATE",
+          entityType: "SchoolDelivery",
+          entityId: saved.id,
+          before: existing,
+          after: saved,
+        },
+        tx,
+      );
     });
     revalidatePath("/escolas");
     return { ok: true };
