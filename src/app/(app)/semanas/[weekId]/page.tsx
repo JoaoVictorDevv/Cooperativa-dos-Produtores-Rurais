@@ -53,7 +53,7 @@ export default async function WeekDetailPage({ params }: { params: Promise<{ wee
 
       <div className="stat-row">
         <div className="card stat money-in">
-          <div className="stat-label">A cobrar da prefeitura</div>
+          <div className="stat-label">Vendas Merenda Escolar (PMP)</div>
           <div className="stat-value">{fmtMoney(summary.treasuryTotal)}</div>
         </div>
         <div className="card stat money-out">

@@ -42,7 +42,7 @@ export default async function ProdutoresPage() {
 
   const defaultDeduction = Number(settings.logisticsDeductionPerKg);
   const productById = new Map(
-    products.map((p) => [p.id, { id: p.id, name: p.name, price: Number(p.prices[0]?.price ?? 0) }]),
+    products.map((p) => [p.id, { id: p.id, name: p.name, slug: p.slug, price: Number(p.prices[0]?.price ?? 0) }]),
   );
 
   const planByProducer = new Map<string, Set<string>>();
@@ -86,6 +86,7 @@ export default async function ProdutoresPage() {
         return {
           productId,
           productName: product.name,
+          productSlug: product.slug,
           allocatedQty: allocByKey.get(key) ?? 0,
           orderedQty: orderByKey.get(key) ?? 0,
           deliveredQty: delivery?.deliveredQty ?? null,
@@ -118,6 +119,7 @@ export default async function ProdutoresPage() {
       allProducts: products.map((p) => ({
         id: p.id,
         name: p.name,
+        slug: p.slug,
         price: Number(p.prices[0]?.price ?? 0),
         logisticsDeductionPerKg: defaultDeduction,
       })),

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ProducerProductRow } from "./ProducerProductRow";
+import { formatQtyNumber } from "@/lib/format";
 
 interface Reason {
   id: string;
@@ -12,6 +13,7 @@ interface Reason {
 interface ProductLine {
   productId: string;
   productName: string;
+  productSlug: string;
   allocatedQty: number;
   orderedQty: number;
   deliveredQty: number | null;
@@ -43,7 +45,7 @@ export function ProducerRow({
   editable: boolean;
   reasons: Reason[];
   initialLines: ProductLine[];
-  allProducts: { id: string; name: string; price: number; logisticsDeductionPerKg: number }[];
+  allProducts: { id: string; name: string; slug: string; price: number; logisticsDeductionPerKg: number }[];
   pending: boolean;
   totalOrdered: number;
   totalDelivered: number;
@@ -63,6 +65,7 @@ export function ProducerRow({
       {
         productId: product.id,
         productName: product.name,
+        productSlug: product.slug,
         allocatedQty: 0,
         orderedQty: 0,
         deliveredQty: null,
@@ -83,8 +86,8 @@ export function ProducerRow({
           {producerName}
           <span className="sub">{producerInternalId}</span>
         </td>
-        <td className="mono">{totalOrdered.toFixed(2)}</td>
-        <td className="mono">{totalDelivered.toFixed(2)}</td>
+        <td className="mono">{formatQtyNumber(totalOrdered)}</td>
+        <td className="mono">{formatQtyNumber(totalDelivered)}</td>
         <td>
           <span className={`status-dot ${pending ? "pending" : "ok"}`}>
             <span className="dot" />

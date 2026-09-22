@@ -18,6 +18,7 @@ export interface TreasuryLine {
   schoolName: string;
   productId: string;
   productName: string;
+  productSlug: string;
   orderedQty: number;
   returnedQty: number;
   netQty: number;
@@ -48,6 +49,7 @@ export async function getTreasuryLines(weekId: string): Promise<TreasuryLine[]> 
       schoolName: o.school.name,
       productId: o.productId,
       productName: o.product.name,
+      productSlug: o.product.slug,
       orderedQty,
       returnedQty,
       netQty: schoolNetQty(orderedQty, returnedQty),
@@ -62,6 +64,7 @@ export interface ProducerPaymentLine {
   producerName: string;
   productId: string;
   productName: string;
+  productSlug: string;
   deliveredQty: number;
   returnedQty: number;
   netQty: number;
@@ -93,6 +96,7 @@ export async function getProducerPaymentLines(weekId: string): Promise<ProducerP
       producerName: d.producer.name,
       productId: d.productId,
       productName: d.product.name,
+      productSlug: d.product.slug,
       deliveredQty,
       returnedQty,
       netQty: deliveredQty - returnedQty,
@@ -154,7 +158,7 @@ export async function getWeekFinancialSummary(weekId: string): Promise<WeekFinan
 export interface PendingProducer {
   producerId: string;
   producerName: string;
-  pendingProducts: { productId: string; productName: string; orderedQty: number }[];
+  pendingProducts: { productId: string; productName: string; productSlug: string; orderedQty: number }[];
 }
 
 // Usado no dashboard e na tela de produtores: pedido feito, entrega
@@ -179,6 +183,7 @@ export async function getPendingProducerDeliveries(weekId: string): Promise<Pend
     entry.pendingProducts.push({
       productId: order.productId,
       productName: order.product.name,
+      productSlug: order.product.slug,
       orderedQty: Number(order.orderedQty),
     });
     byProducer.set(order.producerId, entry);

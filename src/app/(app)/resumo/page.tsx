@@ -2,12 +2,10 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
 import { getWeekFinancialSummary } from "@/lib/weekSummary";
+import { formatQty } from "@/lib/format";
 
 function fmtMoney(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
-}
-function fmtKg(value: number) {
-  return `${value.toFixed(2)} kg`;
 }
 
 // CA-RES-04/05: aceita ?week=<id> para consultar qualquer semana do
@@ -34,9 +32,9 @@ export default async function ResumoPage({ searchParams }: { searchParams: Promi
 
   const summary = await getWeekFinancialSummary(week.id);
 
-  const byProduct = new Map<string, { productName: string; ordered: number; returned: number; net: number; price: number; value: number }>();
+  const byProduct = new Map<string, { productName: string; productSlug: string; ordered: number; returned: number; net: number; price: number; value: number }>();
   for (const l of summary.treasuryLines) {
-    const cur = byProduct.get(l.productId) ?? { productName: l.productName, ordered: 0, returned: 0, net: 0, price: l.price, value: 0 };
+    const cur = byProduct.get(l.productId) ?? { productName: l.productName, productSlug: l.productSlug, ordered: 0, returned: 0, net: 0, price: l.price, value: 0 };
     cur.ordered += l.orderedQty;
     cur.returned += l.returnedQty;
     cur.net += l.netQty;
@@ -63,7 +61,7 @@ export default async function ResumoPage({ searchParams }: { searchParams: Promi
 
       <div className="stat-row">
         <div className="card stat money-in">
-          <div className="stat-label">A cobrar da prefeitura</div>
+          <div className="stat-label">Vendas Merenda Escolar (PMP)</div>
           <div className="stat-value">{fmtMoney(summary.treasuryTotal)}</div>
         </div>
         <div className="card stat money-out">
@@ -94,9 +92,9 @@ export default async function ResumoPage({ searchParams }: { searchParams: Promi
             {[...byProduct.values()].map((p) => (
               <tr key={p.productName}>
                 <td>{p.productName}</td>
-                <td className="mono">{fmtKg(p.ordered)}</td>
-                <td className="mono">{fmtKg(p.returned)}</td>
-                <td className="mono">{fmtKg(p.net)}</td>
+                <td className="mono">{formatQty(p.ordered, p.productSlug)}</td>
+                <td className="mono">{formatQty(p.returned, p.productSlug)}</td>
+                <td className="mono">{formatQty(p.net, p.productSlug)}</td>
                 <td className="mono">{fmtMoney(p.price)}</td>
                 <td className="mono">{fmtMoney(p.value)}</td>
               </tr>

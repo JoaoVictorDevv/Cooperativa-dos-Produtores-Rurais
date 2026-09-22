@@ -60,6 +60,21 @@ export default async function BalancoPage({ searchParams }: { searchParams: Prom
         </div>
       </div>
 
+      <div className="stat-row">
+        <div className="card stat money-in">
+          <div className="stat-label">Vendas Merenda Escolar (PMP)</div>
+          <div className="stat-value">{fmtMoney(summary.treasuryTotal)}</div>
+        </div>
+        <div className="card stat money-out">
+          <div className="stat-label">Pago aos produtores</div>
+          <div className="stat-value">{fmtMoney(summary.producersTotal)}</div>
+        </div>
+        <div className="card stat">
+          <div className="stat-label">Margem bruta</div>
+          <div className="stat-value">{fmtMoney(summary.grossMargin)}</div>
+        </div>
+      </div>
+
       <div className={`balance-hero${summary.balance < 0 ? " negative" : ""}`}>
         <div>
           <div className="bh-label">Saldo da semana</div>

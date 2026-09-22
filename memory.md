@@ -42,33 +42,51 @@ decisões de UX/negócio ANTES de mexer no app de verdade. Fluxo: ajusta no
 modelo → chefe aprova → só então implementa no código real (ainda não
 implementado — ver lista abaixo).
 
-### Mudanças já validadas no modelo, ainda NÃO portadas pro app real
-1. **Unidade em kg** — "120 kg" em vez de "120.00" (só decimal quando
-   existe de verdade). Precisa de um formatter equivalente no app real —
-   hoje os componentes usam `.toFixed(2)` cru em vários lugares. **Atenção
-   à v35**: Ovos é "(dz)", não kg — o formatter precisa saber a unidade
-   por produto, não assumir kg pra tudo.
-2. **Devolução como ação deliberada** — em vez de campo sempre vazio
-   visível, um link "+ Registrar devolução" que só vira input quando
-   clicado (ou se já existe devolução lançada). Resolve a reclamação do
-   chefe de que o campo "instigava" lançar devolução à toa. Portar pra
-   `ReturnRow.tsx` (ficha de escola) e `ProducerProductRow.tsx`.
-3. **Total no romaneio do produtor** — linha de total (pedido, entrega,
-   devolução, valor) no fim da ficha impressa. Portar pra
-   `produtores/[internalId]/page.tsx`.
-4. **Limite Anual PNAE removido da interface** — tirado do dashboard e da
-   ficha do produtor porque isso já é resolvido direto com a prefeitura.
-   O cálculo automático em si (`src/lib/pnae.ts`) deve continuar existindo
-   por baixo (o olucasgon inclusive acabou de reforçar que o acumulado
-   PNAE precisa ficar associado ao período real da entrega) — só a UI de
-   alerta/painel que deve sumir. Não apagar lib/testes sem confirmar.
-5. **Balanço Financeiro: rótulo "Vendas Merenda Escolar (PMP)"** — troca
-   de "Vendas à Prefeitura" / "A cobrar da prefeitura". Motivo: podem
-   entrar outros clientes no futuro (outra prefeitura, um hortifruti) — o
-   nome não pode ficar hardcoded pra "a prefeitura" genérica. Implicação
-   estrutural (ainda não modelada): `School`/`SchoolOrder` talvez devessem
-   pertencer a um `Cliente` (PMP sendo o primeiro), pra somar vendas por
-   cliente. Avaliar com o usuário quando entrar.
+### Mudanças já validadas no modelo — status no app real
+1. **[FEITO] Unidade em kg/dz** — `src/lib/format.ts` (novo: `formatQty`,
+   `formatQtyNumber`, `productUnit`) formata "120 kg" / "10 dz" sem
+   decimais desnecessários, sabendo que Ovos (slug `ovos`) é dúzia, não
+   kg. Aplicado em `resumo/page.tsx`, `painel/page.tsx` (pendências),
+   `produtores/[internalId]/page.tsx` e `escolas/[code]/ReturnRow.tsx`.
+   `weekSummary.ts` ganhou `productSlug` em `TreasuryLine`,
+   `ProducerPaymentLine` e `PendingProducer.pendingProducts` pra viabilizar
+   isso. Totais agregados multi-produto (linha "Pedido/Entrega" da tabela
+   de produtores) usam só `formatQtyNumber` (sem unidade), já que somam
+   produtos de unidades diferentes — mesma simplificação que já existia.
+2. **[FEITO] Devolução como ação deliberada** — `ReturnRow.tsx` (ficha de
+   escola) e `ProducerProductRow.tsx` (produtor) agora mostram um botão
+   "+ Registrar devolução" (estilo `.link-action`) em vez de input vazio
+   sempre visível; clicar revela o input + select de motivo. Estado
+   inicial `revealed = returnedQty > 0`, então devolução já lançada
+   continua editável direto, sem esconder dado real.
+3. **[FEITO] Total no romaneio do produtor** — `produtores/[internalId]/page.tsx`
+   ganhou `<tfoot>` com soma de pedido/entrega/devolução/valor.
+4. **[FEITO] Limite Anual PNAE removido da interface** — painel de alerta
+   tirado de `painel/page.tsx` (dashboard) e a barra/badge tirada de
+   `produtores/[internalId]/page.tsx`. `src/lib/pnae.ts` e seus testes
+   (unitários e de integração) continuam intactos — só a UI sumiu, o
+   cálculo automático (usado pelo `weekPolicy.ts` do olucasgon) segue
+   funcionando por baixo.
+5. **[FEITO] Rótulo "Vendas Merenda Escolar (PMP)"** — trocado de "Vendas
+   à Prefeitura" / "A cobrar da prefeitura" em `painel/page.tsx`,
+   `resumo/page.tsx` e `semanas/[weekId]/page.tsx`. O Balanço Financeiro
+   (`balanco/page.tsx`) não tinha nenhum stat-row de vendas antes — foi
+   adicionado um novo `stat-row` (Vendas Merenda Escolar (PMP) / Pago aos
+   Produtores / Margem Bruta) igual ao que existia no modelo, antes do
+   `balance-hero`. Implicação estrutural (ainda NÃO modelada): `School`/
+   `SchoolOrder` talvez devessem pertencer a um `Cliente` (PMP sendo o
+   primeiro), pra somar vendas por cliente — decisão maior, avaliar com o
+   usuário quando entrar, não fazia parte deste round de "ajustes
+   pequenos".
+
+   Validado: `tsc --noEmit` (só o erro conhecido/inofensivo de
+   `LayoutProps` em `layout.tsx`, que se autocorrige com `next dev`/
+   `build`), `eslint` limpo, 24 testes unitários + 5 de integração
+   passando, `next build` de produção OK, e teste manual via Playwright
+   contra o Postgres local com os dados reais da planilha (login, ficha de
+   escola com e sem devolução prévia, ficha de produtor com total, tabela
+   de produtores com o link de devolução, resumo/balanço/painel com o
+   rótulo novo).
 6. **Histórico clicável, abre detalhe da semana** — no app real isso já
    existe via `/semanas/[weekId]` e `/resumo?week=`/`/balanco?week=`; só
    confirmar que a navegação a partir de `/historico` está linkando certo.
@@ -132,7 +150,11 @@ célula por célula contra o arquivo real, não só contra o resumo enviado:
 ## Pendências combinadas (minhas + sugestões do olucasgon — convergem bastante)
 1. Rodar o ciclo semanal de homologação com usuários reais (marco definido
    pelo olucasgon) antes de qualquer deploy de produção.
-2. Portar pro app real os 8 ajustes já validados no modelo (lista acima).
+2. [FEITO — ver seção acima] Os 5 ajustes pequenos (kg/dz, devolução
+   deliberada, total no romaneio, remover PNAE da UI, rótulo PMP). Faltam
+   ainda os 3 ajustes maiores da lista original: histórico clicável
+   (só confirmar), mapa de produção 12 meses (já ok) e import de Excel
+   (não implementado no app real ainda — só validado no modelo).
 3. Extrair as 18 rotas completas do Mapa de Montagem e modelar `Route`/
    `RouteStop` no schema — feature nova, ninguém começou ainda.
 4. Ajustar formatação de unidade (kg vs dz) em todo lugar que soma/exibe
@@ -150,8 +172,12 @@ célula por célula contra o arquivo real, não só contra o resumo enviado:
     uma cooperativa.
 
 ## Próximo passo exato
-**Nenhuma mudança de código foi decidida ainda — o usuário pediu só pra
-revisar e guardar essas informações por enquanto.** Antes de começar
-qualquer implementação: alinhar com o usuário e com o olucasgon qual item
-da lista acima entra primeiro (o marco de homologação semanal dele parece
-o gate mais urgente, já que é pré-requisito pro deploy de produção).
+Os 5 "ajustes pequenos" do modelo (kg/dz, devolução deliberada, total no
+romaneio, remover PNAE da UI, rótulo "Vendas Merenda Escolar (PMP)") foram
+portados pro app real na branch `develop`, validados (tsc, eslint, 29
+testes, build de produção, teste manual via Playwright com dados reais) e
+commitados. Falta: push pro `develop` remoto e alinhar com o usuário qual
+item entra a seguir — candidatos: import de Excel na tela de escolas
+(Server Action + upload), Mapa de Montagem (feature grande, schema novo),
+ou aguardar o ciclo de homologação semanal do olucasgon (pré-requisito
+dele pro deploy de produção).

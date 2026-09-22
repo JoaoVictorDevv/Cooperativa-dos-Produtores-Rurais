@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
 import { getWeekFinancialSummary, getPendingProducerDeliveries } from "@/lib/weekSummary";
-import { getProducerPnaeUsage } from "@/lib/pnae";
+import { formatQty } from "@/lib/format";
 import { Icon } from "@/components/Icon";
 
 function fmtMoney(value: number) {
@@ -16,13 +16,6 @@ export default async function DashboardPage() {
   const week = await getOpenWeek();
 
   const producers = await prisma.producer.findMany({ where: { active: true } });
-  const pnaeAlerts = (
-    await Promise.all(
-      producers.map(async (p) => ({ producer: p, usage: await getProducerPnaeUsage(prisma, p.id) })),
-    )
-  )
-    .filter((a) => a.usage.alertLevel !== "OK")
-    .sort((a, b) => b.usage.percentUsed - a.usage.percentUsed);
 
   if (!week) {
     return (
@@ -47,7 +40,6 @@ export default async function DashboardPage() {
           </div>
           <div className="welcome-summary">
             <div><span>Produtores ativos</span><strong>{producers.length}</strong></div>
-            <div><span>Alertas PNAE</span><strong>{pnaeAlerts.length}</strong></div>
             <div><span>Status atual</span><strong className="status-copy">Aguardando abertura</strong></div>
           </div>
         </section>
@@ -59,7 +51,6 @@ export default async function DashboardPage() {
           <Link href="/produtores" className="onboarding-card"><span>03</span><Icon name="users" /><strong>Distribua a produção</strong><p>Organize volumes, entregas e pagamentos.</p></Link>
           <Link href="/balanco" className="onboarding-card"><span>04</span><Icon name="balance" /><strong>Feche o balanço</strong><p>Confira receitas, custos e o resultado semanal.</p></Link>
         </div>
-        {pnaeAlerts.length > 0 && <PnaeAlertsPanel alerts={pnaeAlerts} />}
       </>
     );
   }
@@ -86,7 +77,7 @@ export default async function DashboardPage() {
 
       <div className="stat-row">
         <div className="card stat money-in">
-          <div className="stat-label">A cobrar da prefeitura</div>
+          <div className="stat-label">Vendas Merenda Escolar (PMP)</div>
           <div className="stat-value">{fmtMoney(summary.treasuryTotal)}</div>
         </div>
         <div className="card stat money-out">
@@ -111,7 +102,7 @@ export default async function DashboardPage() {
               <div className="pending-item" key={p.producerId}>
                 <span className="who">{p.producerName}</span>
                 <span className="what">
-                  {p.pendingProducts.map((pp) => `${pp.productName} (${pp.orderedQty.toFixed(0)} kg)`).join(", ")} — entrega ainda não registrada
+                  {p.pendingProducts.map((pp) => `${pp.productName} (${formatQty(pp.orderedQty, pp.productSlug)})`).join(", ")} — entrega ainda não registrada
                 </span>
                 <Link className="btn-tiny" href="/produtores">
                   Anotar
@@ -121,8 +112,6 @@ export default async function DashboardPage() {
           </div>
         </>
       )}
-
-      {pnaeAlerts.length > 0 && <PnaeAlertsPanel alerts={pnaeAlerts} />}
 
       <div className="section-title">Ir direto para</div>
       <div className="quick-grid">
@@ -142,31 +131,6 @@ export default async function DashboardPage() {
           <Icon name="history" size={19} />
           <div className="qb-label">Histórico</div>
         </Link>
-      </div>
-    </>
-  );
-}
-
-function PnaeAlertsPanel({
-  alerts,
-}: {
-  alerts: { producer: { id: string; name: string; internalId: string }; usage: { percentUsed: number; alertLevel: string } }[];
-}) {
-  return (
-    <>
-      <div className="section-title">
-        Alertas de limite anual PNAE <span className="count">{alerts.length}</span>
-      </div>
-      <div className="pending-list">
-        {alerts.map((a) => (
-          <div className="pending-item alert-item" key={a.producer.id}>
-            <span className="who">{a.producer.name}</span>
-            <span className="what">{a.usage.percentUsed.toFixed(0)}% do limite de R$ 40.000/ano</span>
-            <Link className="btn-tiny" href={`/produtores/${a.producer.internalId}`}>
-              Ver
-            </Link>
-          </div>
-        ))}
       </div>
     </>
   );
