@@ -448,6 +448,13 @@ button {
   padding: 9px 14px;
   font-size: 13px;
   color: var(--ink-soft);
+  cursor: pointer;
+}
+.filter-chip.active {
+  background: var(--sage-soft);
+  color: var(--forest);
+  border-color: var(--sage);
+  font-weight: 600;
 }
 
 table {

@@ -23,9 +23,9 @@ force push. Uma etapa por vez, commit+push a cada etapa concluída.
   commitado, `memory.md` atualizado com o nome da branch — tudo isso ANTES
   de começar qualquer implementação, conforme pedido. Commit `0b93288`.
 - [FEITO] Etapa 1 — Correções de consistência e salvamento (prompt §4, §5,
-  §6). Detalhes completos logo abaixo. Commit desta etapa: ver ao final
-  desta seção (feito após este registro, conforme o fluxo pedido).
-- [PENDENTE] Etapa 2 — Painel Diferença do galpão (§7).
+  §6). Commit `909ab99`. Detalhes na subseção "Etapa 1" abaixo.
+- [FEITO] Etapa 2 — Painel Diferença do galpão (§7). Detalhes na subseção
+  "Etapa 2" abaixo.
 - [PENDENTE] Etapa 3 — Histórico semanal completo + PDFs (§10, §12).
 - [PENDENTE] Etapa 4 — Melhorias de navegação (decorrente da 3).
 - [PENDENTE] Etapa 5 — Importação Excel/PDF funcional (§13) — depende de
@@ -149,14 +149,59 @@ zero-vs-branco na leitura inicial, mas como não há um passo de
 produtor — isso não bloqueia nenhum fluxo real; registrado aqui como
 inspecionado, não corrigido, caso vire prioridade depois).
 
-**Próximo passo exato:** commitar e enviar a Etapa 1 pra
-`feat/relatorios-diferencas-importacao`, depois começar a Etapa 2 (Painel
-Diferença do galpão, `docs/plano-de-implementacao.md` §7).
+#### Etapa 2 — detalhes (concluída)
 
-**Próximo passo exato:** implementar a etapa 1 (ver `docs/plano-de-implementacao.md`
-§4A/4B/4C/5/6), testar com dados fictícios, documentar aqui os arquivos
-alterados e os testes rodados, e então commitar e enviar pra
-`feat/relatorios-diferencas-importacao`.
+**O que foi implementado** (`docs/plano-de-implementacao.md` §7): tela nova
+"Diferença do galpão" (`/diferenca`), por produto e semana:
+
+- Pedido total das escolas, entrega bruta dos produtores, devolução aos
+  produtores, entrega líquida (bruta − devolução) e diferença (líquida −
+  pedido), cada um na unidade certa do produto (kg ou dz — reaproveita
+  `formatQty` do ajuste anterior).
+- Status por produto: `FALTA` (líquida < pedido, badge vermelho),
+  `SOBRA` (líquida > pedido, badge amarelo), `OK` (iguais, badge verde) —
+  reaproveita as classes `.badge.estourado/.atencao/.ok` que já existiam
+  pro alerta PNAE removido na sessão anterior.
+- Funciona pra semana aberta (usa a semana aberta atual por padrão) e
+  fechada (aceita `?week=<id>`, mesmo padrão de Resumo/Balanço) — o código
+  não tem nenhum branch por `week.status`, então não há caminho que exclua
+  semana fechada.
+- Filtro por status (Todos/Falta/Sobra/OK) client-side, com contagem.
+- Acesso aos detalhes: link "Diferença" adicionado na tela de Histórico
+  (ao lado de Resumo/Balanço) pra cada semana passada, e atalho no painel.
+- **Não** mistura com estoque do galpão nem atendimento por escola — texto
+  explicativo fixo no rodapé da tabela avisando isso, e nenhuma soma cruza
+  produtos de unidades diferentes (a tabela é sempre por produto; não há
+  linha de "total geral em kg").
+
+**Arquivos novos:** `src/app/(app)/diferenca/page.tsx`,
+`src/app/(app)/diferenca/DiferencaTable.tsx`.
+**Arquivos alterados:** `src/lib/calc.ts` (funções puras
+`netProducerDelivered`, `warehouseDifference`, `differenceStatus`),
+`src/lib/weekSummary.ts` (`getWarehouseDifferenceLines`),
+`src/components/nav-items.ts` (item de menu), `src/app/globals.css`
+(`.filter-chip.active`, que também corrigiu de graça um estado "ativo"
+sem estilo que já existia na tela de Histórico), `src/app/(app)/historico/page.tsx`
+e `src/app/(app)/painel/page.tsx` (links de acesso).
+
+**Testes executados:**
+- Automatizado: 5 novos testes unitários em `calc.test.ts` cobrindo
+  FALTA/SOBRA/OK e o efeito da devolução na entrega líquida — `npm run
+  test` (29 testes, todos passando), `tsc --noEmit` limpo, `eslint`
+  limpo, `npm run build` OK.
+- Interface (Playwright, dados fictícios já usados na Etapa 1): tela
+  carrega, números batem com o esperado calculado à mão a partir do
+  banco (Abacate 150kg pedido / 0 entregue → FALTA -150; Alface lisa 45kg
+  entregue sem pedido → SOBRA +45; Chuchu 30 pedido / 25 líquida → FALTA
+  -5), filtros Todos/Falta/Sobra/OK funcionam e contam certo.
+- Não testado nesta sessão: uma semana FECHADA de verdade (não havia
+  nenhuma no banco de dev) — o código não tem branch por status, então o
+  comportamento esperado é idêntico, mas fica registrado como cenário não
+  exercitado ao vivo, só por inspeção de código.
+
+**Próximo passo exato:** commitar e enviar a Etapa 2, depois começar a
+Etapa 3 (Histórico semanal completo + PDFs, `docs/plano-de-implementacao.md`
+§10/§12).
 
 ## Time
 Duas pessoas trabalhando no repo agora: o usuário (com o Claude Code) e um
