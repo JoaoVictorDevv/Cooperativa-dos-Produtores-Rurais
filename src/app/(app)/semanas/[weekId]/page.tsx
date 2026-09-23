@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
 import { getWeekFinancialSummary, getWarehouseDifferenceLines, getPendingProducerDeliveries } from "@/lib/weekSummary";
+import { REPORT_DEFINITIONS } from "@/lib/pdf/definitions";
 import { CloseButton } from "./CloseButton";
 import { ReopenForm } from "./ReopenForm";
 
@@ -112,6 +113,25 @@ export default async function WeekDetailPage({ params }: { params: Promise<{ wee
           <div className="qb-label">Balanço Financeiro</div>
         </Link>
       </div>
+
+      <div className="section-title">Documentos da semana</div>
+      <div className="quick-grid">
+        {REPORT_DEFINITIONS.map((r) => (
+          <a key={r.key} className="quick-btn" href={`/api/semanas/${week.id}/pdf/${r.key}`}>
+            <div className="qb-label">{r.label}</div>
+          </a>
+        ))}
+      </div>
+      <div className="rm-actions" style={{ marginTop: 12 }}>
+        <a className="btn-primary" href={`/api/semanas/${week.id}/pdf/zip`}>
+          Baixar tudo (.zip)
+        </a>
+      </div>
+      <p className="table-foot-note" style={{ textAlign: "left" }}>
+        Os documentos usam os preços e quantidades registrados nesta semana. Nomes e endereços de escolas/produtores
+        refletem o cadastro atual (não têm histórico próprio).
+        {week.status === "ABERTA" && " Esta semana ainda está ABERTA — os valores podem mudar até o fechamento."}
+      </p>
 
       {week.reopenings.length > 0 && (
         <>

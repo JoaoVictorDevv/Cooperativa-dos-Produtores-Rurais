@@ -29,7 +29,8 @@ force push. Uma etapa por vez, commit+push a cada etapa concluída.
 - [FEITO] Etapa 3a — Escolas/Produtores (lista e ficha) navegáveis por
   semana histórica via `?week=` (pré-requisito de §10 e §12). Detalhes na
   subseção "Etapa 3a" abaixo. Falta ainda 3b (PDFs, §12).
-- [EM ANDAMENTO] Etapa 3b — Geração de PDFs por semana (§12).
+- [FEITO] Etapa 3b — Geração de PDFs por semana (§12). Detalhes na
+  subseção "Etapa 3b" abaixo.
 - [PENDENTE] Etapa 4 — Melhorias de navegação (decorrente da 3).
 - [PENDENTE] Etapa 5 — Importação Excel/PDF funcional (§13) — depende de
   exemplo real da prefeitura pra validação final; desenvolver com dados
@@ -264,9 +265,99 @@ pra qualquer semana, não só a aberta).
   como a primeira semana FECHADA de verdade no banco de dev, útil pros
   próximos testes (PDF, etc.).
 
-**Próximo passo exato:** Etapa 3b — gerar PDFs por semana selecionada
-(`docs/plano-de-implementacao.md` §12), usando a mesma lógica de semana
-selecionável desta etapa.
+#### Etapa 3b — detalhes (concluída)
+
+**O que foi implementado** (`docs/plano-de-implementacao.md` §12): geração
+real de PDF (não é impressão do navegador) para os 7 documentos pedidos,
+por semana selecionada, mais um pacote ZIP com todos juntos.
+
+- Biblioteca escolhida: `@react-pdf/renderer` (gera PDF em Node puro, sem
+  precisar de navegador/Chromium em produção — importante pra um deploy
+  futuro em ambiente serverless tipo Vercel) + `jszip` pro pacote. Duas
+  dependências novas em `package.json`, nada de infraestrutura de banco.
+- `src/lib/pdf/`: `styles.ts` (estilos/formatação compartilhados, aviso
+  padrão de "semana ainda aberta", disclaimer sobre cadastro sem
+  histórico), `SimpleReport.tsx` (documento tabular genérico), 
+  `SchoolRomaneiosDocument.tsx` (um romaneio por página, por escola),
+  `BalanceReportDocument.tsx` (balanço com 3 seções), `definitions.ts`
+  (lista dos 7 relatórios, leve, sem depender do react-pdf) e
+  `reports.tsx` (busca os dados de cada relatório — reaproveitando
+  `getWeekFinancialSummary`, `getWarehouseDifferenceLines`,
+  `getProducerPaymentLines` já existentes, e consultas novas simples pra
+  pedido de escola/produtor e entregas de escola).
+- Os 7 documentos: Pedido das Escolas, Pedidos aos Produtores, Romaneios
+  das Escolas (um por escola com pedido, cada um sua própria página —
+  não funde escolas de endereço compartilhado, cada código é um
+  documento), Recebimento e Devoluções no Galpão, Entregas às Escolas
+  (só o dia confirmado — deixa explícito que quantidade por produto
+  entregue à escola ainda não existe no sistema, ver §8), Relatório de
+  Diferenças (mesma tela/regra da Etapa 2), Balanço Financeiro.
+- Rotas: `GET /api/semanas/[weekId]/pdf/[report]` (um arquivo) e
+  `GET /api/semanas/[weekId]/pdf/zip` (pacote com os 7). Protegidas pelo
+  `proxy.ts` (que já bloqueia `/api/*` sem cookie de sessão) e por
+  `verifySession()` dentro do handler — mesma permissão pra arquivo
+  individual e pro zip, sem distinção (leitura, igual olhar a tela).
+- UI: seção "Documentos da semana" no hub `/semanas/[weekId]` (a mesma
+  tela que virou central na Etapa 3a), com os 7 botões de download mais
+  "Baixar tudo (.zip)".
+- Cada documento identifica a semana, a data/hora de emissão, e mostra um
+  aviso vermelho se a semana ainda estiver ABERTA ("os valores podem
+  mudar até o fechamento"). Funciona pra semana aberta ou fechada (usa a
+  mesma função `getWeekMeta` isolada de `getOpenWeek()`).
+
+**Limitação documentada, não resolvida (fora do escopo desta sessão):**
+nome/endereço/telefone de escola e produtor NÃO têm histórico próprio no
+banco (só quantidades e preços são congelados por semana) — se alguém
+editar o cadastro de uma escola hoje, um romaneio de uma semana antiga
+regenerado vai mostrar o endereço ATUAL, não o que valia na época. Isso
+está escrito em texto pequeno no rodapé de cada documento
+(`CADASTRO_DISCLAIMER`). Resolver de verdade exigiria histórico
+versionado de `School`/`Producer` no schema — decisão do olucasgon, não
+implementada aqui.
+
+**Também não implementado (consciente, fora do §12 estrito):** não existe
+armazenamento do PDF gerado nem do "arquivo original" de nada — cada
+download é gerado na hora, a partir dos dados atuais do banco. Isso
+significa que dois downloads do mesmo relatório no mesmo instante são
+idênticos, mas não existe uma "versão final assinada" arquivada em algum
+lugar. Se a cooperativa precisar de prova de um documento exatamente como
+foi emitido num momento específico (ex.: para auditoria externa), isso
+exigiria guardar o PDF gerado em algum storage — dependência de infra,
+documentada aqui, não implementada.
+
+**Arquivos novos:** `src/lib/pdf/*` (7 arquivos),
+`src/app/api/semanas/[weekId]/pdf/[report]/route.ts`,
+`src/app/api/semanas/[weekId]/pdf/zip/route.ts`.
+**Arquivos alterados:** `package.json`/`package-lock.json` (novas
+dependências `@react-pdf/renderer` e `jszip`), `semanas/[weekId]/page.tsx`
+(seção de documentos).
+
+**Testes executados:**
+- Automatizado: `tsc --noEmit` limpo, `eslint` limpo, `npm run test` (29
+  testes, sem mudança de lógica de cálculo), `npm run build` OK (as duas
+  rotas novas aparecem compiladas).
+- Interface/banco (Playwright, dados fictícios): baixei os 7 PDFs
+  individuais e o ZIP pra semana fechada de teste — todos retornam
+  `200`, `Content-Type` correto, começam com a assinatura `%PDF`, e o
+  ZIP contém os 7 arquivos certos. Renderizei os PDFs de verdade (via o
+  visualizador nativo do Chromium, não só "o arquivo existe") e conferi
+  visualmente que os números batem exatamente com o que as telas
+  mostram (romaneio da CEI A SEMENTEIRA: Chuchu 30kg pedido / 0kg
+  devolução / 30kg líquido; balanço: R$2.436,60 / R$615,00 / R$1.821,60
+  / R$100,00 / R$1.721,60 — idênticos à tela). Criei uma segunda semana
+  (Semana 2, ainda ABERTA, também fictícia) só pra confirmar que o aviso
+  vermelho de "semana ainda aberta" aparece corretamente no PDF gerado
+  pra uma semana aberta — confirmado visualmente.
+- Não testado: geração de PDF sob muitas escolas simultâneas (a semana de
+  teste só tinha 3 romaneios) — o código não tem limite artificial, mas
+  não foi validado com a base completa de ~190 escolas com pedido; alerta
+  de possível tempo de geração maior nesse caso, não medido.
+
+**Próximo passo exato:** Etapa 4 (melhorias de navegação, decorrente da
+3) já está em boa parte coberta pelo trabalho das etapas 3a/3b (hub por
+semana, navegação por `?week=`). Avaliar rapidamente o que falta antes de
+seguir pra Etapa 5 (importação Excel/PDF, `docs/plano-de-implementacao.md`
+§13), que é a prioridade que o usuário mais enfatizou.
 
 ## Time
 Duas pessoas trabalhando no repo agora: o usuário (com o Claude Code) e um
