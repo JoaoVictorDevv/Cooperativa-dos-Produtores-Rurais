@@ -6,9 +6,10 @@ const schools: KnownSchool[] = [
   { id: "s2", code: "4007", name: "Escola B" },
 ];
 const products: KnownProduct[] = [
-  { id: "p1", slug: "abacate", name: "Abacate" },
-  { id: "p2", slug: "couve-manteiga", name: "Couve manteiga" },
+  { id: "p1", slug: "abacate", name: "Abacate", active: true },
+  { id: "p2", slug: "couve-manteiga", name: "Couve manteiga", active: true },
 ];
+const productsWithOvos: KnownProduct[] = [...products, { id: "p3", slug: "ovos", name: "Ovos", active: false }];
 
 function withHeader(rows: (string | number | null)[][]) {
   return [["CÓDIGO", "ESCOLA", "Abacate", "Couve manteiga"], ...rows];
@@ -114,5 +115,19 @@ describe("buildImportPreview — nao adivinha, nao transforma erro em zero", () 
   it("sem uma linha de cabecalho reconhecivel, devolve erro explicito", () => {
     const result = buildImportPreview([["x", "y"], ["1", "2"]], schools, products);
     expect("error" in result).toBe(true);
+  });
+});
+
+describe("buildImportPreview — produto retirado do fluxo ativo (plano §15, ex.: Ovos)", () => {
+  it("coluna que bate com produto desativado nao vira 'nao reconhecida' generica, e avisada especificamente", () => {
+    const rows = [["CÓDIGO", "ESCOLA", "Abacate", "Ovos"], ["4005", "Escola A", 5, 12]];
+    const result = buildImportPreview(rows, schools, productsWithOvos);
+    if ("error" in result) throw new Error(result.error);
+    expect(result.unmatchedProductColumns).toHaveLength(0);
+    expect(result.inactiveProductColumns).toEqual([{ colIndex: 3, label: "Ovos", productName: "Ovos" }]);
+    // a quantidade de Ovos nunca vira um SchoolOrder
+    expect(result.matchedRows.some((r) => r.productSlug === "ovos")).toBe(false);
+    expect(result.matchedRows).toHaveLength(1);
+    expect(result.matchedRows[0].productSlug).toBe("abacate");
   });
 });

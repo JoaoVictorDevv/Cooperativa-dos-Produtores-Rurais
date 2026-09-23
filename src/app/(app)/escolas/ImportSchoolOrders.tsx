@@ -99,6 +99,11 @@ export function ImportSchoolOrders({ weekId }: { weekId: string }) {
                     {preview.unmatchedProductColumns.length} coluna(s) não reconhecidas
                   </div>
                 )}
+                {preview.inactiveProductColumns.length > 0 && (
+                  <div className="filter-chip" style={{ color: "#7a5c0a", borderColor: "var(--wheat-soft)" }}>
+                    {preview.inactiveProductColumns.length} coluna(s) de produto fora do fluxo ativo
+                  </div>
+                )}
                 {preview.duplicateSchoolCodes.length > 0 && (
                   <div className="filter-chip" style={{ color: "#8B3A2E", borderColor: "#E9C6BC" }}>
                     {preview.duplicateSchoolCodes.length} código(s) duplicado(s) (não importados)
@@ -130,6 +135,19 @@ export function ImportSchoolOrders({ weekId }: { weekId: string }) {
                   <ul style={{ fontSize: 12.5 }}>
                     {preview.unmatchedProductColumns.map((u, i) => (
                       <li key={i}>Coluna &quot;{u.label}&quot;</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+              {preview.inactiveProductColumns.length > 0 && (
+                <details style={{ marginTop: 8 }}>
+                  <summary>Colunas de produto que não fazem mais parte do fluxo ativo da cooperativa</summary>
+                  <ul style={{ fontSize: 12.5 }}>
+                    {preview.inactiveProductColumns.map((u, i) => (
+                      <li key={i}>
+                        Coluna &quot;{u.label}&quot; corresponde a <strong>{u.productName}</strong>, que está desativado — essas
+                        quantidades não serão importadas.
+                      </li>
                     ))}
                   </ul>
                 </details>

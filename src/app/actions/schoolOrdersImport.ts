@@ -73,7 +73,10 @@ export async function previewSchoolOrdersImport(formData: FormData): Promise<Pre
 
     const [schools, products] = await Promise.all([
       prisma.school.findMany({ where: { active: true }, select: { id: true, code: true, name: true } }),
-      prisma.product.findMany({ where: { active: true }, select: { id: true, slug: true, name: true } }),
+      // Inclui inativos tambem: precisamos reconhecer um produto retirado
+      // do fluxo ativo (ex.: Ovos, plano §15) pelo nome pra avisar
+      // especificamente, em vez de tratar a coluna como desconhecida.
+      prisma.product.findMany({ select: { id: true, slug: true, name: true, active: true } }),
     ]);
 
     const matrix = worksheetToMatrix(worksheet);

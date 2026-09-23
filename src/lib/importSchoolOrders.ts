@@ -26,6 +26,7 @@ export interface KnownProduct {
   id: string;
   slug: string;
   name: string;
+  active: boolean;
 }
 
 export interface MatchedRow {
@@ -55,6 +56,12 @@ export interface ImportPreview {
   matchedRows: MatchedRow[];
   unmatchedSchoolCodes: { rowIndex: number; rawCode: string; rawName: string }[];
   unmatchedProductColumns: { colIndex: number; label: string }[];
+  // Coluna cujo nome bate com um produto que existe no cadastro mas foi
+  // desativado (ex.: Ovos, retirado do fluxo ativo por nao ter produtor —
+  // plano §15). Nunca vira pedido, mas tambem nao e tratada como "coluna
+  // desconhecida" generica — o operador precisa saber que esse produto
+  // simplesmente nao e mais atendido, nao que a planilha esta errada.
+  inactiveProductColumns: { colIndex: number; label: string; productName: string }[];
   duplicateSchoolCodes: { code: string; rowIndexes: number[] }[];
   ignoredRows: { rowIndex: number; reason: string }[];
   invalidCells: InvalidCell[];
@@ -111,12 +118,16 @@ function findHeaderRow(matrix: CellValue[][], maxScanRows = 15): { rowIndex: num
   return null;
 }
 
+// `products` recebido aqui inclui ativos E inativos — precisamos
+// reconhecer um produto desativado (ex.: Ovos) pelo nome pra avisar o
+// operador especificamente, em vez de tratar a coluna como desconhecida.
 function matchProductColumns(headerRow: CellValue[], codeCol: number, nameCol: number | null, products: KnownProduct[]) {
   const bySlug = new Map(products.map((p) => [normalizeText(p.slug.replace(/-/g, " ")), p]));
   const byName = new Map(products.map((p) => [normalizeText(p.name), p]));
 
   const matched: { colIndex: number; label: string; productId: string; productName: string }[] = [];
   const unmatched: { colIndex: number; label: string }[] = [];
+  const inactive: { colIndex: number; label: string; productName: string }[] = [];
 
   for (let c = 0; c < headerRow.length; c++) {
     if (c === codeCol || c === nameCol) continue;
@@ -124,13 +135,15 @@ function matchProductColumns(headerRow: CellValue[], codeCol: number, nameCol: n
     if (!label) continue;
     const norm = normalizeText(label);
     const product = byName.get(norm) ?? bySlug.get(norm);
-    if (product) {
-      matched.push({ colIndex: c, label, productId: product.id, productName: product.name });
-    } else {
+    if (!product) {
       unmatched.push({ colIndex: c, label });
+    } else if (!product.active) {
+      inactive.push({ colIndex: c, label, productName: product.name });
+    } else {
+      matched.push({ colIndex: c, label, productId: product.id, productName: product.name });
     }
   }
-  return { matched, unmatched };
+  return { matched, unmatched, inactive };
 }
 
 function parseQty(raw: CellValue): { ok: true; value: number } | { ok: false; reason: string } {
@@ -158,7 +171,11 @@ export function buildImportPreview(matrix: CellValue[][], schools: KnownSchool[]
   }
   const { rowIndex: headerRowIndex, codeCol: codeColIndex, nameCol: nameColIndex } = header;
   const headerRow = matrix[headerRowIndex] ?? [];
-  const { matched: productColumns, unmatched: unmatchedProductColumns } = matchProductColumns(headerRow, codeColIndex, nameColIndex, products);
+  const {
+    matched: productColumns,
+    unmatched: unmatchedProductColumns,
+    inactive: inactiveProductColumns,
+  } = matchProductColumns(headerRow, codeColIndex, nameColIndex, products);
 
   const schoolByCode = new Map(schools.map((s) => [normalizeCode(s.code), s]));
 
@@ -234,6 +251,7 @@ export function buildImportPreview(matrix: CellValue[][], schools: KnownSchool[]
     matchedRows: finalMatchedRows,
     unmatchedSchoolCodes,
     unmatchedProductColumns,
+    inactiveProductColumns,
     duplicateSchoolCodes,
     ignoredRows,
     invalidCells,
