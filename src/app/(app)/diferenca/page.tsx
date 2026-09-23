@@ -49,6 +49,11 @@ export default async function DiferencaPage({ searchParams }: { searchParams: Pr
           <span className={`badge ${week.status === "ABERTA" ? "aberta" : "fechada"}`}>{week.status}</span>
         </div>
       </div>
+      <p className="table-foot-note" style={{ textAlign: "left", marginTop: -8 }}>
+        <Link className="link-action" href={`/semanas/${week.id}`}>
+          Ver semana completa (documentos, resumo, balanço) →
+        </Link>
+      </p>
 
       <DiferencaTable lines={lines} />
     </>

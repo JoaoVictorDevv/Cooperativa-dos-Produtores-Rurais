@@ -31,7 +31,12 @@ force push. Uma etapa por vez, commit+push a cada etapa concluída.
   subseção "Etapa 3a" abaixo. Falta ainda 3b (PDFs, §12).
 - [FEITO] Etapa 3b — Geração de PDFs por semana (§12). Detalhes na
   subseção "Etapa 3b" abaixo.
-- [PENDENTE] Etapa 4 — Melhorias de navegação (decorrente da 3).
+- [FEITO] Etapa 4 — Melhorias de navegação (decorrente da 3). Link "Ver
+  semana completa" adicionado em Escolas, Produtores, Resumo, Balanço e
+  Diferença, apontando pro hub `/semanas/[weekId]` — antes dessas 5 telas
+  não tinham nenhum caminho de volta pro hub além do botão "voltar" do
+  navegador. Validado: tsc/eslint/29 testes/build limpos + teste de
+  interface confirmando o link nas 5 páginas.
 - [PENDENTE] Etapa 5 — Importação Excel/PDF funcional (§13) — depende de
   exemplo real da prefeitura pra validação final; desenvolver com dados
   fictícios enquanto isso.
@@ -353,11 +358,9 @@ dependências `@react-pdf/renderer` e `jszip`), `semanas/[weekId]/page.tsx`
   não foi validado com a base completa de ~190 escolas com pedido; alerta
   de possível tempo de geração maior nesse caso, não medido.
 
-**Próximo passo exato:** Etapa 4 (melhorias de navegação, decorrente da
-3) já está em boa parte coberta pelo trabalho das etapas 3a/3b (hub por
-semana, navegação por `?week=`). Avaliar rapidamente o que falta antes de
-seguir pra Etapa 5 (importação Excel/PDF, `docs/plano-de-implementacao.md`
-§13), que é a prioridade que o usuário mais enfatizou.
+**Próximo passo exato:** Etapa 5 — importação Excel/PDF funcional
+(`docs/plano-de-implementacao.md` §13), que é a prioridade que o usuário
+mais enfatizou ("A importação dos pedidos da prefeitura é essencial").
 
 ## Time
 Duas pessoas trabalhando no repo agora: o usuário (com o Claude Code) e um

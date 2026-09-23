@@ -142,6 +142,11 @@ export default async function ProdutoresPage({ searchParams }: { searchParams: P
         </div>
         <span className={`badge ${week.status === "ABERTA" ? "aberta" : "fechada"}`}>{week.status}</span>
       </div>
+      <p className="table-foot-note" style={{ textAlign: "left", marginTop: -8 }}>
+        <Link className="link-action" href={`/semanas/${week.id}`}>
+          Ver semana completa (documentos, diferença, balanço) →
+        </Link>
+      </p>
 
       <ProdutoresTable rows={rows} />
     </>
