@@ -1,5 +1,43 @@
 # Colheita — estado atual
 
+## Sessão atual: relatórios, diferenças e importação
+**Branch de trabalho:** `feat/relatorios-diferencas-importacao` (criada a
+partir da `develop` no commit `6d632cb`, que já inclui o trabalho do
+olucasgon e os 5 ajustes pequenos do modelo — preservar, não reverter).
+
+**Plano completo desta sessão:** `docs/plano-de-implementacao.md` (contém o
+prompt integral recebido e a quebra em etapas por dependência). Este
+memory.md registra o progresso real etapa por etapa — ver seção
+"Progresso da sessão atual" mais abaixo, que é atualizada a cada etapa
+concluída.
+
+Restrições ativas nesta sessão (ver plano para detalhes): não mexer em
+schema/migrações/seed/credenciais de banco (área do olucasgon), não rodar
+operação destrutiva em banco sem proteção de ambiente de teste comprovado,
+não integrar na `develop`, não tocar `main`/`staging`, sem deploy, sem
+force push. Uma etapa por vez, commit+push a cada etapa concluída.
+
+### Progresso da sessão atual (atualizar a cada etapa concluída)
+
+- [FEITO] Setup: branch criada, `docs/plano-de-implementacao.md` escrito e
+  commitado, `memory.md` atualizado com o nome da branch — tudo isso ANTES
+  de começar qualquer implementação, conforme pedido.
+- [EM ANDAMENTO] Etapa 1 — Correções de consistência e salvamento
+  (prompt §4, §5, §6).
+- [PENDENTE] Etapa 2 — Painel Diferença do galpão (§7).
+- [PENDENTE] Etapa 3 — Histórico semanal completo + PDFs (§10, §12).
+- [PENDENTE] Etapa 4 — Melhorias de navegação (decorrente da 3).
+- [PENDENTE] Etapa 5 — Importação Excel/PDF funcional (§13) — depende de
+  exemplo real da prefeitura pra validação final; desenvolver com dados
+  fictícios enquanto isso.
+- [PENDENTE] Etapa 6 — Documentação de propostas que exigem banco/decisão
+  operacional (§8, §9, §14, §15, §16, §17).
+
+**Próximo passo exato:** implementar a etapa 1 (ver `docs/plano-de-implementacao.md`
+§4A/4B/4C/5/6), testar com dados fictícios, documentar aqui os arquivos
+alterados e os testes rodados, e então commitar e enviar pra
+`feat/relatorios-diferencas-importacao`.
+
 ## Time
 Duas pessoas trabalhando no repo agora: o usuário (com o Claude Code) e um
 colaborador humano, **olucasgon**, que ele trouxe pra ajudar. Fluxo de
