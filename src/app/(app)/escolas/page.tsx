@@ -3,8 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
 import { EscolasTable } from "./EscolasTable";
 
-export default async function EscolasPage() {
-  const week = await getOpenWeek();
+// CA-HIST-*: aceita ?week=<id> pra consultar (so leitura, sem reabrir) o
+// pedido de uma semana ja fechada — sem o parametro, mostra a semana
+// aberta atual, igual sempre foi.
+export default async function EscolasPage({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
+  const { week: weekIdParam } = await searchParams;
+  const week = weekIdParam ? await prisma.week.findUnique({ where: { id: weekIdParam } }) : await getOpenWeek();
 
   if (!week) {
     return (

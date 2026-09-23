@@ -10,12 +10,21 @@ function fmtMoney(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 }
 
-export default async function ProducerDetailPage({ params }: { params: Promise<{ internalId: string }> }) {
+// Aceita ?week=<id> pra abrir a ficha de uma semana especifica (aberta ou
+// ja fechada) — sem o parametro, cai na semana aberta atual.
+export default async function ProducerDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ internalId: string }>;
+  searchParams: Promise<{ week?: string }>;
+}) {
   const { internalId } = await params;
+  const { week: weekIdParam } = await searchParams;
   const producer = await prisma.producer.findUnique({ where: { internalId } });
   if (!producer) notFound();
 
-  const week = await getOpenWeek();
+  const week = weekIdParam ? await prisma.week.findUnique({ where: { id: weekIdParam } }) : await getOpenWeek();
 
   let lines: {
     productName: string;
@@ -71,7 +80,7 @@ export default async function ProducerDetailPage({ params }: { params: Promise<{
 
   return (
     <>
-      <Link className="back-link" href="/produtores">
+      <Link className="back-link" href={week ? `/produtores?week=${week.id}` : "/produtores"}>
         ← Voltar para Produtores
       </Link>
 

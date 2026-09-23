@@ -96,7 +96,7 @@ export function ProducerRow({
         </td>
         <td className="mono">{new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(totalPayment)}</td>
         <td>
-          <Link className="link-action" href={`/produtores/${producerInternalId}`} onClick={(e) => e.stopPropagation()}>
+          <Link className="link-action" href={`/produtores/${producerInternalId}?week=${weekId}`} onClick={(e) => e.stopPropagation()}>
             Ficha
           </Link>
         </td>

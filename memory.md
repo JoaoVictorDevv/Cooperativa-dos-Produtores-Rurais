@@ -24,9 +24,12 @@ force push. Uma etapa por vez, commit+push a cada etapa concluída.
   de começar qualquer implementação, conforme pedido. Commit `0b93288`.
 - [FEITO] Etapa 1 — Correções de consistência e salvamento (prompt §4, §5,
   §6). Commit `909ab99`. Detalhes na subseção "Etapa 1" abaixo.
-- [FEITO] Etapa 2 — Painel Diferença do galpão (§7). Detalhes na subseção
-  "Etapa 2" abaixo.
-- [PENDENTE] Etapa 3 — Histórico semanal completo + PDFs (§10, §12).
+- [FEITO] Etapa 2 — Painel Diferença do galpão (§7). Commit `4efffd5`.
+  Detalhes na subseção "Etapa 2" abaixo.
+- [FEITO] Etapa 3a — Escolas/Produtores (lista e ficha) navegáveis por
+  semana histórica via `?week=` (pré-requisito de §10 e §12). Detalhes na
+  subseção "Etapa 3a" abaixo. Falta ainda 3b (PDFs, §12).
+- [EM ANDAMENTO] Etapa 3b — Geração de PDFs por semana (§12).
 - [PENDENTE] Etapa 4 — Melhorias de navegação (decorrente da 3).
 - [PENDENTE] Etapa 5 — Importação Excel/PDF funcional (§13) — depende de
   exemplo real da prefeitura pra validação final; desenvolver com dados
@@ -194,14 +197,76 @@ e `src/app/(app)/painel/page.tsx` (links de acesso).
   banco (Abacate 150kg pedido / 0 entregue → FALTA -150; Alface lisa 45kg
   entregue sem pedido → SOBRA +45; Chuchu 30 pedido / 25 líquida → FALTA
   -5), filtros Todos/Falta/Sobra/OK funcionam e contam certo.
-- Não testado nesta sessão: uma semana FECHADA de verdade (não havia
-  nenhuma no banco de dev) — o código não tem branch por status, então o
-  comportamento esperado é idêntico, mas fica registrado como cenário não
-  exercitado ao vivo, só por inspeção de código.
+- **Atualização (Etapa 3a):** o cenário de semana FECHADA de verdade foi
+  testado depois — ver subseção "Etapa 3a" abaixo. Confirmado igual ao
+  esperado.
 
-**Próximo passo exato:** commitar e enviar a Etapa 2, depois começar a
-Etapa 3 (Histórico semanal completo + PDFs, `docs/plano-de-implementacao.md`
-§10/§12).
+#### Etapa 3a — detalhes (concluída)
+
+**Problema encontrado:** nenhuma das telas operacionais (`/escolas`,
+`/escolas/[code]`, `/produtores`, `/produtores/[internalId]`) aceitava
+`?week=` — todas usavam `getOpenWeek()` direto, então não tinha como ver
+o pedido/entrega/devolução de uma semana já FECHADA por essas telas (só
+Resumo, Balanço e a Diferença nova tinham esse suporte). Isso bloqueava o
+§10 (histórico completo) inteiro, e também o §12 (PDF precisa poder gerar
+pra qualquer semana, não só a aberta).
+
+**O que foi corrigido:**
+- `escolas/page.tsx`, `produtores/page.tsx`: aceitam `?week=<id>`, caem em
+  `getOpenWeek()` sem o parâmetro (comportamento de sempre preservado).
+- `escolas/[code]/page.tsx`, `produtores/[internalId]/page.tsx`: mesma
+  coisa pras fichas individuais; link "Voltar" preserva o `?week=`.
+- `EscolasTable.tsx` e `ProducerRow.tsx`: o link "Ficha" de cada linha
+  agora inclui `?week=${weekId}`, pra continuar na mesma semana ao abrir
+  o detalhe.
+- Como o campo `editable` dessas páginas já era calculado a partir de
+  `week.status === "ABERTA"`, bastou trocar QUAL semana é carregada — os
+  inputs já ficam desabilitados automaticamente numa semana fechada, sem
+  nenhuma mudança adicional de lógica.
+- `semanas/[weekId]/page.tsx` virou de fato o "hub" central por semana
+  pedido pelo §10: os atalhos pra Escolas/Produtores/Diferença/Resumo/
+  Balanço agora SEMPRE aparecem (antes Escolas/Produtores só apareciam se
+  a semana estivesse aberta) e todos apontam pra `?week=${week.id}`; e
+  ganhou um mini-resumo da Diferença do galpão (contagem de produtos em
+  FALTA/SOBRA/OK) e um aviso de produtores pendentes, sem duplicar
+  nenhuma tabela — só reaproveita `getWarehouseDifferenceLines` e
+  `getPendingProducerDeliveries`, que já existiam.
+
+**Arquivos alterados:** `src/app/(app)/escolas/page.tsx`,
+`escolas/EscolasTable.tsx`, `escolas/[code]/page.tsx`,
+`produtores/page.tsx`, `produtores/ProducerRow.tsx`,
+`produtores/[internalId]/page.tsx`, `semanas/[weekId]/page.tsx`.
+
+**Testes executados:**
+- Automatizado: `tsc --noEmit` limpo, `eslint` limpo, `npm run test` (29
+  testes, nenhuma mudança de lógica de cálculo nesta etapa), `npm run
+  build` OK.
+- Interface (Playwright, dados fictícios): fechei de verdade a "Semana 1"
+  de teste (confirmei entrega física — dia/data — das 3 escolas com
+  pedido, que é exigência do olucasgon pra fechar, `weekPolicy.ts`, e
+  isso NÃO envolveu mexer em schema/regra nenhuma, só usar o formulário
+  de confirmação de entrega que já existia) e então, com a semana já
+  FECHADA de verdade:
+  - `/escolas?week=` e `/produtores?week=` mostram o badge FECHADA e os
+    campos ficam desabilitados (confirmado via `isDisabled()`);
+  - a ficha de uma escola e de um produtor abrem corretamente pra essa
+    semana fechada, preservando `?week=` inclusive no link "Voltar";
+  - `/diferenca?week=` também funciona igual pra semana fechada (resolve
+    a pendência de teste que tinha ficado da Etapa 2);
+  - o hub `/semanas/[weekId]` mostra o resumo de Diferença, os links
+    corretos, e o formulário de reabertura (só ADMIN).
+  - Uma repetição do fluxo de clique na "Ficha" mostrou uma falha
+    intermitente (URL não mudou) que NÃO se repetiu em duas reproduções
+    isoladas subsequentes — atribuído a tempo de compilação do `next dev`
+    (Turbopack compilando a rota pela primeira vez), não a um bug da
+    aplicação; registrado aqui por transparência, não escondido.
+- Não deixei a semana de teste reaberta de propósito — ela serve agora
+  como a primeira semana FECHADA de verdade no banco de dev, útil pros
+  próximos testes (PDF, etc.).
+
+**Próximo passo exato:** Etapa 3b — gerar PDFs por semana selecionada
+(`docs/plano-de-implementacao.md` §12), usando a mesma lógica de semana
+selecionável desta etapa.
 
 ## Time
 Duas pessoas trabalhando no repo agora: o usuário (com o Claude Code) e um

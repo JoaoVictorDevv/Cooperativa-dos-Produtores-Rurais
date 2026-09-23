@@ -4,8 +4,11 @@ import { getOpenWeek, getSettings } from "@/lib/week";
 import { producerPayment } from "@/lib/calc";
 import { ProdutoresTable } from "./ProdutoresTable";
 
-export default async function ProdutoresPage() {
-  const week = await getOpenWeek();
+// Aceita ?week=<id> pra consultar (so leitura) uma semana ja fechada —
+// sem o parametro, mostra a semana aberta atual.
+export default async function ProdutoresPage({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
+  const { week: weekIdParam } = await searchParams;
+  const week = weekIdParam ? await prisma.week.findUnique({ where: { id: weekIdParam } }) : await getOpenWeek();
 
   if (!week) {
     return (

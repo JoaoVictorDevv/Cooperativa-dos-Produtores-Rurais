@@ -86,7 +86,7 @@ export function EscolasTable({
                   </td>
                 ))}
                 <td>
-                  <Link className="link-action" href={`/escolas/${school.code}`}>
+                  <Link className="link-action" href={`/escolas/${school.code}?week=${weekId}`}>
                     Ficha
                   </Link>
                 </td>

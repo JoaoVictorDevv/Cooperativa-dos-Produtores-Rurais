@@ -6,12 +6,22 @@ import { PrintButton } from "@/components/PrintButton";
 import { ReturnRow } from "./ReturnRow";
 import { DeliveryForm } from "./DeliveryForm";
 
-export default async function SchoolDetailPage({ params }: { params: Promise<{ code: string }> }) {
+// Aceita ?week=<id> pra abrir a ficha de uma semana especifica (aberta ou
+// ja fechada) — sem o parametro, cai na semana aberta atual (comportamento
+// de sempre).
+export default async function SchoolDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ code: string }>;
+  searchParams: Promise<{ week?: string }>;
+}) {
   const { code } = await params;
+  const { week: weekIdParam } = await searchParams;
   const school = await prisma.school.findUnique({ where: { code } });
   if (!school) notFound();
 
-  const week = await getOpenWeek();
+  const week = weekIdParam ? await prisma.week.findUnique({ where: { id: weekIdParam } }) : await getOpenWeek();
   const reasons = await prisma.returnReason.findMany({ where: { active: true }, orderBy: { code: "asc" } });
 
   let orders: { productId: string; orderedQty: number }[] = [];
@@ -39,7 +49,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ c
 
   return (
     <>
-      <Link className="back-link" href="/escolas">
+      <Link className="back-link" href={week ? `/escolas?week=${week.id}` : "/escolas"}>
         ← Voltar para Pedido das Escolas
       </Link>
 
