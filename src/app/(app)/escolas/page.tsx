@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
 import { EscolasTable } from "./EscolasTable";
+import { ImportSchoolOrders } from "./ImportSchoolOrders";
 
 // CA-HIST-*: aceita ?week=<id> pra consultar (so leitura, sem reabrir) o
 // pedido de uma semana ja fechada — sem o parametro, mostra a semana
@@ -51,6 +52,8 @@ export default async function EscolasPage({ searchParams }: { searchParams: Prom
           Ver semana completa (documentos, diferença, balanço) →
         </Link>
       </p>
+
+      {week.status === "ABERTA" && <ImportSchoolOrders weekId={week.id} />}
 
       <EscolasTable
         weekId={week.id}

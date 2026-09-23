@@ -37,9 +37,14 @@ force push. Uma etapa por vez, commit+push a cada etapa concluída.
   não tinham nenhum caminho de volta pro hub além do botão "voltar" do
   navegador. Validado: tsc/eslint/29 testes/build limpos + teste de
   interface confirmando o link nas 5 páginas.
-- [PENDENTE] Etapa 5 — Importação Excel/PDF funcional (§13) — depende de
-  exemplo real da prefeitura pra validação final; desenvolver com dados
-  fictícios enquanto isso.
+- [PARCIAL] Etapa 5 — Importação **Excel** funcional e completa (§13):
+  ler → conferir → resolver pendências → confirmar → gravar, tudo de
+  verdade, não é só um leitor. Importação por **PDF ainda não foi feita**
+  (ver justificativa na subseção "Etapa 5" abaixo — não é meia-solução
+  apresentada como pronta, é trabalho não iniciado, registrado como tal).
+  Ainda depende do exemplo real da prefeitura pra validação final do
+  formato — desenvolvido e testado com dados fictícios/sintéticos
+  enquanto isso, exatamente como o plano pede.
 - [PENDENTE] Etapa 6 — Documentação de propostas que exigem banco/decisão
   operacional (§8, §9, §14, §15, §16, §17).
 
@@ -358,9 +363,122 @@ dependências `@react-pdf/renderer` e `jszip`), `semanas/[weekId]/page.tsx`
   não foi validado com a base completa de ~190 escolas com pedido; alerta
   de possível tempo de geração maior nesse caso, não medido.
 
-**Próximo passo exato:** Etapa 5 — importação Excel/PDF funcional
-(`docs/plano-de-implementacao.md` §13), que é a prioridade que o usuário
-mais enfatizou ("A importação dos pedidos da prefeitura é essencial").
+#### Etapa 5 — detalhes (parcial: Excel feito, PDF não iniciado)
+
+**O que foi implementado** (`docs/plano-de-implementacao.md` §13): fluxo
+completo de importação do pedido das escolas via Excel — não é o
+protótipo antigo (que só lia e mostrava na tela sem gravar nada). Agora:
+
+1. Operador abre "+ Importar pedido da prefeitura (Excel)" em `/escolas`
+   (só aparece com a semana aberta) e escolhe o arquivo `.xlsx`.
+2. O arquivo é enviado pro servidor e lido lá (nunca só no navegador) —
+   `previewSchoolOrdersImport` usa `exceljs` pra ler a planilha, acha a
+   linha de cabeçalho procurando "CÓDIGO" (e opcionalmente "ESCOLA") nas
+   primeiras 15 linhas, e casa cada coluna com um produto ativo pelo nome
+   (normalizado — ignora acento/maiúscula) e cada linha com uma escola
+   pelo código (normalizado — ignora espaço e um ".0" sobrando que o
+   Excel costuma adicionar em código numérico).
+3. Mostra uma prévia completa antes de gravar qualquer coisa: quantas
+   linhas foram reconhecidas, o valor atual (se já havia pedido lançado)
+   ao lado do novo valor vindo do arquivo, e quatro categorias de
+   pendência tratadas SEM adivinhar nada:
+   - código de escola não encontrado no cadastro;
+   - coluna de produto não reconhecida;
+   - célula com valor que não deu pra interpretar (nunca vira zero);
+   - código de escola duplicado no arquivo (ambíguo — as linhas
+     correspondentes ficam de fora, nenhuma delas é escolhida
+     arbitrariamente).
+   Linhas que parecem total/subtotal (nome contém "total"/"subtotal" e
+   código vazio) são identificadas e ignoradas à parte, sem aparecer
+   como "escola desconhecida".
+4. Só depois de revisar a prévia o operador clica "Confirmar e
+   importar" — aí sim `confirmSchoolOrdersImport` revalida tudo de novo
+   no servidor (nunca confia no que veio do preview) e grava numa única
+   transação: ou entra tudo, ou nada entra (testei isso de propósito —
+   ver testes abaixo). Reaproveita exatamente as mesmas regras da Etapa
+   1: preço congelado na criação, e bloqueio se a quantidade importada
+   for menor que uma devolução já lançada pra aquela escola/produto (se
+   isso acontecer em qualquer linha, a importação inteira é recusada com
+   uma mensagem dizendo qual escola/produto causou o problema).
+5. Reenviar o mesmo arquivo **substitui** os valores (upsert por
+   escola+produto), nunca soma — testado explicitamente.
+6. Rastreabilidade da origem sem mudar o schema: cada linha gravada pela
+   importação vira um `AuditLog` com `action` `SCHOOL_ORDER_IMPORT_CREATE`
+   ou `_UPDATE` e `reason` = `Importado de "<nome do arquivo>"` — dá pra
+   auditar depois quais lançamentos vieram de importação e de qual
+   arquivo, usando a auditoria que já existia (não criei tela nova).
+
+**Bibliotecas:** `exceljs` (não usei o pacote `xlsx`/SheetJS porque a
+versão do npm tem duas vulnerabilidades de segurança altas e sem correção
+disponível — prototype pollution e ReDoS — exatamente no caminho de
+analisar um arquivo enviado por alguém de fora, que é exatamente o que
+essa funcionalidade faz; `exceljs` tem só um alerta moderado indireto,
+numa dependência interna de geração de UUID que não é acionada pelo
+nosso uso). Registrado aqui pra não ser uma escolha "silenciosa".
+
+**Arquivos novos:** `src/lib/importSchoolOrders.ts` (lógica pura de
+casamento/validação, testável sem banco), `importSchoolOrders.test.ts`
+(12 testes), `src/app/actions/schoolOrdersImport.ts` (as duas Server
+Actions), `src/app/(app)/escolas/ImportSchoolOrders.tsx` (UI).
+**Arquivos alterados:** `escolas/page.tsx` (mostra o importador),
+`package.json`/`package-lock.json` (nova dependência `exceljs`).
+
+**Testes executados:**
+- Automatizado: 12 testes novos cobrindo TODOS os casos do plano —
+  vírgula decimal, código com formatação (espaço, ".0"), nome de produto
+  com acento/caixa diferente, código de escola desconhecido, coluna de
+  produto desconhecida, célula inválida, quantidade negativa, código
+  duplicado (ambíguo), linha de total/subtotal, linha em branco, arquivo
+  sem cabeçalho reconhecível. `tsc`, `eslint`, `npm run test` (41 testes
+  no total agora), `npm run test:integration` (5), `npm run build` — todos
+  limpos.
+- Interface/banco (Playwright, arquivo `.xlsx` sintético gerado com
+  `exceljs` contendo exatamente os casos acima, dados fictícios, semana
+  de teste "Semana 2"): subi o arquivo de verdade pela tela, conferi a
+  prévia (contagens batendo com o esperado: 5 reconhecidas, 1 código
+  desconhecido, 1 duplicado, 1 célula inválida, 1 linha de total
+  ignorada), confirmei a gravação, recarreguei a página e confirmei no
+  banco que os valores persistiram certos. Reenviei o MESMO arquivo de
+  novo e confirmei que o valor não duplicou/somou (upsert, não soma).
+  Lancei manualmente uma devolução maior que um valor que a importação
+  ia trazer, tentei importar, e confirmei que a importação inteira foi
+  recusada (mensagem clara) E que, direto no banco, NENHUMA linha daquele
+  arquivo foi gravada — nem as que não tinham problema (transação
+  atômica de verdade, não só na teoria).
+- **Não testado ainda**: o formato REAL da planilha da prefeitura — o
+  usuário disse que vai mandar um exemplo assim que receber. Tudo aqui
+  foi validado com a estrutura da v27/v35 (mesmo layout: CÓDIGO, ESCOLA,
+  uma coluna por produto) e com dados sintéticos cobrindo os problemas
+  que o plano pediu pra considerar. **Isto só pode ser declarado
+  validado contra o formato real depois de testar o exemplo real** —
+  exatamente como o próprio plano pede pra não presumir.
+
+**O que NÃO foi feito nesta etapa (declarado, não escondido):**
+1. **Importação por PDF — não iniciada.** O plano pede pra "distinguir
+   texto extraível de imagem digitalizada" e "avaliar OCR" — isso é uma
+   frente de trabalho separada e significativamente maior (biblioteca de
+   OCR, heurística de confiança por campo, fluxo de conferência mais
+   pesado que o do Excel). Como o Excel já cobre o caso mais provável
+   (a prefeitura manda planilha) e o usuário disse que vai mandar um
+   exemplo real "assim que receber", decidi não começar PDF às cegas
+   nesta sessão. Fica como próximo passo claro, não como uma tela
+   incompleta apresentada como pronta.
+2. Resolução manual de pendências direto na tela de prévia (ex.: escolher
+   manualmente qual escola corresponde a um código não encontrado) — hoje
+   o operador precisa corrigir a planilha e reenviar, ou lançar essas
+   linhas manualmente na tabela normal. Funcional, mas menos conveniente;
+   registrado como melhoria futura, não como bug.
+3. Guardar o arquivo original enviado — cada importação só grava os
+   dados extraídos (via AuditLog), não o arquivo `.xlsx` em si. Guardar o
+   arquivo original exigiria um lugar pra guardar (storage), que é
+   infraestrutura — documentado como dependência pro olucasgon, não
+   implementado.
+
+**Próximo passo exato:** Etapa 6 — documentar as propostas que dependem
+de banco/decisão operacional (`docs/plano-de-implementacao.md` §8, §9,
+§14, §15, §16, §17). Depois, se sobrar tempo/prioridade: avaliar PDF pra
+importação, ou aguardar o exemplo real da prefeitura pra fechar de vez a
+validação do Excel.
 
 ## Time
 Duas pessoas trabalhando no repo agora: o usuário (com o Claude Code) e um
