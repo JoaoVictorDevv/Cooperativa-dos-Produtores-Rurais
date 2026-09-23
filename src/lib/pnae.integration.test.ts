@@ -9,9 +9,40 @@ import { getProducerAnnualTotal } from "./pnae";
 // aceite (historico, preco historico, PNAE) sao sobre persistencia real.
 config({ path: resolve(__dirname, "../../.env.test"), override: true });
 
+// Protecao explicita contra rodar resetDb() (que apaga TODAS as tabelas)
+// em qualquer banco que nao seja claramente um banco de teste. O nome do
+// arquivo .env.test e o comentario acima NAO sao suficientes por si so —
+// se DATABASE_URL apontar pra outro lugar (dev, producao, banco do
+// olucasgon) por engano, essa checagem recusa rodar em vez de apagar dados
+// reais.
+function assertTestDatabaseUrl(url: string | undefined): void {
+  if (!url) {
+    throw new Error("DATABASE_URL nao definida — nao e possivel confirmar que e um banco de teste.");
+  }
+  let dbName: string;
+  try {
+    dbName = new URL(url).pathname.replace(/^\//, "");
+  } catch {
+    throw new Error(`DATABASE_URL invalida, recusando rodar testes destrutivos: ${url}`);
+  }
+  if (!dbName.toLowerCase().includes("test")) {
+    throw new Error(
+      `Recusando rodar testes destrutivos: o banco "${dbName}" nao parece ser um banco de teste ` +
+        `dedicado (o nome do database precisa conter "test"). Aponte .env.test para um banco exclusivo ` +
+        `de testes antes de rodar npm run test:integration.`,
+    );
+  }
+}
+
+assertTestDatabaseUrl(process.env.DATABASE_URL);
+
 const prisma = new PrismaClient();
 
 async function resetDb() {
+  // Reconfirma a cada chamada — resetDb roda em beforeAll/beforeEach/afterAll,
+  // entao mesmo que algo recarregasse o env entre testes, cada limpeza
+  // passa pela mesma checagem antes de apagar qualquer linha.
+  assertTestDatabaseUrl(process.env.DATABASE_URL);
   await prisma.auditLog.deleteMany();
   await prisma.weekReopening.deleteMany();
   await prisma.producerReturn.deleteMany();

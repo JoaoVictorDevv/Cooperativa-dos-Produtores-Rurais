@@ -22,12 +22,41 @@ export async function saveSchoolReturn(
   try {
     const user = await requireOperator();
     const returnedQty = qtySchema.parse(returnedQtyRaw);
-    if (!returnReasonId) {
-      return { ok: false, error: "Selecione o motivo da devolucao." };
-    }
 
     const week = await prisma.week.findUniqueOrThrow({ where: { id: weekId } });
     assertWeekEditable(week);
+
+    // Corrigir uma devolucao pra zero significa "essa devolucao nao devia
+    // ter sido lancada" — o modelo nao tem um conceito de "devolucao zero
+    // com motivo", entao a correcao remove o lancamento em vez de gravar
+    // uma linha com quantidade zero. Sem devolucao existente, e um no-op
+    // (nada foi digitado, nao ha nada pra corrigir) e nao exige motivo.
+    if (returnedQty === 0) {
+      return prisma.$transaction(async (tx) => {
+        const existing = await tx.schoolReturn.findUnique({
+          where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
+        });
+        if (!existing) return { ok: true };
+        await tx.schoolReturn.delete({ where: { id: existing.id } });
+        await writeAudit(
+          {
+            userId: user.id,
+            action: "SCHOOL_RETURN_DELETE",
+            entityType: "SchoolReturn",
+            entityId: existing.id,
+            before: existing,
+            after: undefined,
+          },
+          tx,
+        );
+        revalidatePath("/escolas");
+        return { ok: true };
+      });
+    }
+
+    if (!returnReasonId) {
+      return { ok: false, error: "Selecione o motivo da devolucao." };
+    }
 
     const order = await prisma.schoolOrder.findUnique({
       where: { weekId_schoolId_productId: { weekId, schoolId, productId } },

@@ -29,9 +29,12 @@ export async function saveProducerOrder(
       const existing = await tx.producerOrder.findUnique({
         where: { weekId_producerId_productId: { weekId, producerId, productId } },
       });
+      // Preco congelado no primeiro lancamento (ver mesma regra em
+      // schoolOrders.ts/producerDeliveries.ts) — correcao de quantidade
+      // nao re-resolve o preco vigente.
       const saved = await tx.producerOrder.upsert({
         where: { weekId_producerId_productId: { weekId, producerId, productId } },
-        update: { orderedQty, priceId: price.id },
+        update: { orderedQty },
         create: { weekId, producerId, productId, orderedQty, priceId: price.id },
       });
       await writeAudit(

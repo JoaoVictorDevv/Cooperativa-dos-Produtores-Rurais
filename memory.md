@@ -21,9 +21,10 @@ force push. Uma etapa por vez, commit+push a cada etapa concluída.
 
 - [FEITO] Setup: branch criada, `docs/plano-de-implementacao.md` escrito e
   commitado, `memory.md` atualizado com o nome da branch — tudo isso ANTES
-  de começar qualquer implementação, conforme pedido.
-- [EM ANDAMENTO] Etapa 1 — Correções de consistência e salvamento
-  (prompt §4, §5, §6).
+  de começar qualquer implementação, conforme pedido. Commit `0b93288`.
+- [FEITO] Etapa 1 — Correções de consistência e salvamento (prompt §4, §5,
+  §6). Detalhes completos logo abaixo. Commit desta etapa: ver ao final
+  desta seção (feito após este registro, conforme o fluxo pedido).
 - [PENDENTE] Etapa 2 — Painel Diferença do galpão (§7).
 - [PENDENTE] Etapa 3 — Histórico semanal completo + PDFs (§10, §12).
 - [PENDENTE] Etapa 4 — Melhorias de navegação (decorrente da 3).
@@ -32,6 +33,125 @@ force push. Uma etapa por vez, commit+push a cada etapa concluída.
   fictícios enquanto isso.
 - [PENDENTE] Etapa 6 — Documentação de propostas que exigem banco/decisão
   operacional (§8, §9, §14, §15, §16, §17).
+
+#### Etapa 1 — detalhes (concluída)
+
+**O que foi corrigido** (ver `docs/plano-de-implementacao.md` §4/§5/§6 pro
+texto original do pedido):
+
+1. **§4A — reduzir pedido/entrega abaixo de uma devolução já registrada
+   agora é bloqueado**, nos dois lados:
+   - `src/app/actions/producerDeliveries.ts`: reduzir a entrega do produtor
+     pra menos que a devolução já lançada é recusado com mensagem
+     explicando que a devolução precisa ser corrigida antes.
+   - `src/app/actions/schoolOrders.ts`: mesma regra pro pedido da escola
+     vs. a devolução da escola.
+   - A checagem roda DENTRO da mesma transação que grava (reduz — não
+     elimina — a janela de corrida em edições simultâneas; uma proteção
+     100% à prova de concorrência exigiria uma constraint no banco, fica
+     documentado como pendência pro olucasgon, não implementado aqui).
+2. **§4B — correção para zero, distinta de "não conferido"**:
+   - Bug real encontrado: `ReturnRow.tsx` (ficha da escola) e
+     `ProducerProductRow.tsx` (produtores) tinham um `if (numeric === 0)
+     return` que IMPEDIA salvar zero — ou seja, uma devolução lançada por
+     engano não podia ser corrigida pra zero pela interface (o clique não
+     fazia nada). Corrigido: agora, se já existe uma devolução gravada,
+     corrigir pra zero é permitido e **remove o lançamento** (não grava uma
+     linha de devolução com quantidade zero, já que motivo é obrigatório
+     nesse modelo — zero devolução = ausência do registro). Sem devolução
+     existente, campo em branco continua sendo no-op (nada digitado, nada
+     a salvar).
+   - `src/app/actions/schoolReturns.ts` e `producerReturns.ts`: quando a
+     quantidade enviada é zero, a action agora apaga o registro existente
+     (se houver) em vez de tentar validar motivo — motivo só é exigido
+     quando a quantidade é maior que zero.
+   - Bug real encontrado (entrega do produtor): `ProducerProductRow.tsx`
+     tratava campo vazio ("") e "0" digitado como a MESMA coisa
+     (`num(nextDelivered) === 0` bloqueava os dois), então uma entrega
+     ZERO CONFIRMADA (ex.: produtor não entregou nada essa semana) não
+     dava pra salvar — e o estado inicial também colapsava
+     `deliveredQty=0` salvo no banco pra campo em branco na tela (mesmo
+     bug, no lado da leitura). Corrigido: branco = não conferido (não
+     salva), "0" explícito com data = zero confirmado (salva e persiste
+     como "0", não como campo vazio).
+3. **§4C — feedback de salvando/salvo/erro**: adicionado indicador
+   "salvando…"/"salvo" (reaproveitando o padrão visual que já existia em
+   `SchoolOrderCell.tsx`) em `ReturnRow.tsx` e em todos os quatro campos de
+   `ProducerProductRow.tsx` (divisão, pedido, entrega, devolução).
+4. **§5 — preço e desconto de logística não são mais re-resolvidos numa
+   correção**: bug real encontrado em `producerDeliveries.ts` — toda vez
+   que uma entrega já existente era corrigida (ex.: ajustar só a
+   quantidade), o código buscava o desconto de logística ATUAL em
+   `Settings` e sobrescrevia o valor congelado do lançamento original,
+   contrariando o próprio comentário do schema ("congela o pagamento
+   histórico mesmo que preço/dedução mudem depois"). Corrigido: preço e
+   desconto só são gravados na CRIAÇÃO; uma correção de quantidade/data
+   não altera mais esses valores. Mesmo tratamento aplicado por
+   consistência em `schoolOrders.ts` e `producerOrders.ts` (preço).
+5. **§6 — proteção de banco de teste**: `src/lib/pnae.integration.test.ts`
+   agora recusa rodar (lança erro antes de apagar qualquer tabela) se
+   `DATABASE_URL` não apontar pra um banco cujo nome contenha "test". Só
+   corrigido no código do teste — nenhuma credencial/infra alterada.
+
+**Arquivos alterados** (todos fora de schema/migração/seed/credenciais):
+`src/app/actions/producerDeliveries.ts`, `producerOrders.ts`,
+`producerReturns.ts`, `schoolOrders.ts`, `schoolReturns.ts`,
+`src/app/(app)/escolas/[code]/ReturnRow.tsx`,
+`src/app/(app)/produtores/ProducerProductRow.tsx`,
+`src/lib/pnae.integration.test.ts`.
+
+**Atenção pro olucasgon**: os 5 arquivos em `src/app/actions/` acima
+mudam funções de gravação (upserts/deletes) — destacando aqui conforme
+pedido, pra revisão dele antes de considerar isso definitivo.
+
+**Testes executados** (tipos diferenciados conforme pedido):
+- Código inspecionado: todos os arquivos acima, lidos por completo antes
+  de editar.
+- Teste automatizado executado: `npx tsc --noEmit` (limpo, só o erro
+  conhecido/inofensivo de `LayoutProps`), `npx eslint` (limpo), `npm run
+  test` — 24 testes unitários passando, `npm run build` (build de
+  produção OK).
+- Teste com banco: `npm run test:integration` — 5 testes contra
+  `colheita_test`, todos passando, agora com a proteção do §6 ativa (o
+  DATABASE_URL do `.env.test` foi confirmado como um banco com "test" no
+  nome antes de rodar).
+- Teste de interface (Playwright, contra `colheita` local com dados
+  fictícios/de teste — produtor P02 e escola 3007, sem tocar dados
+  "reais" da semana 1 usados antes): 12 cenários, todos passando —
+  redução de entrega/pedido abaixo da devolução bloqueada (produtor e
+  escola), devolução corrigida pra zero remove o lançamento (produtor e
+  escola) e persiste removida após reload, entrega "0" confirmada persiste
+  como "0" (não vira branco) após reload, e — o mais delicado — corrigir
+  a quantidade de uma entrega depois de mudar
+  `Settings.logisticsDeductionPerKg` globalmente NÃO alterou o
+  `logisticsDeductionSnapshot` já gravado (confirmado direto no banco via
+  SQL). A configuração global foi revertida ao valor original (3.67) ao
+  final do teste.
+- Cenário ainda não validado: comportamento sob concorrência real (duas
+  edições simultâneas de fato disparadas ao mesmo tempo) — a checagem foi
+  movida pra dentro da transação como mitigação, mas não foi testada sob
+  carga concorrente real; ver nota de pendência de banco abaixo.
+
+**Pendência de banco documentada pro olucasgon**: uma proteção 100% à
+prova de concorrência para "não reduzir abaixo da devolução" exigiria uma
+constraint/trigger no banco (ex.: CHECK entre tabelas via função, ou uma
+coluna de versão pra lock otimista) — não implementado nesta etapa por
+exigir schema/migração, que é área dele. A mitigação atual (checagem
+dentro da mesma transação da escrita) cobre o caso comum de uso sequencial
+por um operador só.
+
+**Não implementado nesta etapa** (fora do escopo do §4/§5/§6, não
+confundir com pronto): tela de auditoria nova (não pedido — auditoria já
+existente via `AuditLog` foi usada, não alterada), qualquer mudança em
+`SchoolOrderCell.tsx` (pedido da escola tem a mesma ambiguidade
+zero-vs-branco na leitura inicial, mas como não há um passo de
+"conferência" separado pra pedido de escola — diferente de entrega de
+produtor — isso não bloqueia nenhum fluxo real; registrado aqui como
+inspecionado, não corrigido, caso vire prioridade depois).
+
+**Próximo passo exato:** commitar e enviar a Etapa 1 pra
+`feat/relatorios-diferencas-importacao`, depois começar a Etapa 2 (Painel
+Diferença do galpão, `docs/plano-de-implementacao.md` §7).
 
 **Próximo passo exato:** implementar a etapa 1 (ver `docs/plano-de-implementacao.md`
 §4A/4B/4C/5/6), testar com dados fictícios, documentar aqui os arquivos

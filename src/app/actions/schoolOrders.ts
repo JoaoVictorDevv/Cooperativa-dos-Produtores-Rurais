@@ -27,15 +27,31 @@ export async function saveSchoolOrder(
 
     const week = await prisma.week.findUniqueOrThrow({ where: { id: weekId } });
     assertWeekEditable(week);
+
     const price = await getCurrentPrice(productId, week.referenceDate);
 
     await prisma.$transaction(async (tx) => {
+      // Checagem contra devolucao dentro da mesma transacao que a
+      // gravacao (ver mesmo comentario em producerDeliveries.ts).
+      const existingReturn = await tx.schoolReturn.findUnique({
+        where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
+      });
+      const existingReturnedQty = existingReturn ? Number(existingReturn.returnedQty) : 0;
+      if (orderedQty < existingReturnedQty) {
+        throw new Error(
+          `Nao e possivel reduzir o pedido para ${orderedQty} kg: ja ha ${existingReturnedQty} kg de ` +
+            `devolucao registrada para este produto nesta semana. Corrija a devolucao primeiro.`,
+        );
+      }
+
       const existing = await tx.schoolOrder.findUnique({
         where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
       });
+      // Preco congelado no primeiro lancamento — uma correcao de
+      // quantidade nao deve re-resolver o preco vigente por baixo.
       const saved = await tx.schoolOrder.upsert({
         where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
-        update: { orderedQty, priceId: price.id },
+        update: { orderedQty },
         create: { weekId, schoolId, productId, orderedQty, priceId: price.id },
       });
       await writeAudit(
