@@ -9,7 +9,10 @@ olucasgon e os 5 ajustes pequenos do modelo — preservar, não reverter).
 prompt integral recebido e a quebra em etapas por dependência). Este
 memory.md registra o progresso real etapa por etapa — ver seção
 "Progresso da sessão atual" mais abaixo, que é atualizada a cada etapa
-concluída.
+concluída. **Ao final da sessão** (todas as 6 etapas), ver também
+`docs/relatorio-sessao.md` (relatório completo em português simples,
+como pedido) e `docs/propostas-pendentes.md` (as 6 propostas da Etapa 6
+que dependem de decisão do usuário e/ou do olucasgon).
 
 Restrições ativas nesta sessão (ver plano para detalhes): não mexer em
 schema/migrações/seed/credenciais de banco (área do olucasgon), não rodar
@@ -45,8 +48,14 @@ force push. Uma etapa por vez, commit+push a cada etapa concluída.
   Ainda depende do exemplo real da prefeitura pra validação final do
   formato — desenvolvido e testado com dados fictícios/sintéticos
   enquanto isso, exatamente como o plano pede.
-- [PENDENTE] Etapa 6 — Documentação de propostas que exigem banco/decisão
-  operacional (§8, §9, §14, §15, §16, §17).
+- [FEITO] Etapa 6 — Documentação de propostas que exigem banco/decisão
+  operacional (§8, §9, §14, §15, §16, §17). Tudo em
+  `docs/propostas-pendentes.md` — entrega efetiva por escola, cobrança
+  com faltas, semanas futuras, retirada de Ovos (código já preparado na
+  Etapa 5, só falta o UPDATE de dado real coordenado com o olucasgon),
+  backup, e divisão→pedido sem redigitar. Nenhuma mudança de schema ou
+  infraestrutura foi feita — só análise e proposta, como pedido. Ver
+  também o relatório final `docs/relatorio-sessao.md`.
 
 #### Etapa 1 — detalhes (concluída)
 
@@ -474,11 +483,24 @@ Actions), `src/app/(app)/escolas/ImportSchoolOrders.tsx` (UI).
    infraestrutura — documentado como dependência pro olucasgon, não
    implementado.
 
-**Próximo passo exato:** Etapa 6 — documentar as propostas que dependem
-de banco/decisão operacional (`docs/plano-de-implementacao.md` §8, §9,
-§14, §15, §16, §17). Depois, se sobrar tempo/prioridade: avaliar PDF pra
-importação, ou aguardar o exemplo real da prefeitura pra fechar de vez a
-validação do Excel.
+**Próximo passo exato:** Etapa 6 concluída em seguida (ver subseção
+"Etapa 6" logo abaixo e `docs/propostas-pendentes.md`). Todas as 6 etapas
+do plano desta sessão estão feitas (Etapa 5 parcialmente — só Excel, PDF
+não iniciado, ver acima). Ver `docs/relatorio-sessao.md` pro fechamento
+completo desta sessão e o que fica pra amanhã.
+
+#### Etapa 6 — detalhes (concluída)
+
+Análise e documentação de 6 pontos do plano que dependem de decisão do
+usuário e/ou mudança de schema/infraestrutura do olucasgon — nenhuma
+implementação de código nem mudança de dado real, como pedido. Tudo em
+`docs/propostas-pendentes.md`: entrega efetiva por escola (§8), cobrança
+e fechamento com faltas (§9), pedidos de semanas futuras (§14), retirada
+de Ovos do fluxo ativo (§15 — o código de importação já trata isso desde
+o commit anterior; só falta o UPDATE de dado real, coordenado), backup
+(§16), e divisão→pedido sem redigitar (§17). Cada item tem: o problema
+real, uma proposta de formato (quando aplicável), e uma tabela final
+resumindo quem decide o quê e o que cada decisão bloqueia ou não.
 
 ## Time
 Duas pessoas trabalhando no repo agora: o usuário (com o Claude Code) e um
