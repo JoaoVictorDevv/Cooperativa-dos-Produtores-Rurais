@@ -19,6 +19,7 @@
 
 # production
 /build
+/api/target/
 
 # misc
 .DS_Store
@@ -51,3 +52,4 @@ next-env.d.ts
 
 # banco PostgreSQL local de desenvolvimento
 /.local/
+/.tools/

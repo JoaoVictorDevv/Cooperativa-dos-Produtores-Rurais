@@ -2,6 +2,14 @@
 
 Sistema de gestão do ciclo semanal da Cooperativa dos Produtores Rurais de Petrópolis para o PNAE. Substitui o fluxo operacional mantido em uma grande planilha por lançamentos rastreáveis de pedido, divisão, entrega, devolução e financeiro.
 
+## Nova estrutura de backend
+
+- `api/`: API REST em Java 21 e Spring Boot, organizada em Clean Architecture;
+- `database/`: PostgreSQL com migrações, papéis técnicos, permissões, auditoria e inicialização local;
+- `/`: redireciona diretamente para `/login`, sem landing page pública.
+
+Veja as instruções específicas em [`api/README.md`](./api/README.md) e [`database/README.md`](./database/README.md).
+
 ## Estado do produto
 
 O projeto está em preparação para o primeiro piloto. Ainda não deve ser publicado como produção sem:
