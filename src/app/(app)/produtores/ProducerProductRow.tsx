@@ -44,6 +44,7 @@ export function ProducerProductRow({
   const [deliveredAt, setDeliveredAt] = useState(initial.deliveredAt ?? "");
   const [returned, setReturned] = useState(initial.returnedQty === 0 ? "" : String(initial.returnedQty));
   const [reasonId, setReasonId] = useState(initial.returnReasonId ?? "");
+  const [returnRevealed, setReturnRevealed] = useState(initial.returnedQty > 0);
   const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [, startTransition] = useTransition();
 
@@ -132,33 +133,50 @@ export function ProducerProductRow({
         />
       </td>
       <td>
-        <input
-          className={`cell-input${errors.return ? " pending" : ""}`}
-          disabled={!editable}
-          value={returned}
-          title={errors.return ?? undefined}
-          onChange={(e) => setReturned(e.target.value)}
-          onBlur={() => saveReturn(returned, reasonId)}
-        />
+        {returnRevealed ? (
+          <input
+            className={`cell-input${errors.return ? " pending" : ""}`}
+            disabled={!editable}
+            value={returned}
+            title={errors.return ?? undefined}
+            autoFocus
+            onChange={(e) => setReturned(e.target.value)}
+            onBlur={() => saveReturn(returned, reasonId)}
+          />
+        ) : (
+          <button
+            type="button"
+            className="link-action"
+            style={{ background: "none", border: "none", padding: 0, font: "inherit", cursor: editable ? "pointer" : "default" }}
+            disabled={!editable}
+            onClick={() => setReturnRevealed(true)}
+          >
+            + Registrar devolução
+          </button>
+        )}
       </td>
       <td>
-        <select
-          className="login-input"
-          style={{ marginBottom: 0, fontSize: 12, padding: "6px 8px", width: 140 }}
-          disabled={!editable}
-          value={reasonId}
-          onChange={(e) => {
-            setReasonId(e.target.value);
-            saveReturn(returned, e.target.value);
-          }}
-        >
-          <option value="">—</option>
-          {reasons.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.code} · {r.description}
-            </option>
-          ))}
-        </select>
+        {returnRevealed ? (
+          <select
+            className="login-input"
+            style={{ marginBottom: 0, fontSize: 12, padding: "6px 8px", width: 140 }}
+            disabled={!editable}
+            value={reasonId}
+            onChange={(e) => {
+              setReasonId(e.target.value);
+              saveReturn(returned, e.target.value);
+            }}
+          >
+            <option value="">—</option>
+            {reasons.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.code} · {r.description}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <span className="stat-sub">—</span>
+        )}
       </td>
       <td className="mono">
         <strong>{value ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value) : "—"}</strong>

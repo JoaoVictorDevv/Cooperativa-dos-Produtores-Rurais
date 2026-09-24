@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { saveSchoolReturn } from "@/app/actions/schoolReturns";
+import { formatQty } from "@/lib/format";
 
 interface Reason {
   id: string;
@@ -14,6 +15,7 @@ export function ReturnRow({
   schoolId,
   productId,
   productName,
+  productSlug,
   orderedQty,
   initialReturnedQty,
   initialReasonId,
@@ -24,6 +26,7 @@ export function ReturnRow({
   schoolId: string;
   productId: string;
   productName: string;
+  productSlug: string;
   orderedQty: number;
   initialReturnedQty: number;
   initialReasonId: string | null;
@@ -32,6 +35,7 @@ export function ReturnRow({
 }) {
   const [returnedQty, setReturnedQty] = useState(initialReturnedQty === 0 ? "" : String(initialReturnedQty));
   const [reasonId, setReasonId] = useState(initialReasonId ?? "");
+  const [revealed, setRevealed] = useState(initialReturnedQty > 0);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -54,38 +58,55 @@ export function ReturnRow({
   return (
     <tr>
       <td>{productName}</td>
-      <td className="mono">{orderedQty.toFixed(2)}</td>
+      <td className="mono">{formatQty(orderedQty, productSlug)}</td>
       <td>
-        <input
-          className={`cell-input${error ? " pending" : ""}`}
-          disabled={!editable || pending}
-          value={returnedQty}
-          title={error ?? undefined}
-          onChange={(e) => setReturnedQty(e.target.value)}
-          onBlur={() => save(returnedQty, reasonId)}
-        />
+        {revealed ? (
+          <input
+            className={`cell-input${error ? " pending" : ""}`}
+            disabled={!editable || pending}
+            value={returnedQty}
+            title={error ?? undefined}
+            autoFocus
+            onChange={(e) => setReturnedQty(e.target.value)}
+            onBlur={() => save(returnedQty, reasonId)}
+          />
+        ) : (
+          <button
+            type="button"
+            className="link-action"
+            style={{ background: "none", border: "none", padding: 0, font: "inherit", cursor: editable ? "pointer" : "default" }}
+            disabled={!editable}
+            onClick={() => setRevealed(true)}
+          >
+            + Registrar devolução
+          </button>
+        )}
       </td>
       <td>
-        <select
-          className="login-input"
-          style={{ marginBottom: 0, fontSize: 12, padding: "6px 8px" }}
-          disabled={!editable || pending}
-          value={reasonId}
-          onChange={(e) => {
-            setReasonId(e.target.value);
-            save(returnedQty, e.target.value);
-          }}
-        >
-          <option value="">—</option>
-          {reasons.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.code} · {r.description}
-            </option>
-          ))}
-        </select>
+        {revealed ? (
+          <select
+            className="login-input"
+            style={{ marginBottom: 0, fontSize: 12, padding: "6px 8px" }}
+            disabled={!editable || pending}
+            value={reasonId}
+            onChange={(e) => {
+              setReasonId(e.target.value);
+              save(returnedQty, e.target.value);
+            }}
+          >
+            <option value="">—</option>
+            {reasons.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.code} · {r.description}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <span className="stat-sub">—</span>
+        )}
       </td>
       <td className="mono">
-        <strong>{netQty.toFixed(2)}</strong>
+        <strong>{formatQty(netQty, productSlug)}</strong>
       </td>
     </tr>
   );

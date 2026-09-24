@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { requireOperator, requireRole } from "@/lib/dal";
 import { writeAudit } from "@/lib/audit";
 import { getOpenWeek } from "@/lib/week";
+import { getWeekClosingBlockers, validateOperationalWeekDates } from "@/lib/weekPolicy";
 
 const CreateWeekSchema = z.object({
   referenceDate: z.string().min(1, "Informe a data de referencia"),
@@ -39,40 +40,102 @@ export async function createWeek(_prev: WeekFormState, formData: FormData): Prom
     return { error: parsed.error.issues[0]?.message ?? "Dados invalidos" };
   }
 
-  const week = await prisma.week.create({
-    data: {
-      referenceDate: new Date(parsed.data.referenceDate),
-      startDate: new Date(parsed.data.startDate),
-      endDate: new Date(parsed.data.endDate),
-      notes: parsed.data.notes || null,
-      status: "ABERTA",
-    },
-  });
-  await writeAudit({ userId: user.id, action: "WEEK_CREATE", entityType: "Week", entityId: week.id, after: week });
+  const dates = {
+    referenceDate: new Date(parsed.data.referenceDate),
+    startDate: new Date(parsed.data.startDate),
+    endDate: new Date(parsed.data.endDate),
+  };
+  const dateError = validateOperationalWeekDates(dates);
+  if (dateError) return { error: dateError };
+
+  let week;
+  try {
+    week = await prisma.$transaction(async (tx) => {
+      const created = await tx.week.create({
+        data: {
+          ...dates,
+          notes: parsed.data.notes || null,
+          status: "ABERTA",
+        },
+      });
+      await writeAudit(
+        { userId: user.id, action: "WEEK_CREATE", entityType: "Week", entityId: created.id, after: created },
+        tx,
+      );
+      return created;
+    });
+  } catch {
+    return { error: "Nao foi possivel criar a semana. Confirme se ja existe outra semana aberta." };
+  }
   revalidatePath("/semanas");
   redirect(`/semanas/${week.id}`);
 }
 
 // CA-SEM-04
-export async function closeWeek(weekId: string) {
-  const user = await requireOperator();
-  const week = await prisma.week.findUniqueOrThrow({ where: { id: weekId } });
-  if (week.status === "FECHADA") return;
+export async function closeWeek(weekId: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const user = await requireOperator();
+    const result = await prisma.$transaction(async (tx) => {
+      // O lock coordena o fechamento com os triggers de escrita operacional.
+      await tx.$queryRaw`SELECT "id" FROM "weeks" WHERE "id" = ${weekId} FOR UPDATE`;
+      const week = await tx.week.findUniqueOrThrow({ where: { id: weekId } });
+      if (week.status === "FECHADA") return { ok: true };
 
-  const updated = await prisma.week.update({
-    where: { id: weekId },
-    data: { status: "FECHADA", closedAt: new Date(), closedById: user.id },
-  });
-  await writeAudit({
-    userId: user.id,
-    action: "WEEK_CLOSE",
-    entityType: "Week",
-    entityId: weekId,
-    before: week,
-    after: updated,
-  });
+      const [producerOrders, producerDeliveries, schoolOrders, schoolDeliveries] = await Promise.all([
+        tx.producerOrder.findMany({
+          where: { weekId },
+          select: { producerId: true, productId: true, orderedQty: true },
+        }),
+        tx.producerDelivery.findMany({
+          where: { weekId },
+          select: { producerId: true, productId: true },
+        }),
+        tx.schoolOrder.findMany({
+          where: { weekId },
+          select: { schoolId: true, orderedQty: true },
+        }),
+        tx.schoolDelivery.findMany({ where: { weekId }, select: { schoolId: true } }),
+      ]);
+      const blockers = getWeekClosingBlockers({
+        producerOrders: producerOrders.map((line) => ({ ...line, orderedQty: Number(line.orderedQty) })),
+        producerDeliveries,
+        schoolOrders: schoolOrders.map((line) => ({ ...line, orderedQty: Number(line.orderedQty) })),
+        schoolDeliveries,
+      });
+      if (blockers.total > 0) {
+        return {
+          ok: false,
+          error:
+            `Nao e possivel fechar: ${blockers.pendingProducerDeliveries} entrega(s) de produtor ` +
+            `e ${blockers.pendingSchoolDeliveries} entrega(s) de escola pendente(s).`,
+        };
+      }
+
+      const updated = await tx.week.update({
+        where: { id: weekId, status: "ABERTA" },
+        data: { status: "FECHADA", closedAt: new Date(), closedById: user.id },
+      });
+      await writeAudit(
+        {
+          userId: user.id,
+          action: "WEEK_CLOSE",
+          entityType: "Week",
+          entityId: weekId,
+          before: week,
+          after: updated,
+        },
+        tx,
+      );
+      return { ok: true };
+    });
+    if (!result.ok) return result;
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Nao foi possivel fechar a semana." };
+  }
   revalidatePath(`/semanas/${weekId}`);
   revalidatePath("/semanas");
+  revalidatePath("/painel");
+  return { ok: true };
 }
 
 const ReopenSchema = z.object({
@@ -101,20 +164,29 @@ export async function reopenWeek(
     return { error: "Esta semana nao esta fechada." };
   }
 
-  const updated = await prisma.week.update({
-    where: { id: weekId },
-    data: { status: "ABERTA", closedAt: null, closedById: null },
-  });
-  await prisma.weekReopening.create({ data: { weekId, userId: user.id, reason: parsed.data.reason } });
-  await writeAudit({
-    userId: user.id,
-    action: "WEEK_REOPEN",
-    entityType: "Week",
-    entityId: weekId,
-    before: week,
-    after: updated,
-    reason: parsed.data.reason,
-  });
+  try {
+    await prisma.$transaction(async (tx) => {
+      const updated = await tx.week.update({
+        where: { id: weekId, status: "FECHADA" },
+        data: { status: "ABERTA", closedAt: null, closedById: null },
+      });
+      await tx.weekReopening.create({ data: { weekId, userId: user.id, reason: parsed.data.reason } });
+      await writeAudit(
+        {
+          userId: user.id,
+          action: "WEEK_REOPEN",
+          entityType: "Week",
+          entityId: weekId,
+          before: week,
+          after: updated,
+          reason: parsed.data.reason,
+        },
+        tx,
+      );
+    });
+  } catch {
+    return { error: "Nao foi possivel reabrir. Confirme se nao existe outra semana aberta." };
+  }
   revalidatePath(`/semanas/${weekId}`);
   revalidatePath("/semanas");
   return {};

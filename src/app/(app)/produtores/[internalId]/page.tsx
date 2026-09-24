@@ -2,8 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
-import { getProducerPnaeUsage } from "@/lib/pnae";
 import { producerPayment } from "@/lib/calc";
+import { formatQty, formatQtyNumber } from "@/lib/format";
 import { PrintButton } from "@/components/PrintButton";
 
 function fmtMoney(value: number) {
@@ -16,10 +16,10 @@ export default async function ProducerDetailPage({ params }: { params: Promise<{
   if (!producer) notFound();
 
   const week = await getOpenWeek();
-  const pnae = await getProducerPnaeUsage(prisma, producer.id);
 
   let lines: {
     productName: string;
+    productSlug: string;
     orderedQty: number;
     deliveredQty: number | null;
     returnedQty: number;
@@ -44,11 +44,13 @@ export default async function ProducerDetailPage({ params }: { params: Promise<{
       const delivery = deliveryByProduct.get(productId);
       const returnedQty = returnByProduct.get(productId) ?? 0;
       const productName = order?.product.name ?? delivery?.product.name ?? "—";
+      const productSlug = order?.product.slug ?? delivery?.product.slug ?? "";
       const payment = delivery
         ? producerPayment(Number(delivery.deliveredQty), returnedQty, Number(delivery.price.price), Number(delivery.logisticsDeductionSnapshot))
         : 0;
       return {
         productName,
+        productSlug,
         orderedQty: order ? Number(order.orderedQty) : 0,
         deliveredQty: delivery ? Number(delivery.deliveredQty) : null,
         returnedQty,
@@ -57,32 +59,21 @@ export default async function ProducerDetailPage({ params }: { params: Promise<{
     }).sort((a, b) => a.productName.localeCompare(b.productName));
   }
 
+  const totals = lines.reduce(
+    (acc, l) => ({
+      ordered: acc.ordered + l.orderedQty,
+      delivered: acc.delivered + (l.deliveredQty ?? 0),
+      returned: acc.returned + l.returnedQty,
+      payment: acc.payment + l.payment,
+    }),
+    { ordered: 0, delivered: 0, returned: 0, payment: 0 },
+  );
+
   return (
     <>
       <Link className="back-link" href="/produtores">
         ← Voltar para Produtores
       </Link>
-
-      <div className="card" style={{ padding: 18, marginBottom: 22 }}>
-        <div className="panel-title" style={{ padding: 0, marginBottom: 8 }}>
-          Limite anual PNAE (ciclo out–set)
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5 }}>
-          <span>
-            Acumulado: <strong>{fmtMoney(pnae.accumulated)}</strong> de {fmtMoney(pnae.limit)}
-          </span>
-          <span className={`badge ${pnae.alertLevel === "OK" ? "ok" : pnae.alertLevel === "ATENCAO" ? "atencao" : "estourado"}`}>
-            {pnae.alertLevel} · {pnae.percentUsed.toFixed(0)}%
-          </span>
-        </div>
-        <div className="pnae-bar-track">
-          <div
-            className={`pnae-bar-fill ${pnae.alertLevel === "ATENCAO" ? "atencao" : pnae.alertLevel === "ESTOURADO" ? "estourado" : ""}`}
-            style={{ width: `${Math.min(pnae.percentUsed, 100)}%` }}
-          />
-        </div>
-        <div className="stat-sub">Restante até o limite: {fmtMoney(pnae.remaining)}</div>
-      </div>
 
       {week && (
         <div className="rm-actions">
@@ -123,11 +114,11 @@ export default async function ProducerDetailPage({ params }: { params: Promise<{
             {lines.map((l) => (
               <tr key={l.productName}>
                 <td>{l.productName}</td>
-                <td>{l.orderedQty.toFixed(2)}</td>
+                <td>{formatQty(l.orderedQty, l.productSlug)}</td>
                 <td className={l.deliveredQty === null ? "mono" : undefined} style={l.deliveredQty === null ? { color: "#8B3A2E" } : undefined}>
-                  {l.deliveredQty === null ? "—" : l.deliveredQty.toFixed(2)}
+                  {l.deliveredQty === null ? "—" : formatQty(l.deliveredQty, l.productSlug)}
                 </td>
-                <td>{l.returnedQty.toFixed(2)}</td>
+                <td>{formatQty(l.returnedQty, l.productSlug)}</td>
                 <td>{fmtMoney(l.payment)}</td>
               </tr>
             ))}
@@ -139,6 +130,17 @@ export default async function ProducerDetailPage({ params }: { params: Promise<{
               </tr>
             )}
           </tbody>
+          {lines.length > 0 && (
+            <tfoot>
+              <tr style={{ borderTop: "2px solid var(--ink)", fontWeight: 600 }}>
+                <td>Total</td>
+                <td>{formatQtyNumber(totals.ordered)}</td>
+                <td>{formatQtyNumber(totals.delivered)}</td>
+                <td>{formatQtyNumber(totals.returned)}</td>
+                <td>{fmtMoney(totals.payment)}</td>
+              </tr>
+            </tfoot>
+          )}
         </table>
 
         <div className="rm-sign">

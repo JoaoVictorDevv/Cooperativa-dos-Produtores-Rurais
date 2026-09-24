@@ -24,21 +24,26 @@ export async function saveProducerAllocation(
     const week = await prisma.week.findUniqueOrThrow({ where: { id: weekId } });
     assertWeekEditable(week);
 
-    const existing = await prisma.producerAllocation.findUnique({
-      where: { weekId_productId_producerId: { weekId, productId, producerId } },
-    });
-    const saved = await prisma.producerAllocation.upsert({
-      where: { weekId_productId_producerId: { weekId, productId, producerId } },
-      update: { allocatedQty },
-      create: { weekId, productId, producerId, allocatedQty },
-    });
-    await writeAudit({
-      userId: user.id,
-      action: existing ? "PRODUCER_ALLOCATION_UPDATE" : "PRODUCER_ALLOCATION_CREATE",
-      entityType: "ProducerAllocation",
-      entityId: saved.id,
-      before: existing,
-      after: saved,
+    await prisma.$transaction(async (tx) => {
+      const existing = await tx.producerAllocation.findUnique({
+        where: { weekId_productId_producerId: { weekId, productId, producerId } },
+      });
+      const saved = await tx.producerAllocation.upsert({
+        where: { weekId_productId_producerId: { weekId, productId, producerId } },
+        update: { allocatedQty },
+        create: { weekId, productId, producerId, allocatedQty },
+      });
+      await writeAudit(
+        {
+          userId: user.id,
+          action: existing ? "PRODUCER_ALLOCATION_UPDATE" : "PRODUCER_ALLOCATION_CREATE",
+          entityType: "ProducerAllocation",
+          entityId: saved.id,
+          before: existing,
+          after: saved,
+        },
+        tx,
+      );
     });
     revalidatePath("/produtores");
     return { ok: true };

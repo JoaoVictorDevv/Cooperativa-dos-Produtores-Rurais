@@ -40,23 +40,29 @@ export async function saveSchoolReturn(
       };
     }
 
-    const existing = await prisma.schoolReturn.findFirst({ where: { weekId, schoolId, productId } });
-    const saved = existing
-      ? await prisma.schoolReturn.update({
-          where: { id: existing.id },
-          data: { returnedQty, returnReasonId },
-        })
-      : await prisma.schoolReturn.create({
-          data: { weekId, schoolId, productId, returnedQty, returnReasonId },
-        });
+    const reason = await prisma.returnReason.findFirst({ where: { id: returnReasonId, active: true } });
+    if (!reason) return { ok: false, error: "Selecione um motivo de devolucao ativo." };
 
-    await writeAudit({
-      userId: user.id,
-      action: existing ? "SCHOOL_RETURN_UPDATE" : "SCHOOL_RETURN_CREATE",
-      entityType: "SchoolReturn",
-      entityId: saved.id,
-      before: existing,
-      after: saved,
+    await prisma.$transaction(async (tx) => {
+      const existing = await tx.schoolReturn.findUnique({
+        where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
+      });
+      const saved = await tx.schoolReturn.upsert({
+        where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
+        update: { returnedQty, returnReasonId },
+        create: { weekId, schoolId, productId, returnedQty, returnReasonId },
+      });
+      await writeAudit(
+        {
+          userId: user.id,
+          action: existing ? "SCHOOL_RETURN_UPDATE" : "SCHOOL_RETURN_CREATE",
+          entityType: "SchoolReturn",
+          entityId: saved.id,
+          before: existing,
+          after: saved,
+        },
+        tx,
+      );
     });
     revalidatePath("/escolas");
     return { ok: true };

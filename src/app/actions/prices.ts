@@ -56,7 +56,7 @@ export async function schedulePriceChange(
       entityId: created.id,
       before: currentPrice,
       after: created,
-    });
+    }, tx);
   });
 
   revalidatePath("/precos");

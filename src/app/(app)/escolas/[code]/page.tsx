@@ -17,7 +17,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ c
   let orders: { productId: string; orderedQty: number }[] = [];
   let returnsByProduct = new Map<string, { returnedQty: number; returnReasonId: string }>();
   let delivery: { weekday: string; deliveredAt: Date } | null = null;
-  let products: { id: string; name: string }[] = [];
+  let products: { id: string; name: string; slug: string }[] = [];
 
   if (week) {
     const [orderRows, returnRows, deliveryRow, productRows] = await Promise.all([
@@ -93,10 +93,10 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ c
           <thead>
             <tr>
               <th>Produto</th>
-              <th style={{ width: 90 }}>Pedido (kg)</th>
-              <th style={{ width: 110 }}>Devolução (kg)</th>
+              <th style={{ width: 90 }}>Pedido</th>
+              <th style={{ width: 110 }}>Devolução</th>
               <th style={{ width: 160 }}>Motivo</th>
-              <th style={{ width: 90 }}>Líquido (kg)</th>
+              <th style={{ width: 90 }}>Líquido</th>
             </tr>
           </thead>
           <tbody>
@@ -109,6 +109,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ c
                   schoolId={school.id}
                   productId={p.id}
                   productName={p.name}
+                  productSlug={p.slug}
                   orderedQty={orderedByProduct.get(p.id) ?? 0}
                   initialReturnedQty={existingReturn?.returnedQty ?? 0}
                   initialReasonId={existingReturn?.returnReasonId ?? null}
