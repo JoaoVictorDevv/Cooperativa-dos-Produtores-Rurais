@@ -21,12 +21,38 @@ export async function saveProducerReturn(
   try {
     const user = await requireOperator();
     const returnedQty = qtySchema.parse(returnedQtyRaw);
-    if (!returnReasonId) {
-      return { ok: false, error: "Selecione o motivo da devolucao." };
-    }
 
     const week = await prisma.week.findUniqueOrThrow({ where: { id: weekId } });
     assertWeekEditable(week);
+
+    // Corrigir pra zero remove o lancamento (ver mesma regra em
+    // schoolReturns.ts) em vez de gravar devolucao zero com motivo.
+    if (returnedQty === 0) {
+      return prisma.$transaction(async (tx) => {
+        const existing = await tx.producerReturn.findUnique({
+          where: { weekId_producerId_productId: { weekId, producerId, productId } },
+        });
+        if (!existing) return { ok: true };
+        await tx.producerReturn.delete({ where: { id: existing.id } });
+        await writeAudit(
+          {
+            userId: user.id,
+            action: "PRODUCER_RETURN_DELETE",
+            entityType: "ProducerReturn",
+            entityId: existing.id,
+            before: existing,
+            after: undefined,
+          },
+          tx,
+        );
+        revalidatePath("/produtores");
+        return { ok: true };
+      });
+    }
+
+    if (!returnReasonId) {
+      return { ok: false, error: "Selecione o motivo da devolucao." };
+    }
 
     const delivery = await prisma.producerDelivery.findUnique({
       where: { weekId_producerId_productId: { weekId, producerId, productId } },

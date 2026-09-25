@@ -123,6 +123,10 @@ export default async function DashboardPage() {
           <Icon name="users" size={19} />
           <div className="qb-label">Divisão / Pedido / Entrega</div>
         </Link>
+        <Link className="quick-btn" href="/diferenca">
+          <Icon name="truck" size={19} />
+          <div className="qb-label">Diferença do galpão</div>
+        </Link>
         <Link className="quick-btn" href="/balanco">
           <Icon name="balance" size={19} />
           <div className="qb-label">Fechar Balanço</div>

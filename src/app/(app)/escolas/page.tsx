@@ -2,9 +2,14 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
 import { EscolasTable } from "./EscolasTable";
+import { ImportSchoolOrders } from "./ImportSchoolOrders";
 
-export default async function EscolasPage() {
-  const week = await getOpenWeek();
+// CA-HIST-*: aceita ?week=<id> pra consultar (so leitura, sem reabrir) o
+// pedido de uma semana ja fechada — sem o parametro, mostra a semana
+// aberta atual, igual sempre foi.
+export default async function EscolasPage({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
+  const { week: weekIdParam } = await searchParams;
+  const week = weekIdParam ? await prisma.week.findUnique({ where: { id: weekIdParam } }) : await getOpenWeek();
 
   if (!week) {
     return (
@@ -42,6 +47,13 @@ export default async function EscolasPage() {
         </div>
         <span className={`badge ${week.status === "ABERTA" ? "aberta" : "fechada"}`}>{week.status}</span>
       </div>
+      <p className="table-foot-note" style={{ textAlign: "left", marginTop: -8 }}>
+        <Link className="link-action" href={`/semanas/${week.id}`}>
+          Ver semana completa (documentos, diferença, balanço) →
+        </Link>
+      </p>
+
+      {week.status === "ABERTA" && <ImportSchoolOrders weekId={week.id} />}
 
       <EscolasTable
         weekId={week.id}

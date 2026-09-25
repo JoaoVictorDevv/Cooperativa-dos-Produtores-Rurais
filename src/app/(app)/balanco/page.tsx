@@ -59,6 +59,11 @@ export default async function BalancoPage({ searchParams }: { searchParams: Prom
           <div className="page-title display">Balanço Financeiro</div>
         </div>
       </div>
+      <p className="table-foot-note" style={{ textAlign: "left", marginTop: -8 }}>
+        <Link className="link-action" href={`/semanas/${week.id}`}>
+          Ver semana completa (documentos, diferença, produtores) →
+        </Link>
+      </p>
 
       <div className="stat-row">
         <div className="card stat money-in">

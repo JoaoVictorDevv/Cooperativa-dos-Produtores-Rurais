@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/dal";
-import { getWeekFinancialSummary } from "@/lib/weekSummary";
+import { getWeekFinancialSummary, getWarehouseDifferenceLines, getPendingProducerDeliveries } from "@/lib/weekSummary";
+import { REPORT_DEFINITIONS } from "@/lib/pdf/definitions";
 import { CloseButton } from "./CloseButton";
 import { ReopenForm } from "./ReopenForm";
 
@@ -26,7 +27,15 @@ export default async function WeekDetailPage({ params }: { params: Promise<{ wee
   });
   if (!week) notFound();
 
-  const summary = await getWeekFinancialSummary(weekId);
+  const [summary, differenceLines, pending] = await Promise.all([
+    getWeekFinancialSummary(weekId),
+    getWarehouseDifferenceLines(weekId),
+    getPendingProducerDeliveries(weekId),
+  ]);
+  const differenceCounts = differenceLines.reduce(
+    (acc, l) => ({ ...acc, [l.status]: acc[l.status] + 1 }),
+    { FALTA: 0, SOBRA: 0, OK: 0 },
+  );
 
   return (
     <>
@@ -66,24 +75,63 @@ export default async function WeekDetailPage({ params }: { params: Promise<{ wee
         </div>
       </div>
 
+      <div className="section-title">Diferença do galpão nesta semana</div>
+      <div className="stat-row">
+        <div className="card stat" style={{ color: differenceCounts.FALTA > 0 ? "var(--brick)" : undefined }}>
+          <div className="stat-label">Produtos em falta</div>
+          <div className="stat-value">{differenceCounts.FALTA}</div>
+        </div>
+        <div className="card stat">
+          <div className="stat-label">Produtos com sobra</div>
+          <div className="stat-value">{differenceCounts.SOBRA}</div>
+        </div>
+        <div className="card stat">
+          <div className="stat-label">Produtos OK</div>
+          <div className="stat-value">{differenceCounts.OK}</div>
+        </div>
+      </div>
+      {pending.length > 0 && (
+        <p className="table-foot-note" style={{ textAlign: "left" }}>
+          {pending.length} produtor(es) com pedido lançado e entrega ainda não registrada.
+        </p>
+      )}
+
       <div className="quick-grid">
-        {week.status === "ABERTA" && (
-          <>
-            <Link className="quick-btn" href="/escolas">
-              <div className="qb-label">Pedido das Escolas</div>
-            </Link>
-            <Link className="quick-btn" href="/produtores">
-              <div className="qb-label">Divisão / Pedido / Entrega</div>
-            </Link>
-          </>
-        )}
-        <Link className="quick-btn" href={`/balanco?week=${week.id}`}>
-          <div className="qb-label">Balanço Financeiro</div>
+        <Link className="quick-btn" href={`/escolas?week=${week.id}`}>
+          <div className="qb-label">Pedido das Escolas</div>
+        </Link>
+        <Link className="quick-btn" href={`/produtores?week=${week.id}`}>
+          <div className="qb-label">Divisão / Pedido / Entrega</div>
+        </Link>
+        <Link className="quick-btn" href={`/diferenca?week=${week.id}`}>
+          <div className="qb-label">Diferença do galpão</div>
         </Link>
         <Link className="quick-btn" href={`/resumo?week=${week.id}`}>
           <div className="qb-label">Resumo</div>
         </Link>
+        <Link className="quick-btn" href={`/balanco?week=${week.id}`}>
+          <div className="qb-label">Balanço Financeiro</div>
+        </Link>
       </div>
+
+      <div className="section-title">Documentos da semana</div>
+      <div className="quick-grid">
+        {REPORT_DEFINITIONS.map((r) => (
+          <a key={r.key} className="quick-btn" href={`/api/semanas/${week.id}/pdf/${r.key}`}>
+            <div className="qb-label">{r.label}</div>
+          </a>
+        ))}
+      </div>
+      <div className="rm-actions" style={{ marginTop: 12 }}>
+        <a className="btn-primary" href={`/api/semanas/${week.id}/pdf/zip`}>
+          Baixar tudo (.zip)
+        </a>
+      </div>
+      <p className="table-foot-note" style={{ textAlign: "left" }}>
+        Os documentos usam os preços e quantidades registrados nesta semana. Nomes e endereços de escolas/produtores
+        refletem o cadastro atual (não têm histórico próprio).
+        {week.status === "ABERTA" && " Esta semana ainda está ABERTA — os valores podem mudar até o fechamento."}
+      </p>
 
       {week.reopenings.length > 0 && (
         <>

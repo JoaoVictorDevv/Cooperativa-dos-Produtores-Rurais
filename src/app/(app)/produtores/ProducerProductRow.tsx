@@ -40,84 +40,135 @@ export function ProducerProductRow({
 }) {
   const [allocated, setAllocated] = useState(initial.allocatedQty === 0 ? "" : String(initial.allocatedQty));
   const [ordered, setOrdered] = useState(initial.orderedQty === 0 ? "" : String(initial.orderedQty));
-  const [delivered, setDelivered] = useState(initial.deliveredQty ? String(initial.deliveredQty) : "");
+  const [delivered, setDelivered] = useState(initial.deliveredQty !== null ? String(initial.deliveredQty) : "");
   const [deliveredAt, setDeliveredAt] = useState(initial.deliveredAt ?? "");
   const [returned, setReturned] = useState(initial.returnedQty === 0 ? "" : String(initial.returnedQty));
   const [reasonId, setReasonId] = useState(initial.returnReasonId ?? "");
   const [returnRevealed, setReturnRevealed] = useState(initial.returnedQty > 0);
+  // Distingue "ja existe devolucao gravada" de "campo em branco" — sem
+  // isso, corrigir uma devolucao existente pra zero (§4B) fica
+  // indistinguivel de um campo nunca preenchido e nunca chega a salvar.
+  const [hasPersistedReturn, setHasPersistedReturn] = useState(initial.returnedQty > 0);
   const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const [status, setStatus] = useState<Record<string, "idle" | "saving" | "saved" | "error">>({});
   const [, startTransition] = useTransition();
 
   const num = (v: string) => (v === "" ? 0 : Number(v.replace(",", ".")));
 
   function saveAllocation() {
     if (!editable) return;
+    setStatus((s) => ({ ...s, allocation: "saving" }));
     startTransition(async () => {
       const r = await saveProducerAllocation(weekId, productId, producerId, num(allocated));
       setErrors((e) => ({ ...e, allocation: r.ok ? null : r.error ?? "erro" }));
+      setStatus((s) => ({ ...s, allocation: r.ok ? "saved" : "error" }));
     });
   }
   function saveOrder() {
     if (!editable) return;
+    setStatus((s) => ({ ...s, order: "saving" }));
     startTransition(async () => {
       const r = await saveProducerOrder(weekId, producerId, productId, num(ordered));
       setErrors((e) => ({ ...e, order: r.ok ? null : r.error ?? "erro" }));
+      setStatus((s) => ({ ...s, order: r.ok ? "saved" : "error" }));
     });
   }
   function saveDelivery(nextDelivered: string, nextDate: string) {
-    if (!editable || !nextDate || num(nextDelivered) === 0) return;
+    if (!editable || !nextDate) return;
+    // Campo de quantidade em branco = entrega ainda nao conferida, nada a
+    // salvar. "0" explicito e uma entrega zero CONFIRMADA e deve salvar.
+    if (nextDelivered.trim() === "") return;
+    setStatus((s) => ({ ...s, delivery: "saving" }));
     startTransition(async () => {
       const r = await saveProducerDelivery(weekId, producerId, productId, num(nextDelivered), nextDate);
       setErrors((e) => ({ ...e, delivery: r.ok ? null : r.error ?? "erro" }));
+      setStatus((s) => ({ ...s, delivery: r.ok ? "saved" : "error" }));
     });
   }
   function saveReturn(nextReturned: string, nextReason: string) {
-    if (!editable || num(nextReturned) === 0) return;
-    if (!nextReason) {
+    if (!editable) return;
+    const numeric = num(nextReturned);
+    if (numeric === 0 && !hasPersistedReturn) return; // nada digitado, nada a corrigir
+    if (numeric > 0 && !nextReason) {
       setErrors((e) => ({ ...e, return: "Selecione o motivo" }));
+      setStatus((s) => ({ ...s, return: "error" }));
       return;
     }
+    setStatus((s) => ({ ...s, return: "saving" }));
     startTransition(async () => {
-      const r = await saveProducerReturn(weekId, producerId, productId, num(nextReturned), nextReason);
+      const r = await saveProducerReturn(weekId, producerId, productId, numeric, nextReason);
       setErrors((e) => ({ ...e, return: r.ok ? null : r.error ?? "erro" }));
+      setStatus((s) => ({ ...s, return: r.ok ? "saved" : "error" }));
+      if (r.ok) {
+        setHasPersistedReturn(numeric > 0);
+        if (numeric === 0) {
+          // devolucao corrigida pra zero = lancamento removido.
+          setReturnRevealed(false);
+          setReturned("");
+          setReasonId("");
+        }
+      }
     });
   }
 
   const netQty = Math.max(num(delivered) - num(returned), 0);
   const value = Math.round(netQty * (initial.price - initial.logisticsDeductionPerKg) * 100) / 100;
 
+  function cellClass(field: string) {
+    if (status[field] === "error") return " pending";
+    if (status[field] === "saved") return " saved";
+    return "";
+  }
+  function statusHint(field: string) {
+    if (status[field] === "saving") return <span className="stat-sub"> salvando…</span>;
+    if (status[field] === "saved") return <span className="stat-sub"> salvo</span>;
+    return null;
+  }
+
   return (
     <tr>
       <td>{productName}</td>
       <td>
         <input
-          className="cell-input"
+          className={`cell-input${cellClass("allocation")}`}
           disabled={!editable}
           value={allocated}
           title={errors.allocation ?? undefined}
-          onChange={(e) => setAllocated(e.target.value)}
+          onChange={(e) => {
+            setAllocated(e.target.value);
+            setStatus((s) => ({ ...s, allocation: "idle" }));
+          }}
           onBlur={saveAllocation}
         />
+        {statusHint("allocation")}
       </td>
       <td>
         <input
-          className="cell-input"
+          className={`cell-input${cellClass("order")}`}
           disabled={!editable}
           value={ordered}
           title={errors.order ?? undefined}
-          onChange={(e) => setOrdered(e.target.value)}
+          onChange={(e) => {
+            setOrdered(e.target.value);
+            setStatus((s) => ({ ...s, order: "idle" }));
+          }}
           onBlur={saveOrder}
         />
+        {statusHint("order")}
       </td>
       <td>
         <input
-          className="cell-input"
+          className={`cell-input${cellClass("delivery")}`}
           disabled={!editable}
           value={delivered}
           title={errors.delivery ?? undefined}
-          onChange={(e) => setDelivered(e.target.value)}
+          onChange={(e) => {
+            setDelivered(e.target.value);
+            setStatus((s) => ({ ...s, delivery: "idle" }));
+          }}
           onBlur={() => saveDelivery(delivered, deliveredAt)}
         />
+        {statusHint("delivery")}
       </td>
       <td>
         <input
@@ -134,15 +185,21 @@ export function ProducerProductRow({
       </td>
       <td>
         {returnRevealed ? (
-          <input
-            className={`cell-input${errors.return ? " pending" : ""}`}
-            disabled={!editable}
-            value={returned}
-            title={errors.return ?? undefined}
-            autoFocus
-            onChange={(e) => setReturned(e.target.value)}
-            onBlur={() => saveReturn(returned, reasonId)}
-          />
+          <>
+            <input
+              className={`cell-input${cellClass("return")}`}
+              disabled={!editable}
+              value={returned}
+              title={errors.return ?? undefined}
+              autoFocus
+              onChange={(e) => {
+                setReturned(e.target.value);
+                setStatus((s) => ({ ...s, return: "idle" }));
+              }}
+              onBlur={() => saveReturn(returned, reasonId)}
+            />
+            {statusHint("return")}
+          </>
         ) : (
           <button
             type="button"

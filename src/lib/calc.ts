@@ -76,6 +76,27 @@ export function balanceStatus(balance: number): BalanceStatus {
   return "ZERO";
 }
 
+// Painel Diferenca do galpao (plano docs/plano-de-implementacao.md §7):
+// compara, por produto, o pedido das escolas com o que efetivamente saiu
+// do galpao pros produtores (entrega bruta - devolucao). Isso NAO e o
+// mesmo que estoque atual do galpao nem atendimento individual de escola
+// — e uma comparacao agregada por produto, sempre na mesma unidade dele.
+export function netProducerDelivered(deliveredQty: number, returnedQty: number): number {
+  return round2(deliveredQty - returnedQty);
+}
+
+export function warehouseDifference(orderedQty: number, netDeliveredQty: number): number {
+  return round2(netDeliveredQty - orderedQty);
+}
+
+export type DifferenceStatus = "FALTA" | "SOBRA" | "OK";
+
+export function differenceStatus(difference: number): DifferenceStatus {
+  if (difference < 0) return "FALTA";
+  if (difference > 0) return "SOBRA";
+  return "OK";
+}
+
 // Conferencia financeira (secao 33-34)
 export interface ReconciliationResult {
   sumIndividual: number;

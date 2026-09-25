@@ -70,6 +70,9 @@ export default async function HistoricoPage({ searchParams }: { searchParams: Pr
                   <Link className="link-action" href={`/resumo?week=${w.id}`}>
                     Resumo
                   </Link>
+                  <Link className="link-action" href={`/diferenca?week=${w.id}`}>
+                    Diferença
+                  </Link>
                   <Link className="link-action" href={`/balanco?week=${w.id}`}>
                     Balanço
                   </Link>
