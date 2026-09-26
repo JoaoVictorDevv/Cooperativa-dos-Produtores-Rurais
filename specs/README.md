@@ -18,6 +18,7 @@ O código pode explicar **como** algo funciona. As especificações devem explic
 - [`004-relatorios-exportacoes`](./004-relatorios-exportacoes/spec.md): documentos do ciclo em PDF/ZIP e romaneio escolar (data/horário real, 4 vias). Implementada no modelo atual; conteúdos de aceite real dependem da 008.
 - [`008-recebimentos-faltas-fechamento`](./008-recebimentos-faltas-fechamento/spec.md): dois recebimentos (galpão e escola), complementos, faltas e fechamento. Regras confirmadas e testadas em memória; persistência bloqueada (Lucas).
 - [`009-importacao-pedido-prefeitura`](./009-importacao-pedido-prefeitura/spec.md): importação do pedido da prefeitura (Excel com várias abas e PDF com texto), com conferência e gravação atômica. Implementada e testada; falta validar com arquivo oficial da prefeitura.
+- [`010-divisao-para-pedidos`](./010-divisao-para-pedidos/spec.md): gerar pedidos aos produtores a partir da divisão, com prévia e confirmação, sem apagar nem sobrescrever em silêncio. Implementada e testada (tabelas atuais, sem mudança de schema).
 - [`backlog.md`](./backlog.md): próximas especificações candidatas, ainda não aprovadas para implementação.
 
 ## Numeração

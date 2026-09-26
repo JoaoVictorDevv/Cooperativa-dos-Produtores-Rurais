@@ -37,6 +37,8 @@ Lucas (schema/API).
 | Ovos fora de novos lançamentos sem sumir do histórico | Pedido das Escolas, Produtores, importação | idem + teste com Ovos desativado |
 | Termos "A cobrar / A pagar / Resultado calculado" e metodologia visível | Painel, Semana, Resumo, Balanço, PDF do Balanço | varredura de telas |
 | Grade de pedidos atualiza após importação sem perder edição; campos não ficam presos a outra semana | Pedido das Escolas, Balanço, Produtores, ficha | teste de interface |
+| Gerar pedidos aos produtores a partir da divisão, com prévia (demanda × divisão × pedidos), sem apagar nem sobrescrever em silêncio, preço congelado, auditoria | Produtores → "+ Gerar pedidos aos produtores a partir da divisão" | `specs/010…/tasks.md` |
+| Total a cobrar soma linhas já arredondadas (ciclos novos); ciclos antigos intocados | Resumo, Balanço, PDF do Balanço | `src/lib/roundingPolicy.test.ts` + integração |
 
 ### Preparado sem integração
 - Regras do ciclo (spec 008): `src/lib/domain/cycle.ts` + 40 testes — inclui
@@ -71,14 +73,14 @@ lançamento. Semanas antigas não foram recalculadas.
 
 ### Testes e ambiente
 - `npx tsc --noEmit`, `npx eslint`, `npm run build`: limpos.
-- `npx vitest run --exclude "**/*.integration.test.ts"`: 110 passando,
+- `npx vitest run --exclude "**/*.integration.test.ts"`: 137 passando,
   1 pulado (teste opcional do GZ real; passa com `GZ_XLSX_PATH=<anexo>`).
 - Interface e documentos (Playwright + build de produção) contra um banco
   **criado para o teste e descartável** (`colheita_r2_descartavel_202609261644`,
   seed fictício, Postgres local do container). Nenhum banco real consultado.
 - `npm run test:integration`: agora cria um banco descartável próprio,
   marcado com um código da execução, e o apaga no fim (spec 001, T10).
-  Executado em 26/09/2026: 5 testes passando; rodar o arquivo direto ou
+  Executado em 26/09/2026: 6 testes passando; rodar o arquivo direto ou
   apontar para um banco sem a marca é recusado sem apagar nada.
 
 ### Comandos seguros de verificação
@@ -97,8 +99,9 @@ para banco com dados de operação.
 ### Próximo passo exato
 1. Levar ao Lucas o resumo de `docs/propostas-pendentes.md` ("Para o Lucas") e
    fechar o contrato de integração (§7).
-2. Independente do Lucas: "Gerar pedidos aos produtores a partir da divisão"
-   com prévia (propostas §6), usando as tabelas atuais.
+2. ~~Gerar pedidos aos produtores a partir da divisão~~ — feito (spec 010).
+   Próximo independente do Lucas: revisar com a operação a tela de Produtores
+   com a prévia (demanda × divisão × pedidos) e ajustar textos se preciso.
 3. Validar a importação assim que houver um pedido oficial da prefeitura
    (Excel e/ou PDF).
 4. Depois da persistência do Lucas: ligar `src/lib/domain/cycle.ts` às telas
@@ -109,8 +112,10 @@ para banco com dados de operação.
 `src/lib/import/*`, `src/lib/domain/cycle.ts`, `src/lib/productPolicy.ts`,
 `src/lib/methodology.ts`, `src/lib/pdf/*`,
 `src/app/actions/schoolOrdersImport.ts`,
+`src/lib/producerOrdersFromAllocation.ts`, `src/app/actions/producerOrdersFromAllocation.ts`,
+`src/app/(app)/produtores/GenerateOrdersFromAllocation.tsx`, `src/lib/roundingPolicy.ts`,
 `src/app/(app)/escolas/{ImportSchoolOrders,SchoolOrderCell,EscolasTable}.tsx`,
-`src/app/api/semanas/[weekId]/pdf/*`, `next.config.ts`, `specs/004|008|009`,
+`src/app/api/semanas/[weekId]/pdf/*`, `next.config.ts`, `specs/004|008|009|010`,
 `docs/propostas-pendentes.md`.
 
 ### Integração na develop
@@ -124,6 +129,11 @@ para banco com dados de operação.
   nada foi publicado. `main`/`staging` intocadas (`fcfc7f5`).
 - "Integrar no Git" ≠ "telas conectadas à API Java": as telas continuam no
   Prisma (ver `docs/propostas-pendentes.md` §7).
+- Depois do merge, cada etapa validada (tsc, eslint, testes, build) entra na
+  `develop` por fast-forward a partir da branch de trabalho: etapa 2 do
+  núcleo (`855d33a`), arredondamento por linha (`5e02600`) e divisão → pedido
+  (spec 010, commit seguinte a este registro). Conferir com
+  `git log --oneline origin/develop -5`.
 
 ---
 
@@ -337,7 +347,8 @@ banco ou infraestrutura), detalhadas em `docs/propostas-pendentes.md`:
 - "Confirmar divisão e gerar pedidos automaticamente" pros produtores,
   pra não redigitar a mesma quantidade duas vezes — proposta descrita,
   não implementada, porque precisa saber o que fazer quando já existe um
-  pedido diferente da divisão.
+  pedido diferente da divisão. *(Feito na Rodada 2 — spec 010: pedido
+  diferente só muda com marcação explícita na linha.)*
 
 ## Próximos passos
 
@@ -376,7 +387,9 @@ individuais, aqui só os pontos de entrada):
 - `src/lib/calc.ts`, `src/lib/weekSummary.ts`, `src/app/(app)/diferenca/` — Painel Diferença (Etapa 2).
 - `src/app/(app)/{escolas,produtores}/page.tsx` e fichas, `src/app/(app)/semanas/[weekId]/page.tsx` — navegação por semana histórica (Etapa 3a/4).
 - `src/lib/pdf/`, `src/app/api/semanas/[weekId]/pdf/` — geração de PDF (Etapa 3b).
-- `src/lib/importSchoolOrders.ts`, `src/app/actions/schoolOrdersImport.ts`, `src/app/(app)/escolas/ImportSchoolOrders.tsx` — importação de Excel (Etapa 5).
+- `src/lib/importSchoolOrders.ts`, `src/app/actions/schoolOrdersImport.ts`,
+`src/lib/producerOrdersFromAllocation.ts`, `src/app/actions/producerOrdersFromAllocation.ts`,
+`src/app/(app)/produtores/GenerateOrdersFromAllocation.tsx`, `src/lib/roundingPolicy.ts`, `src/app/(app)/escolas/ImportSchoolOrders.tsx` — importação de Excel (Etapa 5).
 - `docs/plano-de-implementacao.md`, `docs/propostas-pendentes.md`, `docs/relatorio-sessao.md`, `memory.md` — planejamento e documentação.
 
 **Dependências novas** (`package.json`): `@react-pdf/renderer`, `jszip`,

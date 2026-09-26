@@ -4,6 +4,7 @@ import { getOpenWeek, getSettings } from "@/lib/week";
 import { producerPayment } from "@/lib/calc";
 import { isOfferedForNewEntries } from "@/lib/productPolicy";
 import { ProdutoresTable } from "./ProdutoresTable";
+import { GenerateOrdersFromAllocation } from "./GenerateOrdersFromAllocation";
 
 // Aceita ?week=<id> pra consultar (so leitura) uma semana ja fechada —
 // sem o parametro, mostra a semana aberta atual.
@@ -155,6 +156,7 @@ export default async function ProdutoresPage({ searchParams }: { searchParams: P
         </Link>
       </p>
 
+      {week.status === "ABERTA" && <GenerateOrdersFromAllocation key={week.id} weekId={week.id} />}
       <ProdutoresTable key={week.id} rows={rows} />
     </>
   );

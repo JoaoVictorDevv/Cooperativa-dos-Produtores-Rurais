@@ -39,7 +39,10 @@ export function ProducerProductRow({
   };
 }) {
   const [allocated, setAllocated] = useState(initial.allocatedQty === 0 ? "" : String(initial.allocatedQty));
-  const [ordered, setOrdered] = useState(initial.orderedQty === 0 ? "" : String(initial.orderedQty));
+  // Pedido: sem edição em andamento, mostra o valor atual do servidor (ex.:
+  // depois de gerar pedidos a partir da divisão).
+  const [orderDraft, setOrderDraft] = useState<string | null>(null);
+  const ordered = orderDraft ?? (initial.orderedQty === 0 ? "" : String(initial.orderedQty));
   const [delivered, setDelivered] = useState(initial.deliveredQty !== null ? String(initial.deliveredQty) : "");
   const [deliveredAt, setDeliveredAt] = useState(initial.deliveredAt ?? "");
   const [returned, setReturned] = useState(initial.returnedQty === 0 ? "" : String(initial.returnedQty));
@@ -65,12 +68,17 @@ export function ProducerProductRow({
     });
   }
   function saveOrder() {
-    if (!editable) return;
+    if (!editable || orderDraft === null) return;
+    if (num(orderDraft) === initial.orderedQty) {
+      setOrderDraft(null);
+      return;
+    }
     setStatus((s) => ({ ...s, order: "saving" }));
     startTransition(async () => {
-      const r = await saveProducerOrder(weekId, producerId, productId, num(ordered));
+      const r = await saveProducerOrder(weekId, producerId, productId, num(orderDraft));
       setErrors((e) => ({ ...e, order: r.ok ? null : r.error ?? "erro" }));
       setStatus((s) => ({ ...s, order: r.ok ? "saved" : "error" }));
+      if (r.ok) setOrderDraft(null);
     });
   }
   function saveDelivery(nextDelivered: string, nextDate: string) {
@@ -141,6 +149,11 @@ export function ProducerProductRow({
           onBlur={saveAllocation}
         />
         {statusHint("allocation")}
+        {status.allocation !== "saving" && status.allocation !== "saved" && initial.allocatedQty > 0 && (
+          <span className="stat-sub" style={{ display: "block" }}>
+            {initial.orderedQty === 0 ? "só planejado" : initial.orderedQty === initial.allocatedQty ? "pedido emitido" : "pedido ≠ divisão"}
+          </span>
+        )}
       </td>
       <td>
         <input
@@ -149,7 +162,7 @@ export function ProducerProductRow({
           value={ordered}
           title={errors.order ?? undefined}
           onChange={(e) => {
-            setOrdered(e.target.value);
+            setOrderDraft(e.target.value);
             setStatus((s) => ({ ...s, order: "idle" }));
           }}
           onBlur={saveOrder}

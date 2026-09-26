@@ -52,7 +52,10 @@ export function ProducerRow({
   totalPayment: number;
 }) {
   const [open, setOpen] = useState(false);
-  const [lines, setLines] = useState(initialLines);
+  // Linhas vêm do servidor (atualizam após salvar ou gerar pedidos); só as
+  // adicionadas agora na tela, ainda sem lançamento, ficam no estado local.
+  const [addedLines, setAddedLines] = useState<ProductLine[]>([]);
+  const lines = [...initialLines, ...addedLines.filter((a) => !initialLines.some((l) => l.productId === a.productId))];
   const [addingProductId, setAddingProductId] = useState("");
 
   const availableToAdd = allProducts.filter((p) => !lines.some((l) => l.productId === p.id));
@@ -60,7 +63,7 @@ export function ProducerRow({
   function addProduct() {
     const product = allProducts.find((p) => p.id === addingProductId);
     if (!product) return;
-    setLines((prev) => [
+    setAddedLines((prev) => [
       ...prev,
       {
         productId: product.id,

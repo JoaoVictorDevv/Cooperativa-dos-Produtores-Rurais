@@ -98,11 +98,14 @@ auditoria. PDFs não substituem backup.
 
 ## 6. Divisão → pedido aos produtores sem redigitar
 
-Continua pendente. Há suporte no modelo atual (`ProducerAllocation` →
-`ProducerOrder`). Proposta: ação "Gerar pedidos a partir da divisão" com prévia,
-sem sobrescrever pedido já digitado diferente sem decisão explícita, sem tocar
-em entregas. Pode ser feito pelo Claude numa próxima etapa sem depender de
-schema.
+**FEITO (26/09/2026)** — spec [`010-divisao-para-pedidos`](../specs/010-divisao-para-pedidos/spec.md).
+Em Produtores (ciclo aberto): "+ Gerar pedidos aos produtores a partir da
+divisão" → prévia com demanda das escolas × divisão × pedidos → confirmação.
+Pedido digitado diferente só muda com marcação explícita na linha; nada é
+apagado; entregas não são tocadas; preço congelado na criação; auditoria com
+motivo. Usa as tabelas atuais, sem mudança de schema. Quando a API do Lucas
+assumir os pedidos, a regra pura (`src/lib/producerOrdersFromAllocation.ts`)
+pode ser reaproveitada.
 
 ## 7. Contrato de integração Next.js ↔ API Java (proposta para alinhar)
 
@@ -148,7 +151,9 @@ ligadas. **Integrar os commits no Git (feito) é diferente de conectar as telas
 - Resumo por ciclo com a metodologia (spec 008, item 6 do plan) e dados dos
   documentos (spec 004) — ou listas paginadas suficientes para o Next montar os
   PDFs.
-- Gerar pedidos a partir da divisão (item 6), se feito no servidor.
+- Gerar pedidos a partir da divisão (item 6): já implementada no Next sobre as
+  tabelas atuais (spec 010); se passar para a API, manter as mesmas garantias
+  (prévia, transação única, atualização condicionada, preço congelado, auditoria).
 
 ### 7.5 Revisão técnica da API atual (para revisão conjunta)
 Encontrado lendo `api/` e `database/` (sem executar):

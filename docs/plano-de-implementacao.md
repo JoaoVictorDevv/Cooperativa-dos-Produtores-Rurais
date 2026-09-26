@@ -100,8 +100,8 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
 - [x] **R2-8 Validação e integração** — merge `fce91a3` na develop, push confirmado — tsc, lint, build, testes; merge na
   develop + push; confirmar commits em `origin/develop`; relatório e
   retomada.
-- [ ] **R2-10 Divisão → pedido aos produtores com prévia** (propostas §6) —
-  independente do Lucas; próxima etapa sugerida.
+- [x] **R2-10 Divisão → pedido aos produtores com prévia** (propostas §6) —
+  spec 010; implementada e testada (unitários + interface em banco descartável).
 - [B] **R2-9 Mapa de Montagem** (Etapa 7 do prompt) — só depois do núcleo
   validado com persistência real. Não iniciar nesta rodada enquanto R2-2
   estiver bloqueado.
