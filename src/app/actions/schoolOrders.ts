@@ -6,6 +6,7 @@ import { requireOperator } from "@/lib/dal";
 import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable, getCurrentPrice } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
+import { isOfferedForNewEntries } from "@/lib/productPolicy";
 
 export interface SaveResult {
   ok: boolean;
@@ -47,6 +48,12 @@ export async function saveSchoolOrder(
       const existing = await tx.schoolOrder.findUnique({
         where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
       });
+      if (!existing) {
+        const product = await tx.product.findUniqueOrThrow({ where: { id: productId } });
+        if (!isOfferedForNewEntries(product)) {
+          throw new Error(`${product.name} está fora da oferta ativa: não recebe novos pedidos (lançamentos antigos continuam no histórico).`);
+        }
+      }
       // Preco congelado no primeiro lancamento — uma correcao de
       // quantidade nao deve re-resolver o preco vigente por baixo.
       const saved = await tx.schoolOrder.upsert({

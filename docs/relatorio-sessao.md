@@ -1,4 +1,115 @@
-# Relatório da sessão — Diferenças, Histórico, PDFs e Importação
+# Relatório de sessão e ponto de retomada — Colheita
+
+> **Outro agente ou pessoa continuando daqui:** leia esta seção inteira, depois
+> `specs/README.md`, as specs 004/008/009, `docs/plano-de-implementacao.md`
+> (lista única de etapas) e o prompt autorizado em
+> `docs/prompts/2026-09-24-prompt-v2-operacao-specs-develop.md`. Confira o Git
+> antes de agir (os hashes abaixo são uma fotografia).
+
+## Rodada 2 (24–26/09/2026) — situação atual
+
+### Em uma frase
+A importação do pedido da prefeitura (Excel com várias abas e PDF com texto),
+os documentos (romaneio com data/horário real e 4 vias) e a interface foram
+corrigidos e testados; **o núcleo novo — entrega real por escola, complementos,
+faltas e cobrança pelo aceito — tem as regras confirmadas e testadas em
+memória, mas ainda não existe no banco nem nas telas**, porque depende do
+Lucas (schema/API).
+
+### Git
+- Branch de trabalho: `feat/relatorios-diferencas-importacao`.
+- A Rodada 1 já estava na `develop` (merge `2997ac2`, feito pelo João Victor
+  em 25/09, junto com a API Java/banco novo do Lucas, `3e77064`). A branch de
+  trabalho foi avançada por fast-forward; não houve merge a repetir.
+- Commits desta rodada (todos enviados à branch de trabalho): `78baa41`
+  (prompt e plano), `6f907ac` (spec 008 + núcleo), `637915a` (spec 009
+  importação), `dbd887a` (spec 004 documentos), `cd85967` (interface) e o
+  commit de documentação final. Integração na `develop`: ver
+  "Integração" no fim desta seção.
+
+### Implementado e testado
+| O quê | Onde clicar | Evidência |
+|---|---|---|
+| Importação Excel: abas selecionáveis, cabeçalho Pedido/Entrega (só Pedido entra), zero explícito, `1.000` ambíguo, colunas e escolas duplicadas, conflito código × nome (2044, 3016), fórmulas sem resultado, precisão, unidades, reconciliação, gravação atômica revalidada no servidor, proteção contra edição concorrente, reimportação sem duplicar | Pedido das Escolas → "+ Importar pedido da prefeitura" | `specs/009…/tasks.md` |
+| Importação de PDF com texto (tabela simples, várias páginas) | mesmo botão, arquivo `.pdf` | `src/lib/import/pdf.test.tsx` |
+| Romaneio com conferência em branco, "Data da entrega / Horário da entrega", nome e assinatura; 4 vias; romaneio individual | Semana → Documentos; ficha da escola | `specs/004…/tasks.md` |
+| PDFs com ciclo e cabeçalho repetidos, numeração, nomes por ciclo/data, 191 escolas (ZIP ~11 s) | Semana → Documentos | idem |
+| Ovos fora de novos lançamentos sem sumir do histórico | Pedido das Escolas, Produtores, importação | idem + teste com Ovos desativado |
+| Termos "A cobrar / A pagar / Resultado calculado" e metodologia visível | Painel, Semana, Resumo, Balanço, PDF do Balanço | varredura de telas |
+| Grade de pedidos atualiza após importação sem perder edição; campos não ficam presos a outra semana | Pedido das Escolas, Balanço, Produtores, ficha | teste de interface |
+
+### Preparado sem integração
+- Regras do ciclo (spec 008): `src/lib/domain/cycle.ts` + 32 testes. Não usado
+  por telas, PDFs ou totais.
+
+### Implementado, mas não validado com dado oficial
+- Importação com **pedido oficial da prefeitura de Petrópolis** (Excel ou PDF):
+  nenhum exemplo oficial disponível. O GZ é de outra operação e só serviu para
+  testar formato.
+
+### Bloqueado por dependência do Lucas
+- Entrega por escola/produto, complementos, perda antes da escola, decisão de
+  falta, fechamento pelos novos estados, cobrança pelo aceito (spec 008).
+- Correções na API: preço/desconto congelados, devolução × entrega no
+  servidor, auditoria com antes/depois (`docs/propostas-pendentes.md` §7.5).
+- Contrato de integração Next ↔ API (§7) — nenhuma tela consome a API ainda.
+- Desativar Ovos no banco real; backup e ensaio de restauração.
+- **Mapa de Montagem (Etapa 7) não iniciado**: por regra do prompt, só depois do
+  núcleo validado com persistência real.
+
+### Alterações financeiras nesta rodada
+Nenhuma fórmula foi trocada. A cobrança continua `pedido − devolução` (agora
+identificada como "metodologia atual" nas telas e no PDF). Pagamento ao
+produtor continua `(entrega − devolução) × (preço − desconto)`, congelados no
+lançamento. Semanas antigas não foram recalculadas.
+
+### Testes e ambiente
+- `npx tsc --noEmit`, `npx eslint`, `npm run build`: limpos.
+- `npx vitest run --exclude "**/*.integration.test.ts"`: 110 passando,
+  1 pulado (teste opcional do GZ real; passa com `GZ_XLSX_PATH=<anexo>`).
+- Interface e documentos (Playwright + build de produção) contra um banco
+  **criado para o teste e descartável** (`colheita_r2_descartavel_202609261644`,
+  seed fictício, Postgres local do container). Nenhum banco real consultado.
+- `npm run test:integration` **não** foi executado nesta rodada (não havia
+  banco comprovadamente descartável configurado em `.env.test`; o nome
+  `colheita_test` sozinho não comprova isso).
+
+### Comandos seguros de verificação
+```bash
+git fetch origin && git status && git log --oneline origin/develop -5
+npx tsc --noEmit && npx eslint src && npm run build
+npx vitest run --exclude "**/*.integration.test.ts"
+GZ_XLSX_PATH=/caminho/do/anexo.xlsx npx vitest run src/lib/import   # opcional
+```
+Testes com banco: só num banco criado para isso (ex.: `createdb
+colheita_tmp_x`, `DATABASE_URL=… npx prisma migrate deploy`, `npm run db:seed`),
+apagado depois. Nunca apontar para banco com dados de operação.
+
+### Próximo passo exato
+1. Levar ao Lucas o resumo de `docs/propostas-pendentes.md` ("Para o Lucas") e
+   fechar o contrato de integração (§7).
+2. Independente do Lucas: "Gerar pedidos aos produtores a partir da divisão"
+   com prévia (propostas §6), usando as tabelas atuais.
+3. Validar a importação assim que houver um pedido oficial da prefeitura
+   (Excel e/ou PDF).
+4. Depois da persistência do Lucas: ligar `src/lib/domain/cycle.ts` às telas
+   de conferência na escola/galpão, fechamento e cobrança (tarefas T05–T11 da
+   spec 008); só então a Etapa 7 (Mapa de Montagem).
+
+### Arquivos principais desta rodada
+`src/lib/import/*`, `src/lib/domain/cycle.ts`, `src/lib/productPolicy.ts`,
+`src/lib/methodology.ts`, `src/lib/pdf/*`,
+`src/app/actions/schoolOrdersImport.ts`,
+`src/app/(app)/escolas/{ImportSchoolOrders,SchoolOrderCell,EscolasTable}.tsx`,
+`src/app/api/semanas/[weekId]/pdf/*`, `next.config.ts`, `specs/004|008|009`,
+`docs/propostas-pendentes.md`.
+
+### Integração na develop
+(preenchido ao integrar — ver abaixo)
+
+---
+
+# Rodada 1 (histórico, 22–23/09/2026) — Diferenças, Histórico, PDFs e Importação
 
 **Branch:** `feat/relatorios-diferencas-importacao` (a partir da `develop`,
 sem integrar de volta, sem tocar em `main`/`staging`, sem deploy).

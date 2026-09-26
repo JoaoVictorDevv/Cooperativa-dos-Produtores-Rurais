@@ -13,6 +13,8 @@ interface SchoolRow {
 interface ProductCol {
   id: string;
   name: string;
+  // Fora da oferta ativa (ex.: Ovos): aparece só se já tem lançamento, sem edição.
+  offered: boolean;
 }
 
 export function EscolasTable({
@@ -57,8 +59,9 @@ export function EscolasTable({
               <th style={{ position: "sticky", left: 0, background: "var(--panel)" }}>Código</th>
               <th style={{ position: "sticky", left: 70, background: "var(--panel)" }}>Escola</th>
               {products.map((p) => (
-                <th key={p.id} style={{ width: 90 }}>
+                <th key={p.id} style={{ width: 90 }} title={p.offered ? undefined : "Fora da oferta ativa: só consulta do que já foi lançado"}>
                   {p.name}
+                  {!p.offered && <span className="sub"> (fora da oferta)</span>}
                 </th>
               ))}
               <th></th>
@@ -70,7 +73,7 @@ export function EscolasTable({
                 <td className="code-tag" style={{ position: "sticky", left: 0, background: "var(--panel)" }}>
                   {school.code}
                 </td>
-                <td className="name-cell" style={{ position: "sticky", left: 70, background: "var(--panel)" }}>
+                <td className="name-cell" style={{ position: "sticky", left: 70, background: "var(--panel)", minWidth: 220 }}>
                   {school.name}
                   {school.neighborhood && <span className="sub">{school.neighborhood}</span>}
                 </td>
@@ -81,7 +84,7 @@ export function EscolasTable({
                       schoolId={school.id}
                       productId={p.id}
                       initialValue={orders[`${school.id}:${p.id}`] ?? 0}
-                      editable={editable}
+                      editable={editable && p.offered}
                     />
                   </td>
                 ))}

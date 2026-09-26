@@ -34,7 +34,9 @@ export default async function SchoolDetailPage({
       prisma.schoolOrder.findMany({ where: { weekId: week.id, schoolId: school.id } }),
       prisma.schoolReturn.findMany({ where: { weekId: week.id, schoolId: school.id } }),
       prisma.schoolDelivery.findUnique({ where: { weekId_schoolId: { weekId: week.id, schoolId: school.id } } }),
-      prisma.product.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
+      // Sem filtro de ativo: a ficha só lista produtos com pedido neste ciclo,
+      // e um produto desativado depois (ex.: Ovos) não pode sumir do histórico.
+      prisma.product.findMany({ orderBy: { name: "asc" } }),
     ]);
     orders = orderRows.map((o) => ({ productId: o.productId, orderedQty: Number(o.orderedQty) }));
     returnsByProduct = new Map(
@@ -53,9 +55,15 @@ export default async function SchoolDetailPage({
         ← Voltar para Pedido das Escolas
       </Link>
 
-      {week && week.status === "ABERTA" && (
+      {week && (
         <div className="rm-actions">
-          <PrintButton />
+          {week.status === "ABERTA" && <PrintButton />}
+          <a className="btn-ghost" href={`/api/semanas/${week.id}/pdf/romaneios-escolas?escola=${encodeURIComponent(school.code)}`}>
+            Romaneio desta escola (PDF)
+          </a>
+          <a className="btn-ghost" href={`/api/semanas/${week.id}/pdf/romaneios-escolas?escola=${encodeURIComponent(school.code)}&vias=4`}>
+            4 vias (PDF)
+          </a>
         </div>
       )}
       {!week && <p>Não há semana aberta — exibindo apenas o cadastro da escola.</p>}
@@ -90,6 +98,7 @@ export default async function SchoolDetailPage({
 
         {week && (
           <DeliveryForm
+            key={week.id}
             weekId={week.id}
             schoolId={school.id}
             initialWeekday={delivery?.weekday ?? null}
@@ -99,6 +108,7 @@ export default async function SchoolDetailPage({
         )}
 
         <div className="rm-table-title">Produtos pedidos nesta semana</div>
+        <div className="table-scroll">
         <table>
           <thead>
             <tr>
@@ -114,7 +124,7 @@ export default async function SchoolDetailPage({
               const existingReturn = returnsByProduct.get(p.id);
               return (
                 <ReturnRow
-                  key={p.id}
+                  key={`${week?.id}-${p.id}`}
                   weekId={week!.id}
                   schoolId={school.id}
                   productId={p.id}
@@ -137,6 +147,7 @@ export default async function SchoolDetailPage({
             )}
           </tbody>
         </table>
+        </div>
 
         <div className="rm-sign">
           <div className="line">Assinatura de quem recebeu</div>

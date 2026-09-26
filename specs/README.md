@@ -14,5 +14,22 @@ O código pode explicar **como** algo funciona. As especificações devem explic
 
 ## Incrementos
 
-- [`001-integridade-operacional`](./001-integridade-operacional/spec.md): endurecimento da fundação antes do primeiro piloto.
+- [`001-integridade-operacional`](./001-integridade-operacional/spec.md): endurecimento da fundação antes do primeiro piloto (ver adendo de 2026-09 sobre fechamento e testes seguros).
+- [`004-relatorios-exportacoes`](./004-relatorios-exportacoes/spec.md): documentos do ciclo em PDF/ZIP e romaneio escolar (data/horário real, 4 vias). Implementada no modelo atual; conteúdos de aceite real dependem da 008.
+- [`008-recebimentos-faltas-fechamento`](./008-recebimentos-faltas-fechamento/spec.md): dois recebimentos (galpão e escola), complementos, faltas e fechamento. Regras confirmadas e testadas em memória; persistência bloqueada (Lucas).
+- [`009-importacao-pedido-prefeitura`](./009-importacao-pedido-prefeitura/spec.md): importação do pedido da prefeitura (Excel com várias abas e PDF com texto), com conferência e gravação atômica. Implementada e testada; falta validar com arquivo oficial da prefeitura.
 - [`backlog.md`](./backlog.md): próximas especificações candidatas, ainda não aprovadas para implementação.
+
+## Numeração
+
+Os números 002 a 007 estão reservados pelos candidatos do [`backlog.md`](./backlog.md).
+Um candidato promovido mantém o número do backlog; um assunto novo recebe o
+próximo número livre depois deles (008 em diante).
+
+## Regra vigente × regra substituída
+
+Quando uma regra confirmada substitui outra, a spec nova traz a tabela
+"Regras substituídas" (o que era, onde estava no código, alcance da troca e
+transição do histórico). Nenhuma regra antiga é apagada do histórico; ela é
+marcada como substituída para que nenhum agente encontre duas regras vigentes
+incompatíveis.

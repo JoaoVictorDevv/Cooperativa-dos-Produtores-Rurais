@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getOpenWeek, getSettings } from "@/lib/week";
 import { producerPayment } from "@/lib/calc";
+import { isOfferedForNewEntries } from "@/lib/productPolicy";
 import { ProdutoresTable } from "./ProdutoresTable";
 
 // Aceita ?week=<id> pra consultar (so leitura) uma semana ja fechada —
@@ -28,9 +29,10 @@ export default async function ProdutoresPage({ searchParams }: { searchParams: P
 
   const [producers, products, mapEntries, allocations, orders, deliveries, returns, settings, reasons] =
     await Promise.all([
-      prisma.producer.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
+      prisma.producer.findMany({ orderBy: { name: "asc" } }),
+      // Todos os produtos: linhas antigas de um produto desativado depois
+      // (ex.: Ovos) continuam aparecendo. Novos lançamentos só na oferta ativa.
       prisma.product.findMany({
-        where: { active: true },
         orderBy: { name: "asc" },
         include: { prices: { where: { validTo: null } } },
       }),
@@ -72,7 +74,12 @@ export default async function ProdutoresPage({ searchParams }: { searchParams: P
     returns.map((r) => [`${r.producerId}:${r.productId}`, { returnedQty: Number(r.returnedQty), returnReasonId: r.returnReasonId }]),
   );
 
-  const rows = producers.map((producer) => {
+  const producersWithData = new Set(
+    [...allocations, ...orders, ...deliveries, ...returns].map((x) => x.producerId),
+  );
+  const visibleProducers = producers.filter((p) => p.active || producersWithData.has(p.id));
+
+  const rows = visibleProducers.map((producer) => {
     const relevantIds = new Set<string>(planByProducer.get(producer.id) ?? []);
     for (const key of [...allocByKey.keys(), ...orderByKey.keys(), ...deliveryByKey.keys(), ...returnByKey.keys()]) {
       const [pid, prodId] = key.split(":");
@@ -119,7 +126,7 @@ export default async function ProdutoresPage({ searchParams }: { searchParams: P
       editable: week.status === "ABERTA",
       reasons,
       initialLines: lines,
-      allProducts: products.map((p) => ({
+      allProducts: products.filter((p) => isOfferedForNewEntries(p)).map((p) => ({
         id: p.id,
         name: p.name,
         slug: p.slug,
@@ -148,7 +155,7 @@ export default async function ProdutoresPage({ searchParams }: { searchParams: P
         </Link>
       </p>
 
-      <ProdutoresTable rows={rows} />
+      <ProdutoresTable key={week.id} rows={rows} />
     </>
   );
 }

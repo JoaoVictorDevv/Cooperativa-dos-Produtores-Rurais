@@ -1,15 +1,135 @@
-# Plano de implementação — Diferenças, Histórico/PDFs, Importação
+# Plano de implementação — Colheita
 
-Branch de trabalho: `feat/relatorios-diferencas-importacao` (criada a partir da
-`develop` atualizada, commit `6d632cb`).
+Este arquivo tem duas partes:
 
-Este documento guarda o prompt completo que orienta esta etapa do trabalho
-(seção "Prompt completo" abaixo) e a organização desse prompt em etapas
-sequenciáveis (seção "Plano por etapas"). O `memory.md` referencia este
-arquivo e registra o progresso real, etapa por etapa, com arquivos alterados,
-testes executados e pendências — não duplicar esse controle aqui.
+1. **Rodada 2 (vigente, a partir de 24/09/2026)** — logo abaixo. Orientada
+   pelo prompt `docs/prompts/2026-09-24-prompt-v2-operacao-specs-develop.md`
+   (cópia integral). É a única lista de etapas em vigor.
+2. **Rodada 1 (histórico, 22–23/09/2026)** — mais abaixo, preservada como
+   registro. Onde a Rodada 1 contradiz a Rodada 2, vale a Rodada 2 (ver
+   "Hipóteses e regras substituídas").
 
-## Regras gerais desta sessão (não violar)
+O `memory.md` e o `docs/relatorio-sessao.md` registram o progresso real e o
+ponto de retomada. As regras de produto ficam em `specs/` (fonte de verdade).
+
+---
+
+## Rodada 2 — operação real, specs e integração na develop
+
+### Estado do Git no início da rodada (26/09/2026, conferido)
+
+- `origin/develop` = `2997ac2`: merge (feito pelo João Victor em 25/09) de
+  `origin/feat/relatorios-diferencas-importacao` (`194f5f9`) com o commit do
+  Lucas `3e77064` (API Java em `api/`, PostgreSQL novo em `database/`). O
+  merge foi limpo (nenhum conflito resolvido à mão).
+- Todos os 9 commits da Rodada 1 já estão na develop. **Não há merge a
+  repetir.** A branch de trabalho `feat/relatorios-diferencas-importacao` foi
+  avançada por fast-forward até `2997ac2` e segue como branch de trabalho.
+- `main`/`staging` = `fcfc7f5` (não tocar).
+
+### Regras desta rodada (não violar)
+
+- Integração e push na `develop` **autorizados** pelo Lucas depois de
+  validação (typecheck, lint, build, testes). Sem force push, sem reescrever
+  histórico, sem `main`/`staging`, sem produção.
+- Não alterar schema, migrações, seed, conexão, credenciais, infraestrutura,
+  `api/` ou `database/` (área do Lucas). Mudanças necessárias nessas áreas
+  viram dependência documentada em `docs/propostas-pendentes.md`.
+- Não expandir o Prisma antigo para criar um segundo núcleo operacional. Não
+  migrar telas para a API Java sem contrato combinado.
+- Não consultar nem modificar banco real. Testes destrutivos só em banco
+  comprovadamente descartável — nome com "test" não basta.
+- Preservar visual atual (inclusive a camada "Colheita 2.0" do Lucas), auth,
+  permissões e auditoria automática.
+- Não declarar pronto o que só tem documentação, componente sem persistência
+  ou regra testada em memória.
+
+### Hipóteses e regras substituídas (histórico preservado)
+
+| Antes (Rodada 1 / specs antigas) | Agora (regra confirmada com Seu Paulo) | Onde está a regra nova |
+|---|---|---|
+| "Não integrar na develop" | Integração autorizada após validação | este plano, §Regras |
+| Cobrança da prefeitura = pedido − devolução ("regra vigente até decisão") | Cobrança = quantidade **aceita pela escola** (entregas + complementos − rejeições escolares). A fórmula antiga continua no código **só** até existir fonte persistida de entrega por escola/produto — não se troca a fórmula sem essa fonte | `specs/008-recebimentos-faltas-fechamento/spec.md` |
+| Pagamento ao produtor sujeito a qualquer devolução | Produtor recebe pelo **aceito no galpão**; rejeição na escola é perda da cooperativa, nunca descontada do produtor | spec 008 |
+| Proposta de carregar reposição pendente para a semana seguinte | Proibido. Cada falta é resolvida por complemento no mesmo ciclo ou **encerrada sem atendimento** antes do fechamento; não vira pedido/cobrança/pendência na semana seguinte | spec 008 |
+| Uma entrega por escola por semana | Pode haver complementos no mesmo ciclo; cada evento preserva o anterior | spec 008 |
+| Fechamento bloqueia só por "entrega registrada" (CA-03.1/03.2) | Fechamento separa recebimento conferido / valor calculado / pronto para fechar; faltas precisam de decisão | spec 008 (CA-03.* da spec 001 continuam valendo como mínimo técnico até a substituição) |
+| Import lê só a primeira aba e procura "CÓDIGO" | Seleção explícita de abas, cabeçalho Pedido/Entrega em 2 linhas, só colunas de Pedido | `specs/009-importacao-pedido-prefeitura/spec.md` |
+| Backup verificado rodando `npm run test:integration` na cópia restaurada | Proibido: a suíte chama `resetDb()` e apaga o que foi restaurado. Verificação de restauração só com leituras | `docs/propostas-pendentes.md` §5 |
+
+### Etapas da Rodada 2 — lista única de estado
+
+Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
+`[B]` bloqueado (dependência externa) · `[P]` preparado sem integração.
+
+- [x] **R2-0 Diagnóstico e registro** (commit `78baa41`) — Git, specs, API/DB do Lucas, arquivos
+  GZ e MODELO v20; prompt salvo; este plano; commit+push antes de
+  implementar.
+- [x] **R2-1 Specs** (004, 008, 009 + adendo 001) — criar `specs/008-recebimentos-faltas-fechamento`,
+  `specs/009-importacao-pedido-prefeitura`, promover `SPEC-004 Relatórios e
+  exportações` do backlog para `specs/004-relatorios-exportacoes`, adendo na
+  001 (testes seguros, substituição de CA-03). Atualizar `specs/README.md` e
+  `specs/backlog.md`.
+- [P] **R2-2 Núcleo de domínio** (spec 008) — regras puras e 32 testes feitos (commit `6f907ac`); preparado sem integração — funções puras + testes:
+  galpão (bruto−rejeição=aceito), escola (apresentado−rejeição=aceito),
+  complementos, falta/excedente, perda pré-escola × rejeição escolar, estados
+  de conferência e "pronto para fechar". **Persistência: [B] Lucas** (não há
+  tabela de entrega por escola/produto nem de complemento/decisão de falta).
+- [x] **R2-3 Importação Excel** (spec 009) — ver `specs/009…/tasks.md`; falta só validar com arquivo oficial [B] — motor novo (abas, cabeçalho 2
+  linhas, Pedido×Entrega, zero explícito, `1.000`, colunas duplicadas,
+  conflito código×nome, fórmula sem resultado, precisão, unidades), prévia
+  com seleção de abas e resolução de pendências, confirmação atômica com
+  revalidação no servidor. Testes com estrutura do GZ e sintético de 191
+  escolas.
+- [x] **R2-4 Importação PDF com texto** (spec 009) — layout tabular simples testado; PDF oficial não testado [B] — extração local, sem
+  serviço externo; reaproveita prévia/confirmação. OCR: [B] infraestrutura
+  não autorizada.
+- [x] **R2-5 Documentos** (spec 004) — ver `specs/004…/tasks.md`; romaneio de complemento/aceite real [B] spec 008 — romaneio com "Data da entrega /
+  Horário da entrega" manuais, conferência em branco, opção de 4 vias sem
+  duplicar dados; cabeçalho de ciclo e de tabela repetidos por página,
+  paginação; aviso de modelo antigo em "Entregas às Escolas"; teste com 191
+  escolas; Ovos no histórico.
+- [x] **R2-6 Interface confiável** (commit `cd85967`) — `useState(initialValue)` desatualizado
+  após importação/troca de ciclo; rótulos "A cobrar/A pagar/Resultado
+  calculado"; Ovos fora de novos lançamentos (regra de app, sem mexer no
+  banco).
+- [x] **R2-7 Contrato de integração para o Lucas** (`docs/propostas-pendentes.md` §7) — backend alvo, sessão,
+  organização/IDs, histórico, endpoints, divisão de trabalho; revisão
+  técnica da API (devolução × recebimento, preço histórico no upsert,
+  fechamento). Em `docs/propostas-pendentes.md`.
+- [~] **R2-8 Validação e integração** — tsc, lint, build, testes; merge na
+  develop + push; confirmar commits em `origin/develop`; relatório e
+  retomada.
+- [ ] **R2-10 Divisão → pedido aos produtores com prévia** (propostas §6) —
+  independente do Lucas; próxima etapa sugerida.
+- [B] **R2-9 Mapa de Montagem** (Etapa 7 do prompt) — só depois do núcleo
+  validado com persistência real. Não iniciar nesta rodada enquanto R2-2
+  estiver bloqueado.
+
+Critérios de conclusão de cada etapa: estão nos `tasks.md` das specs
+correspondentes, vinculados aos critérios de aceite.
+
+### Exemplos de teste (onde estão)
+
+- `Planilha_de_Pedido_22-06-2026_-_GZ_Alimentos.xlsx` — anexo do prompt v2,
+  modelo de **outra operação**, usado só para testar formato. Não é
+  versionado no repositório. Os testes automatizados usam uma reprodução
+  sintética da estrutura dele (`src/lib/import/fixtures/`). Há um teste
+  opcional que roda contra o arquivo real se a variável `GZ_XLSX_PATH`
+  apontar para ele.
+- `controle_escolas_produtores_2026_MODELO_v20.xlsx` — referência atual de
+  campos, cálculos e romaneios (anexo do prompt v2). Não versionado.
+- `TESTE_CICLO_FINANCEIRO_v3.xlsx` — citado no prompt, **não foi anexado**
+  nesta sessão.
+
+---
+
+## Rodada 1 (histórico) — Diferenças, Histórico/PDFs, Importação
+
+Branch de trabalho na época: `feat/relatorios-diferencas-importacao` (criada a
+partir da `develop`, commit `6d632cb`). Integrada na develop em `2997ac2`.
+
+## Regras gerais da Rodada 1 (históricas — ver Rodada 2 para as vigentes)
 
 - Preservar as implementações do olucasgon e os 5 ajustes do commit `6d632cb`
   — esse commit é referência de trabalho concluído, não um ponto para

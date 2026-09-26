@@ -77,7 +77,7 @@ export default async function DashboardPage() {
 
       <div className="stat-row">
         <div className="card stat money-in">
-          <div className="stat-label">Vendas Merenda Escolar (PMP)</div>
+          <div className="stat-label">A cobrar — Merenda Escolar (PMP)</div>
           <div className="stat-value">{fmtMoney(summary.treasuryTotal)}</div>
         </div>
         <div className="card stat money-out">
@@ -86,7 +86,7 @@ export default async function DashboardPage() {
           <div className="stat-sub">{pending.length} produtor(es) com pedido sem entrega registrada</div>
         </div>
         <div className={`card stat ${summary.balance >= 0 ? "balance-pos" : "balance-neg"}`}>
-          <div className="stat-label">Saldo da semana (após custos)</div>
+          <div className="stat-label">Resultado calculado (após custos)</div>
           <div className={`stat-value ${summary.balance >= 0 ? "pos" : "neg"}`}>{fmtMoney(summary.balance)}</div>
           <div className="stat-sub">Margem bruta − custos reais de logística</div>
         </div>

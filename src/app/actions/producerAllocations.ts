@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireOperator } from "@/lib/dal";
+import { isOfferedForNewEntries } from "@/lib/productPolicy";
 import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
@@ -28,6 +29,12 @@ export async function saveProducerAllocation(
       const existing = await tx.producerAllocation.findUnique({
         where: { weekId_productId_producerId: { weekId, productId, producerId } },
       });
+      if (!existing) {
+        const product = await tx.product.findUniqueOrThrow({ where: { id: productId } });
+        if (!isOfferedForNewEntries(product)) {
+          throw new Error(`${product.name} está fora da oferta ativa: não recebe novos lançamentos (os antigos continuam no histórico).`);
+        }
+      }
       const saved = await tx.producerAllocation.upsert({
         where: { weekId_productId_producerId: { weekId, productId, producerId } },
         update: { allocatedQty },

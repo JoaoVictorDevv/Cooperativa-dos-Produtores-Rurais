@@ -1,6 +1,34 @@
 # Colheita — estado atual
 
-## Sessão atual: relatórios, diferenças e importação
+## Rodada 2 (vigente desde 24/09/2026): operação real, specs, develop
+
+**Comece por aqui:** `docs/relatorio-sessao.md` (ponto de entrada e
+retomada), `docs/plano-de-implementacao.md` (lista única de etapas R2-0…R2-9
+com estado), `specs/README.md` (regras de produto) e o prompt integral em
+`docs/prompts/2026-09-24-prompt-v2-operacao-specs-develop.md`.
+
+- Branch de trabalho: `feat/relatorios-diferencas-importacao`. Integração e
+  push na `develop` autorizados pelo Lucas após validação. `main`/`staging`
+  intocáveis; sem force push; sem produção.
+- A Rodada 1 inteira já estava na develop (merge `2997ac2`, feito pelo João
+  Victor em 25/09, junto com o commit `3e77064` do Lucas: API Java em
+  `api/` + PostgreSQL em `database/`). A branch de trabalho foi avançada por
+  fast-forward até `2997ac2`.
+- **Arquitetura em transição**: as telas Next.js usam Prisma direto; a API
+  Java do Lucas usa outro banco (schema `colheita`, UUID, `organization_id`)
+  e não está ligada às telas. Não migrar sem contrato combinado — o contrato
+  proposto fica em `docs/propostas-pendentes.md`.
+- **Regras de negócio confirmadas** (substituem hipóteses antigas): produtor
+  recebe pelo aceito no galpão; prefeitura paga pelo aceito na escola;
+  rejeição na escola é perda da cooperativa; faltas se resolvem no mesmo
+  ciclo (complemento) ou são encerradas sem atendimento — nunca carregadas
+  para a semana seguinte. Detalhes e exemplos: `specs/008-…/spec.md`.
+- Progresso detalhado por etapa: seção "Progresso da Rodada 2" do
+  `docs/relatorio-sessao.md`.
+
+---
+
+## Rodada 1 (histórico): relatórios, diferenças e importação
 **Branch de trabalho:** `feat/relatorios-diferencas-importacao` (criada a
 partir da `develop` no commit `6d632cb`, que já inclui o trabalho do
 olucasgon e os 5 ajustes pequenos do modelo — preservar, não reverter).

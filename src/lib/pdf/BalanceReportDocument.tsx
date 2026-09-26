@@ -1,5 +1,6 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import { COOP_NAME, pdfStyles } from "./styles";
+import { LEGACY_BILLING_NOTE, pdfStyles } from "./styles";
+import { PageFrame } from "./SimpleReport";
 import type { WeekStatus } from "@prisma/client";
 
 export interface BalanceReportProps {
@@ -37,29 +38,27 @@ export function BalanceReportDocument({
   reconciliationNote,
 }: BalanceReportProps) {
   return (
-    <Document>
-      <Page size="A4" style={pdfStyles.page}>
-        <Text style={pdfStyles.brand}>{COOP_NAME}</Text>
-        <Text style={pdfStyles.sub}>
-          Semana {weekNumber} · {weekRange}
-        </Text>
+    <Document title={`Balanço Financeiro — Semana ${weekNumber}`}>
+      <Page size="A4" style={[pdfStyles.page, { paddingBottom: 36 }]}>
+        <PageFrame title="Balanço Financeiro" weekNumber={weekNumber} weekRange={weekRange} weekStatus={weekStatus} />
         <Text style={pdfStyles.title}>Balanço Financeiro</Text>
         <Text style={pdfStyles.meta}>
-          Emitido em {issuedAt} · Status da semana no momento da emissão: {weekStatus}
+          Emitido em {issuedAt} · Status do ciclo na emissão: {weekStatus}
         </Text>
         {weekStatus === "ABERTA" && (
           <Text style={pdfStyles.openNotice}>
-            Atenção: esta semana ainda está ABERTA. Os valores abaixo podem mudar até o fechamento.
+            Atenção: este ciclo ainda está ABERTO. Os valores abaixo podem mudar até o fechamento.
           </Text>
         )}
+        <Text style={pdfStyles.methodNotice}>{LEGACY_BILLING_NOTE}</Text>
 
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8 }}>
           <View>
-            <Text style={{ fontSize: 8, color: "#555" }}>Vendas Merenda Escolar (PMP)</Text>
+            <Text style={{ fontSize: 8, color: "#555" }}>A cobrar — Merenda Escolar (PMP)</Text>
             <Text style={{ fontSize: 12, fontWeight: 700 }}>{treasuryTotalLabel}</Text>
           </View>
           <View>
-            <Text style={{ fontSize: 8, color: "#555" }}>Pago aos produtores</Text>
+            <Text style={{ fontSize: 8, color: "#555" }}>A pagar aos produtores</Text>
             <Text style={{ fontSize: 12, fontWeight: 700 }}>{producersTotalLabel}</Text>
           </View>
           <View>
@@ -71,12 +70,12 @@ export function BalanceReportDocument({
             <Text style={{ fontSize: 12, fontWeight: 700 }}>{totalCostsLabel}</Text>
           </View>
           <View>
-            <Text style={{ fontSize: 8, color: "#555" }}>Saldo da semana</Text>
+            <Text style={{ fontSize: 8, color: "#555" }}>Resultado calculado</Text>
             <Text style={{ fontSize: 12, fontWeight: 700 }}>{balanceLabel}</Text>
           </View>
         </View>
 
-        <Text style={pdfStyles.sectionTitle}>Custos reais desta semana</Text>
+        <Text style={pdfStyles.sectionTitle}>Custos reais registrados neste ciclo</Text>
         <View style={pdfStyles.headerRow}>
           <Text style={[pdfStyles.headerCell, { width: "70%" }]}>Categoria</Text>
           <Text style={[pdfStyles.headerCell, { width: "30%" }]}>Valor</Text>
@@ -88,7 +87,7 @@ export function BalanceReportDocument({
           </View>
         ))}
 
-        <Text style={pdfStyles.sectionTitle}>Conferência — valor pago por produtor</Text>
+        <Text style={pdfStyles.sectionTitle}>Conferência — valor a pagar por produtor</Text>
         <View style={pdfStyles.headerRow}>
           <Text style={[pdfStyles.headerCell, { width: "70%" }]}>Produtor</Text>
           <Text style={[pdfStyles.headerCell, { width: "30%" }]}>Valor</Text>

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { formatQty } from "@/lib/format";
+import { formatQty, formatQtyNumber, productUnit } from "@/lib/format";
 import { getWeekFinancialSummary, getWarehouseDifferenceLines, getProducerPaymentLines } from "@/lib/weekSummary";
 import { fmtMoneyPdf, fmtDatePdf, fmtDateTimePdf, CADASTRO_DISCLAIMER } from "./styles";
 import { SimpleReportDocument, type ReportColumn } from "./SimpleReport";
@@ -29,8 +29,18 @@ function weekRangeLabel(week: WeekMeta): string {
   return `${fmtDatePdf(week.startDate)} – ${fmtDatePdf(week.endDate)}`;
 }
 
-function fileNameFor(week: WeekMeta, key: string): string {
-  return `semana-${week.number}-${key}.pdf`;
+export interface ReportOptions {
+  // Romaneios: só uma escola (por código) e/ou 4 vias.
+  schoolCode?: string;
+  copies?: 1 | 4;
+}
+
+function isoDate(d: Date): string {
+  return d.toISOString().slice(0, 10);
+}
+
+export function fileNameFor(week: WeekMeta, key: string, suffix = ""): string {
+  return `semana-${week.number}-${isoDate(week.startDate)}-${key}${suffix}.pdf`;
 }
 
 async function buildPedidoEscolas(week: WeekMeta, issuedAt: string): Promise<ReportResult> {
@@ -95,19 +105,19 @@ async function buildPedidoProdutores(week: WeekMeta, issuedAt: string): Promise<
   };
 }
 
-async function buildRomaneiosEscolas(week: WeekMeta, issuedAt: string): Promise<ReportResult> {
+async function buildRomaneiosEscolas(week: WeekMeta, issuedAt: string, options: ReportOptions = {}): Promise<ReportResult> {
   const orders = await prisma.schoolOrder.findMany({
-    where: { weekId: week.id, orderedQty: { gt: 0 } },
+    where: { weekId: week.id, orderedQty: { gt: 0 }, ...(options.schoolCode ? { school: { code: options.schoolCode } } : {}) },
     include: { school: true, product: true },
+    orderBy: { product: { name: "asc" } },
   });
   const returns = await prisma.schoolReturn.findMany({ where: { weekId: week.id }, include: { returnReason: true } });
   const returnByKey = new Map(returns.map((r) => [`${r.schoolId}:${r.productId}`, r]));
 
   const bySchool = new Map<string, SchoolRomaneio>();
   for (const o of orders) {
-    const key = o.schoolId;
     const entry =
-      bySchool.get(key) ??
+      bySchool.get(o.schoolId) ??
       ({
         code: o.school.code,
         name: o.school.name,
@@ -117,21 +127,19 @@ async function buildRomaneiosEscolas(week: WeekMeta, issuedAt: string): Promise<
         lines: [],
       } satisfies SchoolRomaneio);
     const ret = returnByKey.get(`${o.schoolId}:${o.productId}`);
-    const returnedQty = ret ? Number(ret.returnedQty) : 0;
-    const orderedQty = Number(o.orderedQty);
     entry.lines.push({
       productName: o.product.name,
-      orderedQtyLabel: formatQty(orderedQty, o.product.slug),
-      returnedQtyLabel: formatQty(returnedQty, o.product.slug),
-      netQtyLabel: formatQty(orderedQty - returnedQty, o.product.slug),
-      reasonLabel: ret ? `${ret.returnReason.code} · ${ret.returnReason.description}` : "—",
+      unit: productUnit(o.product.slug),
+      orderedQtyLabel: formatQtyNumber(Number(o.orderedQty)),
+      systemReturnLabel: ret && Number(ret.returnedQty) > 0 ? `${formatQty(Number(ret.returnedQty), o.product.slug)} (${ret.returnReason.code} · ${ret.returnReason.description})` : null,
     });
-    bySchool.set(key, entry);
+    bySchool.set(o.schoolId, entry);
   }
-  const schools = [...bySchool.values()].sort((a, b) => a.code.localeCompare(b.code));
+  const schools = [...bySchool.values()].sort((a, b) => a.code.localeCompare(b.code, "pt-BR", { numeric: true }));
+  const suffix = `${options.schoolCode ? `-escola-${options.schoolCode}` : ""}${options.copies === 4 ? "-4-vias" : ""}`;
 
   return {
-    fileName: fileNameFor(week, "romaneios-escolas"),
+    fileName: fileNameFor(week, "romaneios-escolas", suffix),
     element: (
       <SchoolRomaneiosDocument
         weekNumber={week.number}
@@ -139,6 +147,7 @@ async function buildRomaneiosEscolas(week: WeekMeta, issuedAt: string): Promise<
         weekStatus={week.status}
         issuedAt={issuedAt}
         schools={schools}
+        copies={options.copies}
       />
     ),
   };
@@ -150,9 +159,9 @@ async function buildRecebimentoGalpao(week: WeekMeta, issuedAt: string): Promise
     { header: "Produtor", width: "28%" },
     { header: "Produto", width: "22%" },
     { header: "Entrega bruta", width: "15%", align: "right" },
-    { header: "Devolução", width: "15%", align: "right" },
-    { header: "Entrega líquida", width: "10%", align: "right" },
-    { header: "Valor a pagar", width: "10%", align: "right" },
+    { header: "Rejeição/devolução", width: "15%", align: "right" },
+    { header: "Aceito no galpão", width: "10%", align: "right" },
+    { header: "A pagar", width: "10%", align: "right" },
   ];
   const rows = lines.map((l) => [
     l.producerName,
@@ -175,7 +184,7 @@ async function buildRecebimentoGalpao(week: WeekMeta, issuedAt: string): Promise
         rows={rows}
         emptyMessage="Nenhuma entrega de produtor registrada nesta semana."
         landscape
-        footNote="Pagamento é sempre (entrega − devolução) × (preço − desconto de logística), congelados no momento do lançamento."
+        footNote="A pagar = (entrega bruta - rejeição no galpão) × (preço - desconto de logística), congelados no lançamento. Rejeição ocorrida depois, na escola, não é descontada do produtor. Valor calculado, não quitado."
       />
     ),
   };
@@ -229,8 +238,8 @@ async function buildEntregasEscolas(week: WeekMeta, issuedAt: string): Promise<R
         issuedAt={issuedAt}
         columns={columns}
         rows={rows}
-        emptyMessage="Nenhum pedido ou entrega registrada nesta semana."
-        footNote="Confirma apenas o dia em que a escola foi atendida — não a quantidade recebida por produto. Quanto cada escola recebeu de fato por produto ainda não é registrado no sistema (ver docs/plano-de-implementacao.md §8)."
+        emptyMessage="Nenhum pedido ou entrega registrada neste ciclo."
+        notice="Modelo antigo: este documento confirma apenas o DIA em que a escola foi atendida. Ele NÃO comprova a quantidade recebida por produto — o sistema ainda não registra entrega por escola/produto (spec 008). A prova da quantidade é o romaneio assinado."
       />
     ),
   };
@@ -320,7 +329,7 @@ async function buildBalanco(week: WeekMeta, issuedAt: string): Promise<ReportRes
   };
 }
 
-const BUILDERS: Record<ReportKey, (week: WeekMeta, issuedAt: string) => Promise<ReportResult>> = {
+const BUILDERS: Record<ReportKey, (week: WeekMeta, issuedAt: string, options?: ReportOptions) => Promise<ReportResult>> = {
   "pedido-escolas": buildPedidoEscolas,
   "pedido-produtores": buildPedidoProdutores,
   "romaneios-escolas": buildRomaneiosEscolas,
@@ -336,7 +345,7 @@ export async function getWeekMeta(weekId: string): Promise<WeekMeta | null> {
   return { id: week.id, number: week.number, startDate: week.startDate, endDate: week.endDate, status: week.status };
 }
 
-export async function buildReport(week: WeekMeta, key: ReportKey): Promise<ReportResult> {
+export async function buildReport(week: WeekMeta, key: ReportKey, options: ReportOptions = {}): Promise<ReportResult> {
   const issuedAt = fmtDateTimePdf(new Date());
-  return BUILDERS[key](week, issuedAt);
+  return BUILDERS[key](week, issuedAt, options);
 }

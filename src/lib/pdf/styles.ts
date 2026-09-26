@@ -17,6 +17,14 @@ export const pdfStyles = StyleSheet.create({
     marginBottom: 10,
     fontWeight: 700,
   },
+  methodNotice: {
+    fontSize: 8,
+    color: "#5c4a0a",
+    backgroundColor: "#F6EDD9",
+    padding: 6,
+    marginBottom: 10,
+    lineHeight: 1.35,
+  },
   footNote: { marginTop: 14, fontSize: 7.5, color: "#555", lineHeight: 1.4 },
   headerRow: {
     flexDirection: "row",
@@ -40,11 +48,13 @@ export function fmtMoneyPdf(value: number): string {
 }
 
 export function fmtDatePdf(date: Date): string {
-  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
+  // Datas de ciclo são gravadas como meia-noite UTC: formatar em UTC evita
+  // mostrar o dia anterior num servidor com outro fuso.
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "UTC" }).format(date);
 }
 
 export function fmtDateTimePdf(date: Date): string {
-  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(date);
+  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" }).format(date);
 }
 
 export const COOP_NAME = "COOPERATIVA DOS PRODUTORES RURAIS DE PETRÓPOLIS";
@@ -54,4 +64,6 @@ export const COOP_NAME = "COOPERATIVA DOS PRODUTORES RURAIS DE PETRÓPOLIS";
 // valia na data da semana. So quantidades e precos sao congelados por
 // semana. Ver docs/plano-de-implementacao.md §12.
 export const CADASTRO_DISCLAIMER =
-  "Nomes, enderecos e telefones refletem o cadastro atual (nao tem historico proprio). Apenas quantidades, precos e valores desta semana sao os que valiam na data dela.";
+  "Nomes, endereços e telefones refletem o cadastro atual (não têm histórico próprio). Quantidades, preços e valores são os registrados neste ciclo.";
+
+export { LEGACY_BILLING_NOTE } from "../methodology";

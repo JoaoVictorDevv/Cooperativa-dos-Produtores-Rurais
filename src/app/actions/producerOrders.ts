@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireOperator } from "@/lib/dal";
+import { isOfferedForNewEntries } from "@/lib/productPolicy";
 import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable, getCurrentPrice } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
@@ -29,6 +30,12 @@ export async function saveProducerOrder(
       const existing = await tx.producerOrder.findUnique({
         where: { weekId_producerId_productId: { weekId, producerId, productId } },
       });
+      if (!existing) {
+        const product = await tx.product.findUniqueOrThrow({ where: { id: productId } });
+        if (!isOfferedForNewEntries(product)) {
+          throw new Error(`${product.name} está fora da oferta ativa: não recebe novos lançamentos (os antigos continuam no histórico).`);
+        }
+      }
       // Preco congelado no primeiro lancamento (ver mesma regra em
       // schoolOrders.ts/producerDeliveries.ts) — correcao de quantidade
       // nao re-resolve o preco vigente.
