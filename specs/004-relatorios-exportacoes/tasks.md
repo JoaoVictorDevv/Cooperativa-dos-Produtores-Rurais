@@ -10,7 +10,8 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído · `[B]` bloqu
 - [x] T06 Nomes de arquivo com ciclo e data; datas em UTC e emissão no fuso de Petrópolis.
 - [x] T07 Volume de 191 escolas e desempenho (CA-004.4).
 - [x] T08 Ciclo fechado e Ovos desativado no histórico (CA-004.5).
-- [B] T09 Romaneio de complemento e aceite real por escola — depende da spec 008 (Lucas).
+- [~] T09 Romaneio de complemento e aceite real por escola — **conteúdo e PDF prontos** (RD-12, RD-13; `src/lib/cycleCore/documents.ts`, `src/lib/pdf/EventRomaneiosDocument.tsx`), usados na demonstração; ligar às semanas reais depende da persistência da spec 008 (Lucas).
+- [x] T11 Etapa 5 (26/09/2026) — documentos pela lógica corrigida a partir do registro do ciclo (RD-11 a RD-14), ponto de troca por metodologia nas rotas reais (todas no modelo atual), PDFs/ZIP da demonstração. *Não troca nenhum documento real.*
 - [B] T10 Arquivamento imutável do PDF emitido — depende de storage (Lucas/infra).
 
 ## Evidências (26/09/2026, build de produção, banco descartável `colheita_r2_descartavel_202609261644`, dados fictícios)
@@ -30,3 +31,10 @@ Ciclo aberto com 191 escolas e 1.882 pedidos:
 - Ciclo fechado (fechado no banco descartável) depois de desativar Ovos: documentos com "FECHADO", sem aviso de aberto, Ovos presente; tela do ciclo fechado com a coluna Ovos só leitura; ciclo novo sem Ovos.
 - Antes da otimização: Pedido das Escolas 24 s e ZIP > 30 s (paginação automática do react-pdf).
 - Achado corrigido: o sinal "−" saía em branco nos PDFs (fonte sem o glifo).
+
+## Evidências da etapa 5 (26/09/2026)
+
+- Unitários: `src/lib/cycleCore/documents.test.ts` (11) e `src/lib/pdf/cycleCoreReports.test.tsx` (8 + 1 opcional de volume): PDFs gerados e texto extraído (romaneio de complemento `DEMO-EA-C1`, data/hora real registrada, linha manual em branco no previsto, 4 vias = 8 páginas para 2 documentos, "a conferir", totais, saldo a conferir, balanço pelo aceito).
+- Volume (opcional, `PDF_VOLUME=1`): 191 escolas × 10 produtos com complementos — Entregas e Atendimento 69 páginas em 11,8 s; Romaneios 211 páginas em 6,6 s; Balanço 57 páginas em 4,0 s; sem quebra automática de página (nome da escola uma vez por grupo).
+- Interface (Playwright, build de produção; banco descartável só para login, apagado depois): download pela tela dos 6 PDFs e do ZIP da demonstração, com a faixa "DEMONSTRAÇÃO"; entrada adulterada → 400; documento fora do núcleo → 404; sem login → redireciona para /login; documentos reais da semana (balanço, entregas, ZIP com 7 arquivos) continuam pelo modelo atual. Inspeção visual das páginas (pdf.js no Chromium).
+- Achado e corrigido: cabeçalho repetido do PDF sobrepunha título longo e rótulo do ciclo (agora quebra linha); total de falta somava a falta parcial de linhas ainda não conferidas.

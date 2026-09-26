@@ -4,6 +4,7 @@ import JSZip from "jszip";
 import { verifySession } from "@/lib/dal";
 import { buildReport, getWeekMeta } from "@/lib/pdf/reports";
 import { REPORT_DEFINITIONS } from "@/lib/pdf/definitions";
+import { DOCUMENT_SOURCES, methodologyOfRealCycle } from "@/lib/cycleCore/documents";
 
 // Pacote ZIP com todos os documentos da semana (plano §12). Mesma
 // permissao dos arquivos individuais — respeita a sessao, nao ha
@@ -15,6 +16,12 @@ export async function GET(_req: Request, { params }: { params: Promise<{ weekId:
   const week = await getWeekMeta(weekId);
   if (!week) {
     return NextResponse.json({ error: "Semana não encontrada." }, { status: 404 });
+  }
+
+  // Mesma troca por metodologia dos arquivos individuais (ver [report]/route.ts).
+  const sources = DOCUMENT_SOURCES[methodologyOfRealCycle()];
+  if (REPORT_DEFINITIONS.some(({ key }) => sources[key] !== "ATUAL")) {
+    return NextResponse.json({ error: "Documentos do novo modelo ainda sem persistência." }, { status: 501 });
   }
 
   const zip = new JSZip();

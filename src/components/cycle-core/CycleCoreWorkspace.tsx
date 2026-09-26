@@ -1,14 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { summarizeCycle } from "@/lib/domain/cycle";
 import { cycleInput, ledgerClosingPreview, type Actor, type CycleCommand, type CycleLedger } from "@/lib/domain/cycleLedger";
 import type { CycleCoreRepository } from "@/lib/cycleCore/repository";
+import { AttendanceSummaryTable } from "./AttendanceSummaryTable";
 import { ClosingPreviewPanel } from "./ClosingPreviewPanel";
 import { SchoolLinePanel } from "./SchoolLinePanel";
 import { fmtDateTime, type CycleCoreNames } from "./labels";
 
 type Filter = "TODAS" | "PENDENTES" | "FALTAS";
+
+const lineDomId = (schoolId: string, productId: string) => `linha-${schoolId}-${productId}`.replace(/[^\w-]/g, "_");
 
 // Área de trabalho de complementos e faltas de um ciclo. Recebe o repositório
 // por parâmetro: hoje o de memória (demonstração); depois, o adaptador da API
@@ -20,11 +23,19 @@ export function CycleCoreWorkspace(props: {
   names: CycleCoreNames;
   producerIds: string[];
   reasonOptions: string[];
+  // Área opcional (ex.: documentos) que recebe o estado atual do ciclo.
+  documents?: (ledger: CycleLedger) => ReactNode;
 }) {
   const { repository, cycleId } = props;
   const [ledger, setLedger] = useState<CycleLedger | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("TODAS");
+  const [selected, setSelected] = useState<string | null>(null);
+
+  // Do resumo de atendimento para o detalhe da escola/produto.
+  useEffect(() => {
+    if (selected) document.getElementById(selected)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [selected]);
 
   const reload = useCallback(async () => {
     try {
@@ -70,6 +81,15 @@ export function CycleCoreWorkspace(props: {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 16 }}>
       <ClosingPreviewPanel preview={preview} summary={summary} names={props.names} />
+      {props.documents?.(ledger)}
+      <AttendanceSummaryTable
+        ledger={ledger}
+        names={props.names}
+        onSelect={(schoolId, productId) => {
+          setFilter("TODAS");
+          setSelected(lineDomId(schoolId, productId));
+        }}
+      />
 
       <div className="toolbar">
         {(
@@ -97,6 +117,8 @@ export function CycleCoreWorkspace(props: {
           reasonOptions={props.reasonOptions}
           readOnly={readOnly}
           onCommand={onCommand}
+          domId={lineDomId(line.schoolId, line.productId)}
+          highlighted={selected === lineDomId(line.schoolId, line.productId)}
         />
       ))}
       {lines.length === 0 && <p className="stat-sub">Nenhuma linha neste filtro.</p>}

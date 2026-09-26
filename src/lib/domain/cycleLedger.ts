@@ -141,37 +141,46 @@ function toDecision(record: ShortageDecisionRecord | undefined): ShortageDecisio
   return { kind: "ENCERRADA_SEM_ATENDIMENTO", reason: record.reason, shortageQtyAtDecision: record.shortageQtyAtDecision ?? 0 };
 }
 
+function lineInput(schoolId: string, productId: string, order: SchoolOrderLine | undefined, events: DeliveryEvent[], decision: ShortageDecisionRecord | undefined): SchoolLineInput {
+  return {
+    schoolId,
+    productId,
+    orderedQty: order?.orderedQty ?? 0,
+    unit: order?.unit ?? "kg",
+    price: order?.price ?? undefined,
+    events: events.map((e) => ({
+      kind: e.kind,
+      presentedQty: e.presentedQty,
+      rejectedQty: e.rejectedQty,
+      lossBeforeSchoolQty: e.lossBeforeSchoolQty,
+      sourceProducerId: e.source?.type === "PRODUTOR" ? e.source.producerId : null,
+    })),
+    shortageDecision: toDecision(decision),
+  };
+}
+
 // Converte o registro de eventos nas linhas que o núcleo (cycle.ts) avalia.
+// Indexado por escola × produto: linear no tamanho do ciclo (191 escolas).
 export function schoolLineInputs(ledger: CycleLedger): SchoolLineInput[] {
-  const keys = new Map<string, { schoolId: string; productId: string }>();
-  for (const o of ledger.orders) keys.set(lineKey(o.schoolId, o.productId), o);
-  for (const e of ledger.events) keys.set(lineKey(e.schoolId, e.productId), e);
-  return [...keys.values()].map(({ schoolId, productId }) => {
-    const order = ledger.orders.find((o) => o.schoolId === schoolId && o.productId === productId);
-    const events = ledger.events
-      .filter((e) => e.schoolId === schoolId && e.productId === productId)
-      .map((e) => ({
-        kind: e.kind,
-        presentedQty: e.presentedQty,
-        rejectedQty: e.rejectedQty,
-        lossBeforeSchoolQty: e.lossBeforeSchoolQty,
-        sourceProducerId: e.source?.type === "PRODUTOR" ? e.source.producerId : null,
-      }));
-    return {
-      schoolId,
-      productId,
-      orderedQty: order?.orderedQty ?? 0,
-      unit: order?.unit ?? "kg",
-      price: order?.price ?? undefined,
-      events,
-      shortageDecision: toDecision(ledger.decisions.find((d) => d.schoolId === schoolId && d.productId === productId)),
-    };
-  });
+  const lines = new Map<string, { schoolId: string; productId: string; order?: SchoolOrderLine; events: DeliveryEvent[]; decision?: ShortageDecisionRecord }>();
+  const at = (schoolId: string, productId: string) => {
+    const key = lineKey(schoolId, productId);
+    let line = lines.get(key);
+    if (!line) lines.set(key, (line = { schoolId, productId, events: [] }));
+    return line;
+  };
+  for (const o of ledger.orders) at(o.schoolId, o.productId).order ??= o;
+  for (const e of ledger.events) at(e.schoolId, e.productId).events.push(e);
+  for (const d of ledger.decisions) {
+    const key = lineKey(d.schoolId, d.productId);
+    if (lines.has(key)) lines.get(key)!.decision ??= d;
+  }
+  return [...lines.values()].map((l) => lineInput(l.schoolId, l.productId, l.order, l.events, l.decision));
 }
 
 export function evaluateLedgerLine(ledger: CycleLedger, schoolId: string, productId: string): SchoolLineResult {
-  const input = schoolLineInputs(ledger).find((l) => l.schoolId === schoolId && l.productId === productId);
-  return evaluateSchoolLine(input ?? { schoolId, productId, orderedQty: 0, events: [] });
+  const same = (x: { schoolId: string; productId: string }) => x.schoolId === schoolId && x.productId === productId;
+  return evaluateSchoolLine(lineInput(schoolId, productId, ledger.orders.find(same), ledger.events.filter(same), ledger.decisions.find(same)));
 }
 
 export function cycleInput(ledger: CycleLedger): CycleInput {

@@ -2,7 +2,10 @@
 
 **Status:** implementada e testada no modelo atual de dados. Os conteúdos que
 dependem de entrega por escola/produto (spec 008) continuam com a metodologia
-antiga, **identificada nos documentos**.
+antiga, **identificada nos documentos**. Etapa 5 (26/09/2026): os mesmos tipos
+de documento pela lógica corrigida (RD-11 a RD-14) estão prontos e testados a
+partir do registro do ciclo, **usados só na demonstração** até existir a
+persistência — ver `docs/propostas-pendentes.md` §10.
 
 **Origem:** candidato SPEC-004 do `backlog.md`, promovido na Rodada 2.
 **O que já existia:** a Rodada 1 criou os 7 documentos em PDF e o ZIP por
@@ -65,6 +68,25 @@ os recria: registra as regras e corrige o que o prompt v2 (§13, §14) exige.
   do cadastro).
 - **RD-10 Datas**: datas de ciclo em UTC (como gravadas); hora de emissão no
   fuso de Petrópolis (America/Sao_Paulo).
+- **RD-11 Fonte por metodologia**: os sete tipos e os nomes de arquivo não
+  mudam; a fonte do conteúdo é escolhida pela metodologia do ciclo
+  (`DOCUMENT_SOURCES`). Ciclos no modelo antigo continuam com os documentos
+  atuais para sempre; "Pedidos aos Produtores" não muda de fonte.
+- **RD-12 Romaneio de complemento**: cada complemento (ou grupo de
+  complementos da mesma escola com a mesma data/hora real) tem documento
+  próprio `<ciclo>-<escola>-C<n>`, com pedido original, aceito antes,
+  entregue/rejeitado/aceito agora e origem. O romaneio da entrega inicial nunca
+  é alterado. Previsto = conferência em branco; registrado = "cópia conforme
+  registro", com data/horário real quando registrados.
+- **RD-13 Entregas e atendimento**: por escola/produto — pedido, entregue,
+  rejeição da escola, perda antes da escola, aceito, falta, excedente e
+  situação em texto; pendente de conferência nunca vira zero; totais e
+  atendimento por unidade (cada linha conta no máximo o próprio pedido); falta
+  total só de linhas conferidas.
+- **RD-14 Diferenças e balanço no novo modelo**: diferença com "saldo a
+  conferir" (não é estoque nem perda); balanço a cobrar pelo aceito na escola e
+  a pagar pelo aceito no galpão, com os três indicadores, bloqueios e faltas
+  encerradas.
 
 ## Critérios de aceite
 

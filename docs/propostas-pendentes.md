@@ -298,6 +298,68 @@ Os mesmos números de `src/lib/domain/cycleLedger.test.ts` e
 `src/lib/cycleCore/repository.test.ts` devem sair da API antes de a tela
 passar a usá-la.
 
+## 10. Telas e documentos pela lógica corrigida — o que falta de persistência (etapa 5)
+
+**Situação (26/09/2026):** o conteúdo das telas e dos PDFs/ZIP pela lógica
+corrigida está **pronto e testado a partir do registro do ciclo**
+(`CycleLedger`), mas só é usado na **demonstração** (`/complementos-faltas`,
+dados fictícios, faixa "DEMONSTRAÇÃO" em todas as páginas). As semanas reais
+continuam nos documentos e telas do modelo atual (pedido − devolução),
+identificados como tal. Nada foi recalculado.
+
+### O que já existe (Claude)
+
+| Peça | Arquivo | Estado |
+|---|---|---|
+| Conteúdo dos documentos (pedido, romaneios inicial e de complemento, galpão, entregas e atendimento, diferenças com saldo a conferir, balanço pelo aceito) | `src/lib/cycleCore/documents.ts` | testado (11) |
+| PDFs desses documentos | `src/lib/pdf/cycleCoreReports.tsx`, `EventRomaneiosDocument.tsx`, `AcceptedBalanceDocument.tsx` | testado (render + texto extraído; volume 191 escolas opcional) |
+| Ponto de troca por metodologia | `DOCUMENT_SOURCES` e `methodologyOfRealCycle()` em `documents.ts`, usado pelas rotas `/api/semanas/[id]/pdf/*` | todos os ciclos reais = modelo atual |
+| Resumo de atendimento navegável (clique → detalhe da escola/produto) | `src/components/cycle-core/AttendanceSummaryTable.tsx` | testado pela interface |
+| Documentos da demonstração (PDF e ZIP a partir do estado da tela) | `/api/demonstracao/documentos/*` (valida com zod, exige login, nada é gravado) | testado pela interface |
+
+Os **sete tipos de documento continuam os mesmos** (mesmos nomes de arquivo);
+só a fonte muda. "Pedidos aos Produtores" não muda de fonte. Mudanças de
+conteúdo no novo modelo:
+- **Romaneios:** um documento da entrega inicial por escola (em branco
+  enquanto previsto; "cópia conforme registro" depois) e **um documento
+  próprio para cada complemento** (`<ciclo>-<escola>-C1`, `-C2`…), com pedido
+  original, aceito antes, entregue/rejeitado/aceito agora e origem — o
+  romaneio inicial nunca é alterado. Data/horário real impressos quando
+  registrados; linha manual em branco quando não.
+- **Entregas às Escolas → Entregas e Atendimento:** pedido, entregue
+  (inicial + complementos), rejeição da escola, perda antes da escola, aceito,
+  falta, excedente e situação (pendente de conferência / falta sem decisão /
+  em resolução / encerrada sem atendimento com motivo / atendido / com
+  excedente); totais e percentual de atendimento por unidade.
+- **Diferenças:** acrescenta "saldo a conferir" (aceito no galpão − entregue
+  às escolas − perda antes da escola) e a falta das escolas à parte.
+- **Balanço:** a cobrar pelo aceito na escola, a pagar pelo aceito no galpão,
+  os três indicadores (conferido / calculado / pronto para fechar), motivos de
+  bloqueio e faltas encerradas com motivo.
+- **Regra de total de falta:** só linhas **conferidas** entram no total;
+  linhas a conferir aparecem à parte (antes, uma falta parcial de linha
+  pendente era somada como falta). Vale para o núcleo (`cycle.ts`), telas e
+  PDFs.
+
+### O que falta para ligar nas semanas reais (Lucas + integração)
+
+1. Tudo do §9 (eventos de entrega por escola/produto, decisões de falta,
+   auditoria, endpoint de comando e de leitura).
+2. **Metodologia gravada por ciclo** (`LEGADO_PEDIDO_MENOS_DEVOLUCAO` ×
+   `ACEITE_ESCOLAR`), escolhida explicitamente ao abrir um ciclo no novo
+   modelo; ciclos antigos ficam no legado para sempre. Com isso,
+   `methodologyOfRealCycle()` passa a ler o ciclo e as rotas de PDF escolhem a
+   fonte por `DOCUMENT_SOURCES` sem outra mudança.
+3. **Leitura do ciclo** com: pedidos com preço congelado, recebimentos do
+   galpão com preço/desconto congelados, eventos, decisões e **custos reais**
+   (`WeeklyCost`) — o balanço do novo modelo já aceita custos.
+4. **Nomes do cadastro** (escolas, produtos, produtores) na mesma leitura, com
+   código da escola; continua valendo o aviso de cadastro sem histórico.
+5. Depois disso (Claude): adaptador da porta `CycleCoreRepository` para a API,
+   builders reais na rota `/api/semanas/[id]/pdf/*` e troca das telas
+   Resumo, Balanço, Diferença e página da semana para a nova fonte nos ciclos
+   `ACEITE_ESCOLAR` (componentes prontos). Teste de volume real com 191 escolas.
+
 ---
 
 ## Para o Lucas — resumo
@@ -306,6 +368,8 @@ passar a usá-la.
    falta** (itens 1 e 9; `specs/008…/plan.md`). Tela e regras já prontas
    esperando a persistência (`/complementos-faltas`, demonstração). Aceite:
    `src/lib/domain/cycle.test.ts` e `src/lib/domain/cycleLedger.test.ts`.
+   Para os documentos e telas pela lógica corrigida: **metodologia gravada por
+   ciclo** e leitura do ciclo com custos e nomes (item 10).
 2. **Corrigir na API:** preço/desconto congelados em correções, validação de
    devolução × entrega com concorrência, auditoria com antes/depois, fechamento
    pelos estados da spec 008 (item 7.5).

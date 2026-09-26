@@ -21,18 +21,49 @@ export interface SimpleReportProps {
   // Aviso de destaque logo abaixo do título (ex.: metodologia antiga).
   notice?: string;
   landscape?: boolean;
+  // Substitui "Semana N (datas)" na identificação (ex.: ciclo de demonstração).
+  cycleLabel?: string;
+  // Faixa repetida em todas as páginas (ex.: "DEMONSTRAÇÃO — dados fictícios").
+  banner?: string;
+  // Mostra a 1ª coluna só quando muda dentro da página (ex.: nome da escola uma
+  // vez por grupo). Evita nomes longos repetidos quebrando linha.
+  groupFirstColumn?: boolean;
+}
+
+// Repete o valor da 1ª coluna só na primeira linha do grupo em cada página.
+export function groupRows(rows: (string | number)[][]): (string | number)[][] {
+  return rows.map((r, i) => (i > 0 && rows[i - 1][0] === r[0] ? ["", ...r.slice(1)] : r));
 }
 
 // Identificação do ciclo repetida em todas as páginas (fixed) e numeração.
-export function PageFrame({ title, weekNumber, weekRange, weekStatus }: { title: string; weekNumber: number; weekRange: string; weekStatus: WeekStatus }) {
+export function PageFrame({
+  title,
+  weekNumber,
+  weekRange,
+  weekStatus,
+  cycleLabel,
+  banner,
+}: {
+  title: string;
+  weekNumber: number;
+  weekRange: string;
+  weekStatus: WeekStatus;
+  cycleLabel?: string;
+  banner?: string;
+}) {
   return (
     <>
+      {banner && (
+        <Text fixed style={{ fontSize: 8, fontWeight: 700, color: "#7a5c0a", backgroundColor: "#F6EDD9", padding: 3, marginBottom: 4, textAlign: "center" }}>
+          {banner}
+        </Text>
+      )}
       <View fixed style={{ flexDirection: "row", justifyContent: "space-between", borderBottomWidth: 0.5, borderBottomColor: "#999", paddingBottom: 3, marginBottom: 6 }}>
-        <Text style={{ fontSize: 7.5, color: "#444" }}>
+        <Text style={{ fontSize: 7.5, color: "#444", flex: 1, paddingRight: 8 }}>
           {COOP_NAME} · {title}
         </Text>
-        <Text style={{ fontSize: 7.5, color: "#444" }}>
-          Semana {weekNumber} ({weekRange}) · {weekStatus === "ABERTA" ? "ABERTA — valores podem mudar" : "FECHADA"}
+        <Text style={{ fontSize: 7.5, color: "#444", maxWidth: "48%", textAlign: "right" }}>
+          {cycleLabel ?? `Semana ${weekNumber} (${weekRange})`} · {weekStatus === "ABERTA" ? "ABERTA — valores podem mudar" : "FECHADA"}
         </Text>
       </View>
       <Text
@@ -61,8 +92,8 @@ export function TableHeader({ columns }: { columns: ReportColumn[] }) {
 // longo em duas linhas), o react-pdf quebra o resto e o cabeçalho fixo se repete.
 const ROWS_PER_PAGE = { portrait: { first: 34, next: 44 }, landscape: { first: 20, next: 28 } };
 
-export function paginate<T>(rows: T[], landscape?: boolean): T[][] {
-  const { first, next } = landscape ? ROWS_PER_PAGE.landscape : ROWS_PER_PAGE.portrait;
+export function paginate<T>(rows: T[], landscape?: boolean, sizes?: { first: number; next: number }): T[][] {
+  const { first, next } = sizes ?? (landscape ? ROWS_PER_PAGE.landscape : ROWS_PER_PAGE.portrait);
   const pages: T[][] = [rows.slice(0, first)];
   for (let i = first; i < rows.length; i += next) pages.push(rows.slice(i, i + next));
   return pages;
@@ -83,13 +114,16 @@ export function SimpleReportDocument({
   footNote,
   notice,
   landscape,
+  cycleLabel,
+  banner,
+  groupFirstColumn,
 }: SimpleReportProps) {
   const pages = paginate(rows, landscape);
   return (
-    <Document title={`${title} — Semana ${weekNumber}`}>
+    <Document title={`${title} — ${cycleLabel ?? `Semana ${weekNumber}`}`}>
       {pages.map((pageRows, pageIndex) => (
         <Page key={pageIndex} size="A4" orientation={landscape ? "landscape" : "portrait"} style={[pdfStyles.page, { paddingBottom: 36 }]}>
-          <PageFrame title={title} weekNumber={weekNumber} weekRange={weekRange} weekStatus={weekStatus} />
+          <PageFrame title={title} weekNumber={weekNumber} weekRange={weekRange} weekStatus={weekStatus} cycleLabel={cycleLabel} banner={banner} />
           {pageIndex === 0 && (
             <>
               <Text style={pdfStyles.title}>{title}</Text>
@@ -103,7 +137,7 @@ export function SimpleReportDocument({
             </>
           )}
           <TableHeader columns={columns} />
-          {pageRows.map((r, ri) => (
+          {(groupFirstColumn ? groupRows(pageRows) : pageRows).map((r, ri) => (
             <View key={ri} style={pdfStyles.row}>
               {r.map((v, ci) => (
                 <Text key={ci} style={[pdfStyles.cell, { width: columns[ci].width, textAlign: columns[ci].align ?? "left" }]}>

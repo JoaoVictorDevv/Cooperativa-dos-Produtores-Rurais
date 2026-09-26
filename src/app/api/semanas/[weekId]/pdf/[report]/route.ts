@@ -3,6 +3,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { verifySession } from "@/lib/dal";
 import { buildReport, getWeekMeta } from "@/lib/pdf/reports";
 import { isReportKey } from "@/lib/pdf/definitions";
+import { DOCUMENT_SOURCES, methodologyOfRealCycle } from "@/lib/cycleCore/documents";
 
 // Documentos da semana (plano §12): qualquer usuario autenticado pode
 // baixar (e uma acao de leitura, igual imprimir um romaneio ja era).
@@ -16,6 +17,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ weekId: 
   const week = await getWeekMeta(weekId);
   if (!week) {
     return NextResponse.json({ error: "Semana não encontrada." }, { status: 404 });
+  }
+  // Ponto de troca da fonte por metodologia (spec 004 × 008). Enquanto nenhum
+  // ciclo real tiver entrega por escola/produto registrada, todos usam os
+  // documentos do modelo atual (docs/propostas-pendentes.md §10).
+  if (DOCUMENT_SOURCES[methodologyOfRealCycle()][report] !== "ATUAL") {
+    return NextResponse.json({ error: "Documento do novo modelo ainda sem persistência." }, { status: 501 });
   }
 
   // Romaneios: ?escola=<código> para uma escola só; ?vias=4 para imprimir as

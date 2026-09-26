@@ -64,7 +64,7 @@ export function ClosingPreviewPanel({ preview, summary, names }: { preview: Ledg
               <th>Unidade</th>
               <th>Pedido</th>
               <th>Aceito na escola</th>
-              <th>Falta</th>
+              <th>Falta conferida</th>
               <th>Falta encerrada</th>
               <th>Excedente</th>
               <th>Rejeição galpão</th>

@@ -55,6 +55,14 @@ Lucas (schema/API).
   `/complementos-faltas` (link discreto na página da semana), testada pelo
   navegador. Para gravar de verdade falta a persistência do Lucas — lista
   exata em `docs/propostas-pendentes.md` §9.
+- **Telas e PDFs/ZIP pela lógica corrigida (etapa 5, 26/09/2026)**: os sete
+  tipos de documento com a fonte nova (romaneio de complemento próprio,
+  entregas e atendimento, diferença com saldo a conferir, balanço pelo aceito),
+  resumo de atendimento navegável e ponto de troca por metodologia
+  (`DOCUMENT_SOURCES`). Na demonstração dá para baixar os PDFs e o ZIP com os
+  números da tela. **As semanas reais continuam no modelo atual** até existir
+  a persistência e a metodologia gravada por ciclo —
+  `docs/propostas-pendentes.md` §10.
 
 ### Implementado, mas não validado com dado oficial
 - Importação com **pedido oficial da prefeitura de Petrópolis** (Excel ou PDF):
@@ -83,8 +91,8 @@ lançamento. Semanas antigas não foram recalculadas.
 
 ### Testes e ambiente
 - `npx tsc --noEmit`, `npx eslint`, `npm run build`: limpos.
-- `npx vitest run --exclude "**/*.integration.test.ts"`: 164 passando,
-  1 pulado (teste opcional do GZ real; passa com `GZ_XLSX_PATH=<anexo>`).
+- `npx vitest run --exclude "**/*.integration.test.ts"`: 184 passando,
+  2 pulados (opcionais: GZ real com `GZ_XLSX_PATH=<anexo>`; volume de PDFs com `PDF_VOLUME=1`).
 - Interface e documentos (Playwright + build de produção) contra um banco
   **criado para o teste e descartável** (`colheita_r2_descartavel_202609261644`,
   seed fictício, Postgres local do container). Nenhum banco real consultado.
@@ -117,10 +125,12 @@ para banco com dados de operação.
 4. Mostrar a demonstração `/complementos-faltas` ao Seu Paulo e confirmar as
    hipóteses de `docs/propostas-pendentes.md` §9 (quem encerra falta; origem
    "saldo do galpão"; motivo obrigatório).
-5. Depois da persistência do Lucas: escrever o adaptador da porta
-   `CycleCoreRepository` para a API (a tela não muda), ligar a conferência na
-   escola/galpão, fechamento e cobrança (tarefas T05–T11 da spec 008); só
-   então a Etapa 7 (Mapa de Montagem).
+5. Depois da persistência do Lucas (incluindo a metodologia por ciclo): escrever
+   o adaptador da porta `CycleCoreRepository` para a API (a tela não muda),
+   ligar a conferência na escola/galpão, fechamento e cobrança (T05–T11 da
+   spec 008) e trocar a fonte dos documentos e das telas Resumo/Balanço/
+   Diferença nos ciclos `ACEITE_ESCOLAR` (`docs/propostas-pendentes.md` §10);
+   só então a Etapa 7 (Mapa de Montagem).
 
 ### Arquivos principais desta rodada
 `src/lib/import/*`, `src/lib/domain/cycle.ts`, `src/lib/productPolicy.ts`,
@@ -129,7 +139,9 @@ para banco com dados de operação.
 `src/lib/producerOrdersFromAllocation.ts`, `src/app/actions/producerOrdersFromAllocation.ts`,
 `src/app/(app)/produtores/GenerateOrdersFromAllocation.tsx`, `src/lib/roundingPolicy.ts`,
 `src/lib/domain/cycleLedger.ts`, `src/lib/cycleCore/*`, `src/components/cycle-core/*`,
-`src/app/(app)/complementos-faltas/*`,
+`src/app/(app)/complementos-faltas/*`, `src/lib/cycleCore/documents.ts`,
+`src/lib/pdf/{cycleCoreReports,EventRomaneiosDocument,AcceptedBalanceDocument}.tsx`,
+`src/app/api/demonstracao/documentos/*`,
 `src/app/(app)/escolas/{ImportSchoolOrders,SchoolOrderCell,EscolasTable}.tsx`,
 `src/app/api/semanas/[weekId]/pdf/*`, `next.config.ts`, `specs/004|008|009|010`,
 `docs/propostas-pendentes.md`.
@@ -148,8 +160,9 @@ para banco com dados de operação.
 - Depois do merge, cada etapa validada (tsc, eslint, testes, build) entra na
   `develop` por fast-forward a partir da branch de trabalho: etapa 2 do
   núcleo (`855d33a`), arredondamento por linha (`5e02600`), divisão → pedido
-  (spec 010, `e44895f`) e complementos/faltas em demonstração (etapa 4,
-  commit seguinte a este registro). Conferir com
+  (spec 010, `e44895f`), complementos/faltas em demonstração (etapa 4,
+  `166dec2`), menu lateral no celular (`75bd811`) e telas/PDFs pela lógica
+  corrigida (etapa 5, commit seguinte a este registro). Conferir com
   `git log --oneline origin/develop -5`.
 
 ---
@@ -408,7 +421,9 @@ individuais, aqui só os pontos de entrada):
 `src/lib/producerOrdersFromAllocation.ts`, `src/app/actions/producerOrdersFromAllocation.ts`,
 `src/app/(app)/produtores/GenerateOrdersFromAllocation.tsx`, `src/lib/roundingPolicy.ts`,
 `src/lib/domain/cycleLedger.ts`, `src/lib/cycleCore/*`, `src/components/cycle-core/*`,
-`src/app/(app)/complementos-faltas/*`, `src/app/(app)/escolas/ImportSchoolOrders.tsx` — importação de Excel (Etapa 5).
+`src/app/(app)/complementos-faltas/*`, `src/lib/cycleCore/documents.ts`,
+`src/lib/pdf/{cycleCoreReports,EventRomaneiosDocument,AcceptedBalanceDocument}.tsx`,
+`src/app/api/demonstracao/documentos/*`, `src/app/(app)/escolas/ImportSchoolOrders.tsx` — importação de Excel (Etapa 5).
 - `docs/plano-de-implementacao.md`, `docs/propostas-pendentes.md`, `docs/relatorio-sessao.md`, `memory.md` — planejamento e documentação.
 
 **Dependências novas** (`package.json`): `@react-pdf/renderer`, `jszip`,

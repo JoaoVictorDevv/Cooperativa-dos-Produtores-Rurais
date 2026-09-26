@@ -259,7 +259,10 @@ export interface CycleInput {
 export interface QtyTotals {
   orderedQty: number;
   acceptedAtSchoolQty: number;
+  // Só linhas com a entrega conferida: falta parcial de linha pendente não é
+  // falta confirmada (vazio não é zero). Linhas pendentes: pendingLines.
   shortageQty: number;
+  pendingLines: number;
   shortageClosedQty: number;
   excessQty: number;
   rejectedAtWarehouseQty: number;
@@ -331,7 +334,8 @@ export function summarizeCycle(input: CycleInput): CycleSummary {
     totalsByUnit[unit] = {
       orderedQty: sum(lines.map((l) => l.orderedQty)),
       acceptedAtSchoolQty: sum(lines.map((l) => l.acceptedQty)),
-      shortageQty: sum(lines.map((l) => l.shortageQty)),
+      shortageQty: sum(lines.filter((l) => l.receiptStatus === "CONFERIDO").map((l) => l.shortageQty)),
+      pendingLines: lines.filter((l) => l.receiptStatus === "PENDENTE_CONFERENCIA").length,
       shortageClosedQty: sum(lines.filter((l) => l.shortageStatus === "ENCERRADA_SEM_ATENDIMENTO").map((l) => l.shortageQty)),
       excessQty: sum(lines.map((l) => l.excessQty)),
       rejectedAtWarehouseQty: sum(receipts.map((r) => r.result.rejectedQty)),

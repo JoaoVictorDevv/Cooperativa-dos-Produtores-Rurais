@@ -106,6 +106,11 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
   regras, testes, porta de persistência, componentes e tela de demonstração
   prontos e testados, **sem gravação**. Persistência: [B] Lucas
   (`docs/propostas-pendentes.md` §9).
+- [P] **R2-12 Telas e PDFs/ZIP pela lógica corrigida** (etapa 5; spec 004
+  RD-11 a RD-14) — conteúdo, PDFs, ZIP, resumo de atendimento navegável e
+  ponto de troca por metodologia prontos e testados; usados só na
+  demonstração. Semanas reais continuam no modelo atual até a persistência e
+  a metodologia por ciclo ([B] Lucas, `docs/propostas-pendentes.md` §10).
 - [B] **R2-9 Mapa de Montagem** (Etapa 7 do prompt) — só depois do núcleo
   validado com persistência real. Não iniciar nesta rodada enquanto R2-2
   estiver bloqueado.

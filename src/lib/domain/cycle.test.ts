@@ -329,6 +329,20 @@ describe("spec 008 — estados do ciclo", () => {
   });
 });
 
+describe("spec 008 — total de falta só com linhas conferidas", () => {
+  it("falta parcial de linha pendente não entra no total; a linha aparece como a conferir", () => {
+    const s = summarizeCycle({
+      schoolLines: [
+        exemploObrigatorio(),
+        { schoolId: "e2", productId: ALFACE, orderedQty: 40, events: [] },
+        { schoolId: "e3", productId: ALFACE, orderedQty: 30, events: [{ kind: "COMPLEMENTO", presentedQty: 20, rejectedQty: 0, sourceProducerId: "b" }] },
+      ],
+      warehouseReceipts: [],
+    });
+    expect(s.totalsByUnit.kg).toMatchObject({ shortageQty: 30, pendingLines: 2 });
+  });
+});
+
 describe("spec 008 — unidades nunca se misturam (kg × dz)", () => {
   it("totais e atendimento são separados por unidade", () => {
     const s = summarizeCycle({

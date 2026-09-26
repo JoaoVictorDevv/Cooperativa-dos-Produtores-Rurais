@@ -22,6 +22,8 @@ export function SchoolLinePanel(props: {
   reasonOptions: string[];
   readOnly: boolean;
   onCommand: (command: CycleCommand) => Promise<CommandResult>;
+  domId?: string;
+  highlighted?: boolean;
 }) {
   const { ledger, line, names } = props;
   const [open, setOpen] = useState<Open>(null);
@@ -44,7 +46,12 @@ export function SchoolLinePanel(props: {
   const correcting = open?.form === "CORRIGIR" ? events.find((e) => e.id === open.eventId) : undefined;
 
   return (
-    <section className="card" style={{ padding: 16, display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 12 }} aria-label={title}>
+    <section
+      id={props.domId}
+      className="card"
+      style={{ padding: 16, display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 12, scrollMarginTop: 80, outline: props.highlighted ? "2px solid var(--sage)" : undefined }}
+      aria-label={title}
+    >
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "baseline", justifyContent: "space-between" }}>
         <strong style={{ fontSize: 15 }}>{title}</strong>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>

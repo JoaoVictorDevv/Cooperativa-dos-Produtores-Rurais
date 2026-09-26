@@ -14,7 +14,8 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído · `[B]` bloqu
 - [B] T07 Fechamento pelos estados da spec (CA-008.5) com prévia — depende de T05.
 - [B] T08 Telas de conferência na escola e de complemento **ligadas ao banco** — componentes e tela prontos em modo demonstração (T03d); falta o adaptador da porta `CycleCoreRepository` para a API (depende de T05 e do contrato de integração, `docs/propostas-pendentes.md` §9).
 - [B] T09 Trocar cobrança para aceito na escola, com marcação de metodologia por ciclo — depende de T05–T07.
-- [B] T10 Visão de atendimento no Resumo/Diferença (pedido, aceito, falta/excedente, rejeições, situação) — depende de T05.
+- [B] T10 Visão de atendimento no Resumo/Diferença (pedido, aceito, falta/excedente, rejeições, situação) — **componente e documentos prontos** (etapa 5: `AttendanceSummaryTable`, `documents.ts`, PDFs; usados na demonstração); falta a fonte persistida (T05) e a metodologia por ciclo (`docs/propostas-pendentes.md` §10).
+- [x] T10b Total de falta só com linhas conferidas (linhas a conferir à parte) no núcleo, telas e PDFs — `cycle.test.ts` ("total de falta só com linhas conferidas").
 - [B] T11 Teste ponta a ponta CA-008.11 — depende de tudo acima.
 
 Evidência T03/T03b: `npx vitest run src/lib/domain` → 40 testes passando (26/09/2026, ambiente local, sem banco).

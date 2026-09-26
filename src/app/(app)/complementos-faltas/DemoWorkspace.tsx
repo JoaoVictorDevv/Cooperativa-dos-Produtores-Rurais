@@ -5,6 +5,7 @@ import { CycleCoreWorkspace } from "@/components/cycle-core/CycleCoreWorkspace";
 import { InMemoryCycleCoreRepository } from "@/lib/cycleCore/repository";
 import { DEMO_CYCLE_ID, DEMO_NAMES, DEMO_REASONS, buildDemoLedger } from "@/lib/cycleCore/demoScenario";
 import type { Actor } from "@/lib/domain/cycleLedger";
+import { DemoDocuments } from "./DemoDocuments";
 
 const newRepository = () => new InMemoryCycleCoreRepository([buildDemoLedger()]);
 
@@ -33,6 +34,7 @@ export function DemoWorkspace({ actor }: { actor: Actor }) {
         names={DEMO_NAMES}
         producerIds={Object.keys(DEMO_NAMES.producers)}
         reasonOptions={DEMO_REASONS}
+        documents={(ledger) => <DemoDocuments ledger={ledger} />}
       />
     </div>
   );
