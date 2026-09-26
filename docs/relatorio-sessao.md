@@ -45,6 +45,16 @@ Lucas (schema/API).
   totais por unidade (kg × dz), situação por escola (entrega registrada ×
   pedido atendido) e prévia de fechamento com a cobrar/a pagar/faltas
   encerradas e motivos de bloqueio. Não usado por telas, PDFs ou totais.
+- **Complementos e encerramento de faltas (etapa 4, 26/09/2026)**: comandos
+  com validação, chave de envio contra duplicação, versão contra edição
+  simultânea, auditoria e aviso de decisão incoerente
+  (`src/lib/domain/cycleLedger.ts`, 23 testes); porta de persistência
+  `CycleCoreRepository` com implementação em memória
+  (`src/lib/cycleCore/`); componentes (`src/components/cycle-core/`) e tela
+  **de demonstração com dados fictícios, sem gravação** em
+  `/complementos-faltas` (link discreto na página da semana), testada pelo
+  navegador. Para gravar de verdade falta a persistência do Lucas — lista
+  exata em `docs/propostas-pendentes.md` §9.
 
 ### Implementado, mas não validado com dado oficial
 - Importação com **pedido oficial da prefeitura de Petrópolis** (Excel ou PDF):
@@ -73,7 +83,7 @@ lançamento. Semanas antigas não foram recalculadas.
 
 ### Testes e ambiente
 - `npx tsc --noEmit`, `npx eslint`, `npm run build`: limpos.
-- `npx vitest run --exclude "**/*.integration.test.ts"`: 137 passando,
+- `npx vitest run --exclude "**/*.integration.test.ts"`: 164 passando,
   1 pulado (teste opcional do GZ real; passa com `GZ_XLSX_PATH=<anexo>`).
 - Interface e documentos (Playwright + build de produção) contra um banco
   **criado para o teste e descartável** (`colheita_r2_descartavel_202609261644`,
@@ -104,9 +114,13 @@ para banco com dados de operação.
    com a prévia (demanda × divisão × pedidos) e ajustar textos se preciso.
 3. Validar a importação assim que houver um pedido oficial da prefeitura
    (Excel e/ou PDF).
-4. Depois da persistência do Lucas: ligar `src/lib/domain/cycle.ts` às telas
-   de conferência na escola/galpão, fechamento e cobrança (tarefas T05–T11 da
-   spec 008); só então a Etapa 7 (Mapa de Montagem).
+4. Mostrar a demonstração `/complementos-faltas` ao Seu Paulo e confirmar as
+   hipóteses de `docs/propostas-pendentes.md` §9 (quem encerra falta; origem
+   "saldo do galpão"; motivo obrigatório).
+5. Depois da persistência do Lucas: escrever o adaptador da porta
+   `CycleCoreRepository` para a API (a tela não muda), ligar a conferência na
+   escola/galpão, fechamento e cobrança (tarefas T05–T11 da spec 008); só
+   então a Etapa 7 (Mapa de Montagem).
 
 ### Arquivos principais desta rodada
 `src/lib/import/*`, `src/lib/domain/cycle.ts`, `src/lib/productPolicy.ts`,
@@ -114,6 +128,8 @@ para banco com dados de operação.
 `src/app/actions/schoolOrdersImport.ts`,
 `src/lib/producerOrdersFromAllocation.ts`, `src/app/actions/producerOrdersFromAllocation.ts`,
 `src/app/(app)/produtores/GenerateOrdersFromAllocation.tsx`, `src/lib/roundingPolicy.ts`,
+`src/lib/domain/cycleLedger.ts`, `src/lib/cycleCore/*`, `src/components/cycle-core/*`,
+`src/app/(app)/complementos-faltas/*`,
 `src/app/(app)/escolas/{ImportSchoolOrders,SchoolOrderCell,EscolasTable}.tsx`,
 `src/app/api/semanas/[weekId]/pdf/*`, `next.config.ts`, `specs/004|008|009|010`,
 `docs/propostas-pendentes.md`.
@@ -131,8 +147,9 @@ para banco com dados de operação.
   Prisma (ver `docs/propostas-pendentes.md` §7).
 - Depois do merge, cada etapa validada (tsc, eslint, testes, build) entra na
   `develop` por fast-forward a partir da branch de trabalho: etapa 2 do
-  núcleo (`855d33a`), arredondamento por linha (`5e02600`) e divisão → pedido
-  (spec 010, commit seguinte a este registro). Conferir com
+  núcleo (`855d33a`), arredondamento por linha (`5e02600`), divisão → pedido
+  (spec 010, `e44895f`) e complementos/faltas em demonstração (etapa 4,
+  commit seguinte a este registro). Conferir com
   `git log --oneline origin/develop -5`.
 
 ---
@@ -389,7 +406,9 @@ individuais, aqui só os pontos de entrada):
 - `src/lib/pdf/`, `src/app/api/semanas/[weekId]/pdf/` — geração de PDF (Etapa 3b).
 - `src/lib/importSchoolOrders.ts`, `src/app/actions/schoolOrdersImport.ts`,
 `src/lib/producerOrdersFromAllocation.ts`, `src/app/actions/producerOrdersFromAllocation.ts`,
-`src/app/(app)/produtores/GenerateOrdersFromAllocation.tsx`, `src/lib/roundingPolicy.ts`, `src/app/(app)/escolas/ImportSchoolOrders.tsx` — importação de Excel (Etapa 5).
+`src/app/(app)/produtores/GenerateOrdersFromAllocation.tsx`, `src/lib/roundingPolicy.ts`,
+`src/lib/domain/cycleLedger.ts`, `src/lib/cycleCore/*`, `src/components/cycle-core/*`,
+`src/app/(app)/complementos-faltas/*`, `src/app/(app)/escolas/ImportSchoolOrders.tsx` — importação de Excel (Etapa 5).
 - `docs/plano-de-implementacao.md`, `docs/propostas-pendentes.md`, `docs/relatorio-sessao.md`, `memory.md` — planejamento e documentação.
 
 **Dependências novas** (`package.json`): `@react-pdf/renderer`, `jszip`,

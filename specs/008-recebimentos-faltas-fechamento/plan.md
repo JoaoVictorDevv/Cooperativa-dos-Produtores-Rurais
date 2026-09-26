@@ -27,6 +27,24 @@ substituto em Prisma nem armazenamento paralelo.
 - `src/lib/domain/cycle.test.ts`: 40 testes cobrindo CA-008.1 a CA-008.8 e
   CA-008.12 a CA-008.14 (unidades, situação por escola, prévia de fechamento).
 - Essas funções **não estão ligadas** a nenhuma tela, PDF ou total oficial.
+- Etapa 4 (complementos e faltas, sem persistência):
+  - `src/lib/domain/cycleLedger.ts` — registro de eventos por escola/produto e
+    comandos `REGISTRAR_ENTREGA_INICIAL`, `REGISTRAR_COMPLEMENTO`,
+    `CORRIGIR_EVENTO`, `MARCAR_FALTA_EM_RESOLUCAO`,
+    `ENCERRAR_FALTA_SEM_ATENDIMENTO`, `REVOGAR_DECISAO_FALTA`; valida, gera
+    auditoria (antes/depois), trata chave de envio e versão, avisa decisões
+    que ficaram incoerentes e confere a origem dos complementos no galpão
+    (`supplyIssues`, `ledgerClosingPreview`).
+  - `src/lib/cycleCore/repository.ts` — porta `CycleCoreRepository`
+    (`load`, `execute`) e implementação em memória. **A implementação real
+    será um adaptador para a API** — não em Prisma.
+  - `src/components/cycle-core/` — `CycleCoreWorkspace`, `SchoolLinePanel`,
+    `EventForm`, `EventCorrectionForm`, `ShortageDecisionForm`,
+    `ClosingPreviewPanel`: recebem estado e uma função de comando, sem
+    conhecer a persistência. Prévia local com a mesma regra; quem decide é
+    o `execute`.
+  - `/complementos-faltas` — demonstração com cenário fictício
+    (`src/lib/cycleCore/demoScenario.ts`), link discreto na página da semana.
 
 ## Backend alvo e contrato necessário (para o Lucas)
 

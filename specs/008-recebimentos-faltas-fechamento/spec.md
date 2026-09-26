@@ -1,9 +1,13 @@
 # Especificação 008 — Recebimentos, faltas e fechamento do ciclo
 
 **Status:** regras confirmadas; regras de domínio implementadas e testadas em
-memória (`src/lib/domain/cycle.ts`). **Persistência e telas bloqueadas** por
-dependência de banco/API do Lucas — ver `plan.md`. Nada desta spec está em uso
-nas telas ou no financeiro oficial ainda.
+memória (`src/lib/domain/cycle.ts`). Complementos e encerramento de faltas
+(etapa 4, 26/09/2026): comandos em `src/lib/domain/cycleLedger.ts`, porta de
+persistência, componentes e **tela de demonstração sem gravação**
+(`/complementos-faltas`, dados fictícios). **Persistência bloqueada** por
+dependência de banco/API do Lucas — ver `plan.md` e
+`docs/propostas-pendentes.md` §9. Nada desta spec está em uso nas telas
+operacionais ou no financeiro oficial ainda.
 
 **Origem:** regras confirmadas com Seu Paulo e registradas no prompt
 `docs/prompts/2026-09-24-prompt-v2-operacao-specs-develop.md` (§3–§10).
@@ -101,6 +105,17 @@ pertencem ao **mesmo ciclo**, mesmo atravessando a semana do calendário.
   atendimento = sem pedido / a conferir / atendido / atendimento parcial /
   não atendido.
 
+- **RN-17 Origem do complemento**: todo complemento informa de onde veio —
+  um produtor (que precisa ter recebimento conferido no galpão para ser pago)
+  ou o saldo já recebido no galpão. Não há valor padrão.
+- **RN-18 Sem duplicação**: cada registro leva uma chave de envio; reenvio ou
+  duplo clique com a mesma chave não cria outro evento. Correção usa a versão
+  aberta na tela; se outra pessoa corrigiu antes, a correção é recusada.
+- **RN-19 Quem decide a falta**: perfis que operam o ciclo (ADMIN e OPERADOR —
+  os mesmos que fecham a semana hoje); CONSULTA só vê. *(Hipótese adotada;
+  confirmar.)* A decisão guarda motivo, responsável, data e a falta no momento
+  da decisão.
+
 ## Exemplo obrigatório (testado)
 
 | Etapa | kg |
@@ -153,6 +168,20 @@ a perda de 10 continua registrada, cobrança de 200 uma única vez.
   resultado calculado, rejeições e perdas por unidade, faltas encerradas com
   motivo, e motivos de bloqueio (sem conferência, falta sem decisão, preço não
   congelado, erro). Total igual à soma das linhas arredondadas.
+- **CA-008.15** Complemento registrado não altera a entrega inicial (quantidades,
+  rejeições, horário); exige pedido original, origem explícita e quantidade > 0.
+- **CA-008.16** Reenvio/duplo clique do mesmo complemento grava uma vez; mesmo
+  envio com outros valores é recusado.
+- **CA-008.17** Segunda entrega inicial é recusada (correção ≠ nova entrega);
+  correção guarda antes/depois e motivo; versão antiga é recusada.
+- **CA-008.18** Encerrar falta exige conferência completa, motivo e a falta
+  mostrada igual à atual; decisão concorrente é recusada.
+- **CA-008.19** Correção ou complemento posterior que muda a falta deixa a
+  decisão incoerente, com aviso, e bloqueia o fechamento até revogar e decidir
+  de novo.
+- **CA-008.20** Complemento de produtor sem recebimento conferido no galpão
+  bloqueia o fechamento; escolas com mais do que o galpão aceitou é aviso de
+  saldo a conferir.
 - **CA-008.9** Correção de quantidade não altera preço/desconto histórico;
   tela, PDF e balanço mostram os mesmos valores. *(depende da persistência)*
 - **CA-008.10** Tentativa de reduzir recebimento abaixo da rejeição já

@@ -102,6 +102,10 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
   retomada.
 - [x] **R2-10 Divisão → pedido aos produtores com prévia** (propostas §6) —
   spec 010; implementada e testada (unitários + interface em banco descartável).
+- [P] **R2-11 Complementos e encerramento de faltas** (spec 008, etapa 4) —
+  regras, testes, porta de persistência, componentes e tela de demonstração
+  prontos e testados, **sem gravação**. Persistência: [B] Lucas
+  (`docs/propostas-pendentes.md` §9).
 - [B] **R2-9 Mapa de Montagem** (Etapa 7 do prompt) — só depois do núcleo
   validado com persistência real. Não iniciar nesta rodada enquanto R2-2
   estiver bloqueado.

@@ -33,7 +33,9 @@ validações necessários: [`specs/008…/plan.md`](../specs/008-recebimentos-fa
 mesmos números.
 
 **Já preparado (Claude):** regras puras e testadas em `src/lib/domain/cycle.ts`
-— não ligadas a telas nem totais.
+— não ligadas a telas nem totais. Complementos e encerramento de faltas
+(etapa 4): comandos, componentes e tela de demonstração prontos, sem gravação
+— ver §9 para o que falta de persistência.
 
 ## 2. Cobrança e fechamento com faltas
 
@@ -200,16 +202,111 @@ Encontrado lendo `api/` e `database/` (sem executar):
   atualizar o Prisma, o que mexe na ferramenta de schema/migrações; fica para
   avaliação do Lucas. `uuid` (via exceljs) segue como moderada, já registrada
   na Rodada 1. A nova dependência `unpdf` não trouxe alertas.
-- **Layout no celular:** em 390 px de largura, o menu lateral intercepta
-  cliques sobre o conteúdo em algumas telas (visto no teste automatizado da
-  importação). É do layout "Colheita 2.0" — não alterado aqui.
+- **Layout no celular:** em 390 px de largura, o menu lateral continua visível
+  e intercepta cliques sobre o conteúdo em **todas** as telas autenticadas
+  (confirmado em 26/09/2026 em `/produtores` e `/complementos-faltas`). Causa
+  provável em `src/app/globals.css`: a regra base `.sidebar { display: flex }`
+  (e a camada "Colheita 2.0" de `.shell`/`.sidebar`) vem **depois** do
+  `@media (max-width: 860px)` que esconde o menu, e por isso vence. Correção
+  sugerida: repetir a media query no fim do arquivo. Não alterado aqui para
+  preservar o visual; fica para decisão.
+
+## 9. Complementos e encerramento de faltas — o que falta de persistência (etapa 4)
+
+**Situação (26/09/2026):** regras, testes, componentes e tela **prontos, mas
+sem gravação**. A tela `/complementos-faltas` é uma **demonstração com dados
+fictícios**: roda em memória no navegador e se perde ao recarregar. Não
+alimenta nenhum valor oficial, PDF ou fechamento. Não foi criado nenhum
+substituto em Prisma (seria um segundo núcleo, proibido pelo prompt v2).
+
+### O que já existe (Claude)
+
+| Peça | Arquivo | Estado |
+|---|---|---|
+| Regras dos comandos (entrega inicial, complemento, correção, falta em resolução, encerrar sem atendimento, revogar) | `src/lib/domain/cycleLedger.ts` | testado (23 testes) |
+| Núcleo de quantidades e estados | `src/lib/domain/cycle.ts` | testado (40 testes) |
+| Porta de persistência (contrato) | `src/lib/cycleCore/repository.ts` (`CycleCoreRepository`) | definida |
+| Repositório em memória (testes e demonstração) | idem (`InMemoryCycleCoreRepository`) | testado (concorrência, duplo clique) |
+| Componentes desacoplados | `src/components/cycle-core/*` | testados pela interface |
+| Tela de demonstração | `src/app/(app)/complementos-faltas/` | testada pela interface (dados fictícios) |
+
+As telas só falam com `CycleCoreRepository`. Quando existir a persistência,
+basta um adaptador que implemente `load` e `execute` chamando a API — a tela
+não muda.
+
+### O que o banco/API precisa oferecer (Lucas)
+
+1. **Evento de entrega à escola por produto** (`school_delivery_events` ou
+   equivalente) com: `id`, organização, ciclo, escola, produto, `kind`
+   (`INICIAL` | `COMPLEMENTO`), `presented_qty` (nulo = não informado),
+   `rejected_qty` + `rejection_reason`, `loss_before_school_qty` +
+   `loss_reason`, **origem** (`source_type` `PRODUTOR` | `SALDO_GALPAO` +
+   `source_producer_id`), `delivered_at` (data/hora real, com fuso),
+   `received_by` (texto do romaneio), `idempotency_key`, `version`,
+   `created_by`, `created_at`.
+   - Único: no máximo um `INICIAL` por ciclo/escola/produto; `COMPLEMENTO`
+     sem limite. Único também em (ciclo, `idempotency_key`).
+2. **Decisão de falta** por ciclo/escola/produto (uma vigente): `kind`
+   (`EM_RESOLUCAO` | `ENCERRADA_SEM_ATENDIMENTO`), `reason`,
+   `shortage_qty_at_decision` (só no encerramento), `decided_by`,
+   `decided_at`, `version`. Revogação remove a vigente e fica na auditoria.
+3. **Auditoria** na mesma transação de cada comando: ação, antes/depois só
+   dos campos alterados, motivo, usuário, horário.
+4. **Um endpoint de comando** (ou um por tipo) que receba exatamente o
+   `CycleCommand` de `cycleLedger.ts` e responda como `CommandResult`
+   (`APLICADO` | `JA_REGISTRADO` com avisos, ou erro `CICLO_FECHADO` |
+   `SEM_PERMISSAO` | `INVALIDO` | `CONFLITO` | `NAO_ENCONTRADO`), e um de
+   leitura que devolva o estado do ciclo (pedidos com preço congelado,
+   recebimentos do galpão com preço/desconto congelados, eventos, decisões).
+
+### Validações que o servidor precisa repetir (não confiar na tela)
+
+- Ciclo fechado não aceita comando; perfil CONSULTA não altera.
+- Complemento só com pedido original (> 0), origem explícita e quantidade
+  > 0; não presumir que o produtor original repôs.
+- Segunda entrega inicial é recusada: correção não é nova entrega.
+- Rejeição ≤ entregue no mesmo evento; reduzir entregue abaixo da rejeição já
+  registrada é recusado; rejeição e perda exigem motivo; até 2 casas decimais.
+- Correção exige motivo e a `version` aberta na tela (senão `CONFLITO`).
+- Reenvio com a mesma `idempotency_key` e mesmos dados = `JA_REGISTRADO`;
+  com dados diferentes = `CONFLITO`.
+- Encerrar falta só com todas as entregas da linha conferidas (vazio não é
+  zero), falta > 0, motivo, e a falta atual igual à mostrada na tela.
+- Decisão usa `version` (duas pessoas decidindo ao mesmo tempo → a segunda
+  recebe `CONFLITO`).
+- Depois de qualquer mudança em entrega, rejeição ou complemento, a decisão
+  de encerramento que não bate mais com a falta vira "decisão incoerente" e
+  bloqueia o fechamento até ser revista (RN-11).
+- Fechamento bloqueado também por complemento de produtor sem recebimento
+  conferido desse produtor no galpão (ele não seria pago). Escolas com mais do
+  que o galpão aceitou num produto é só **aviso** ("saldo a conferir").
+
+### Decisões que podem precisar de confirmação (hipóteses adotadas)
+
+- **Quem decide a falta:** ADMIN e OPERADOR (os mesmos que podem fechar a
+  semana hoje). Se só o ADMIN puder encerrar, é uma troca de uma linha.
+- **Origem "saldo do galpão":** aceita para complemento feito com produto já
+  recebido e pago a quem entregou. Sobra vinda de outro ciclo não é modelada;
+  por isso o excesso das escolas sobre o galpão é aviso, não bloqueio.
+- **Motivo obrigatório** em rejeição e perda (com a opção "Motivo não
+  identificado", sem inventar culpados).
+- **Segundo recebimento do mesmo produtor no mesmo ciclo** (ex.: volta à
+  tarde) continua sem suporte no galpão (1 linha por produtor/produto).
+
+### Aceite
+
+Os mesmos números de `src/lib/domain/cycleLedger.test.ts` e
+`src/lib/cycleCore/repository.test.ts` devem sair da API antes de a tela
+passar a usá-la.
 
 ---
 
 ## Para o Lucas — resumo
 
 1. **Banco/API para entrega real por escola/produto, complementos e decisão de
-   falta** (item 1; `specs/008…/plan.md`). Aceite: `src/lib/domain/cycle.test.ts`.
+   falta** (itens 1 e 9; `specs/008…/plan.md`). Tela e regras já prontas
+   esperando a persistência (`/complementos-faltas`, demonstração). Aceite:
+   `src/lib/domain/cycle.test.ts` e `src/lib/domain/cycleLedger.test.ts`.
 2. **Corrigir na API:** preço/desconto congelados em correções, validação de
    devolução × entrega com concorrência, auditoria com antes/depois, fechamento
    pelos estados da spec 008 (item 7.5).

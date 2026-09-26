@@ -113,6 +113,13 @@ export default async function WeekDetailPage({ params }: { params: Promise<{ wee
           <div className="qb-label">Balanço Financeiro</div>
         </Link>
       </div>
+      <p className="table-foot-note" style={{ textAlign: "left" }}>
+        Complementos e encerramento de faltas por escola ainda dependem do banco novo.{" "}
+        <Link className="link-action" href="/complementos-faltas">
+          Ver a demonstração com dados fictícios
+        </Link>{" "}
+        (nada é gravado).
+      </p>
 
       <div className="section-title">Documentos da semana</div>
       <div className="quick-grid">
