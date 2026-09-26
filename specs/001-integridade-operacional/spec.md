@@ -77,3 +77,23 @@ Critérios de aceite:
 - alteração de limites ou regras regulatórias do PNAE.
 
 Esses itens exigem especificações próprias e validação com os responsáveis da cooperativa.
+
+## Adendo 2026-09 — o que mudou depois desta spec
+
+- **CA-03.1 e CA-03.2** (fechar quando existe registro de entrega) continuam
+  valendo como mínimo técnico, mas **não representam** mais o fechamento
+  correto: a regra confirmada exige aceite por escola/produto, complementos e
+  decisão sobre faltas. Ver
+  [`008-recebimentos-faltas-fechamento`](../008-recebimentos-faltas-fechamento/spec.md)
+  (CA-008.5). A troca depende de persistência nova (Lucas).
+- **Devolução única por origem/produto (US-02)** continua valendo para o
+  modelo atual. No novo modelo, a rejeição escolar é limitada pela entrega
+  real daquele evento, não pelo pedido (CA-008.6).
+- **Testes seguros (T09)**: o nome `colheita_test` sozinho **não** comprova
+  que o banco é descartável. Desde a Rodada 1, `src/lib/pnae.integration.test.ts`
+  recusa rodar se o nome do banco não contiver "test" — isso é uma trava
+  mínima contra engano, não uma prova de isolamento. Antes de qualquer teste
+  destrutivo é preciso confirmar que o banco é exclusivo e descartável
+  (criado para o teste, sem dados de operação).
+- **Backup**: a suíte de integração chama `resetDb()` e **apaga** os dados;
+  nunca usá-la para verificar uma restauração. Ver `docs/propostas-pendentes.md` §5.

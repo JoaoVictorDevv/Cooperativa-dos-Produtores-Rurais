@@ -4,7 +4,7 @@ Itens candidatos não são autorização para implementação. Cada um precisa d
 
 ## P1 — antes do piloto
 
-1. **SPEC-002 — Homologação e migração da planilha**
+1. **SPEC-002 — Homologação e migração da planilha** *(não confundir com a importação do pedido da prefeitura, que é a spec 009)*
    - importar uma cópia anonimizada;
    - comparar totais por escola, produtor e semana;
    - produzir relatório de divergências sem sobrescrever silenciosamente.
@@ -12,7 +12,7 @@ Itens candidatos não são autorização para implementação. Cada um precisa d
    - criar, desativar e redefinir acesso;
    - consultar alterações por semana, usuário e entidade;
    - impedir que o último administrador ativo seja removido.
-3. **SPEC-004 — Relatórios e exportações**
+3. **SPEC-004 — Relatórios e exportações** *(promovida na Rodada 2: ver `specs/004-relatorios-exportacoes/`)*
    - definir exatamente quais documentos a prefeitura, a contabilidade e os produtores recebem;
    - gerar arquivos reproduzíveis a partir de semanas fechadas.
 
@@ -33,3 +33,9 @@ Itens candidatos não são autorização para implementação. Cada um precisa d
    - configurações, usuários e identidade visual próprias;
    - estratégia de cobrança e suporte.
 
+
+## Em andamento fora do backlog original
+
+- **SPEC-008 — Recebimentos, faltas e fechamento** — regras confirmadas com Seu Paulo; persistência depende do Lucas.
+- **SPEC-009 — Importação do pedido da prefeitura (Excel/PDF)**.
+- **Etapa 7 — Mapa de Montagem** (rotas, paradas, previsto/embarcado/aceito) — só depois da SPEC-008 integrada e validada. Referência: `controle_escolas_produtores_2026_MODELO_v20.xlsx` (anexo, não versionado).
