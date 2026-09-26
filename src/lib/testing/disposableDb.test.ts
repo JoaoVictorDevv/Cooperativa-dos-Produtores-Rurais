@@ -7,7 +7,7 @@ const TOKEN = "a1b2c3";
 
 describe("proteção de testes destrutivos", () => {
   it("sem o código do executor, recusa (rodar o arquivo direto não apaga nada)", () => {
-    expect(() => checkDisposableTarget({ DATABASE_URL: url("localhost", "colheita_descartavel_1_abc") })).toThrow(/npm run test:integration/);
+    expect(() => checkDisposableTarget({ DATABASE_URL: url("localhost", "colheita_descartavel_1790443552321_0549b7") })).toThrow(/npm run test:integration/);
   });
 
   it("nome com 'test' não basta", () => {
@@ -15,18 +15,18 @@ describe("proteção de testes destrutivos", () => {
   });
 
   it("servidor remoto é recusado sem liberação explícita", () => {
-    expect(() => checkDisposableTarget({ DATABASE_URL: url("db.exemplo.com", "colheita_descartavel_1_abc"), COLHEITA_TEST_DB_TOKEN: TOKEN })).toThrow(/não é local/);
+    expect(() => checkDisposableTarget({ DATABASE_URL: url("db.exemplo.com", "colheita_descartavel_1790443552321_0549b7"), COLHEITA_TEST_DB_TOKEN: TOKEN })).toThrow(/não é local/);
   });
 
   it("banco do executor em servidor local é aceito na primeira etapa", () => {
-    expect(checkDisposableTarget({ DATABASE_URL: url("localhost", "colheita_descartavel_1_abc"), COLHEITA_TEST_DB_TOKEN: TOKEN })).toEqual({
+    expect(checkDisposableTarget({ DATABASE_URL: url("localhost", "colheita_descartavel_1790443552321_0549b7"), COLHEITA_TEST_DB_TOKEN: TOKEN })).toEqual({
       host: "localhost",
-      database: "colheita_descartavel_1_abc",
+      database: "colheita_descartavel_1790443552321_0549b7",
     });
   });
 
   it("sem a marca desta execução no banco, recusa", () => {
-    const target = { host: "localhost", database: "colheita_descartavel_1_abc" };
+    const target = { host: "localhost", database: "colheita_descartavel_1790443552321_0549b7" };
     expect(() => checkDisposableMarker(target, { currentDatabase: target.database, comment: null }, TOKEN)).toThrow(/não tem a marca/);
     expect(() => checkDisposableMarker(target, { currentDatabase: target.database, comment: markerFor("outro") }, TOKEN)).toThrow(/não tem a marca/);
     expect(() => checkDisposableMarker(target, { currentDatabase: "colheita", comment: markerFor(TOKEN) }, TOKEN)).toThrow(/não é o banco descartável/);
@@ -35,9 +35,9 @@ describe("proteção de testes destrutivos", () => {
 
   it("nenhuma mensagem de erro expõe a senha da URL", () => {
     const cases = [
-      { DATABASE_URL: url("localhost", "colheita_descartavel_1_abc") },
+      { DATABASE_URL: url("localhost", "colheita_descartavel_1790443552321_0549b7") },
       { DATABASE_URL: url("localhost", "colheita"), COLHEITA_TEST_DB_TOKEN: TOKEN },
-      { DATABASE_URL: url("db.exemplo.com", "colheita_descartavel_1_abc"), COLHEITA_TEST_DB_TOKEN: TOKEN },
+      { DATABASE_URL: url("db.exemplo.com", "colheita_descartavel_1790443552321_0549b7"), COLHEITA_TEST_DB_TOKEN: TOKEN },
       { DATABASE_URL: `postgresql://postgres:${SECRET}@%%%/x`, COLHEITA_TEST_DB_TOKEN: TOKEN },
     ];
     for (const env of cases) {
