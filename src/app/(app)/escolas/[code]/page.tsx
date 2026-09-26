@@ -34,7 +34,9 @@ export default async function SchoolDetailPage({
       prisma.schoolOrder.findMany({ where: { weekId: week.id, schoolId: school.id } }),
       prisma.schoolReturn.findMany({ where: { weekId: week.id, schoolId: school.id } }),
       prisma.schoolDelivery.findUnique({ where: { weekId_schoolId: { weekId: week.id, schoolId: school.id } } }),
-      prisma.product.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
+      // Sem filtro de ativo: a ficha só lista produtos com pedido neste ciclo,
+      // e um produto desativado depois (ex.: Ovos) não pode sumir do histórico.
+      prisma.product.findMany({ orderBy: { name: "asc" } }),
     ]);
     orders = orderRows.map((o) => ({ productId: o.productId, orderedQty: Number(o.orderedQty) }));
     returnsByProduct = new Map(

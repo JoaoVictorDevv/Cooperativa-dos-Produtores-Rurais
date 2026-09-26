@@ -62,26 +62,26 @@ ponto de retomada. As regras de produto ficam em `specs/` (fonte de verdade).
 Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
 `[B]` bloqueado (dependência externa) · `[P]` preparado sem integração.
 
-- [~] **R2-0 Diagnóstico e registro** — Git, specs, API/DB do Lucas, arquivos
+- [x] **R2-0 Diagnóstico e registro** (commit `78baa41`) — Git, specs, API/DB do Lucas, arquivos
   GZ e MODELO v20; prompt salvo; este plano; commit+push antes de
   implementar.
-- [ ] **R2-1 Specs** — criar `specs/008-recebimentos-faltas-fechamento`,
+- [~] **R2-1 Specs** (008 e 009 criadas; 004 pendente) — criar `specs/008-recebimentos-faltas-fechamento`,
   `specs/009-importacao-pedido-prefeitura`, promover `SPEC-004 Relatórios e
   exportações` do backlog para `specs/004-relatorios-exportacoes`, adendo na
   001 (testes seguros, substituição de CA-03). Atualizar `specs/README.md` e
   `specs/backlog.md`.
-- [ ] **R2-2 Núcleo de domínio** (spec 008) — funções puras + testes:
+- [P] **R2-2 Núcleo de domínio** (spec 008) — regras puras e 32 testes feitos (commit `6f907ac`); preparado sem integração — funções puras + testes:
   galpão (bruto−rejeição=aceito), escola (apresentado−rejeição=aceito),
   complementos, falta/excedente, perda pré-escola × rejeição escolar, estados
   de conferência e "pronto para fechar". **Persistência: [B] Lucas** (não há
   tabela de entrega por escola/produto nem de complemento/decisão de falta).
-- [ ] **R2-3 Importação Excel** (spec 009) — motor novo (abas, cabeçalho 2
+- [x] **R2-3 Importação Excel** (spec 009) — ver `specs/009…/tasks.md`; falta só validar com arquivo oficial [B] — motor novo (abas, cabeçalho 2
   linhas, Pedido×Entrega, zero explícito, `1.000`, colunas duplicadas,
   conflito código×nome, fórmula sem resultado, precisão, unidades), prévia
   com seleção de abas e resolução de pendências, confirmação atômica com
   revalidação no servidor. Testes com estrutura do GZ e sintético de 191
   escolas.
-- [ ] **R2-4 Importação PDF com texto** (spec 009) — extração local, sem
+- [x] **R2-4 Importação PDF com texto** (spec 009) — layout tabular simples testado; PDF oficial não testado [B] — extração local, sem
   serviço externo; reaproveita prévia/confirmação. OCR: [B] infraestrutura
   não autorizada.
 - [ ] **R2-5 Documentos** (spec 004) — romaneio com "Data da entrega /

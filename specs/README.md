@@ -16,6 +16,7 @@ O código pode explicar **como** algo funciona. As especificações devem explic
 
 - [`001-integridade-operacional`](./001-integridade-operacional/spec.md): endurecimento da fundação antes do primeiro piloto (ver adendo de 2026-09 sobre fechamento e testes seguros).
 - [`008-recebimentos-faltas-fechamento`](./008-recebimentos-faltas-fechamento/spec.md): dois recebimentos (galpão e escola), complementos, faltas e fechamento. Regras confirmadas e testadas em memória; persistência bloqueada (Lucas).
+- [`009-importacao-pedido-prefeitura`](./009-importacao-pedido-prefeitura/spec.md): importação do pedido da prefeitura (Excel com várias abas e PDF com texto), com conferência e gravação atômica. Implementada e testada; falta validar com arquivo oficial da prefeitura.
 - [`backlog.md`](./backlog.md): próximas especificações candidatas, ainda não aprovadas para implementação.
 
 ## Numeração
