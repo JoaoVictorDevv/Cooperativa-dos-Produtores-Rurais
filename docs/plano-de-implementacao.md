@@ -70,7 +70,7 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
   exportações` do backlog para `specs/004-relatorios-exportacoes`, adendo na
   001 (testes seguros, substituição de CA-03). Atualizar `specs/README.md` e
   `specs/backlog.md`.
-- [P] **R2-2 Núcleo de domínio** (spec 008) — regras puras e 32 testes feitos (commit `6f907ac`); preparado sem integração — funções puras + testes:
+- [P] **R2-2 Núcleo de domínio** (spec 008) — regras puras (commit `6f907ac`) + etapa 2: unidades separadas, situação por escola, prévia de fechamento (40 testes); preparado sem integração — funções puras + testes:
   galpão (bruto−rejeição=aceito), escola (apresentado−rejeição=aceito),
   complementos, falta/excedente, perda pré-escola × rejeição escolar, estados
   de conferência e "pronto para fechar". **Persistência: [B] Lucas** (não há

@@ -185,6 +185,12 @@ Encontrado lendo `api/` e `database/` (sem executar):
 
 ## 8. Outros achados para o Lucas
 
+- **Arredondamento do total a cobrar** (modelo atual): soma sem arredondar e
+  arredonda no fim, enquanto as linhas exibidas são arredondadas uma a uma —
+  pode haver diferença de centavos entre a soma das linhas e o total. A regra
+  proposta (spec 008, RN-15) é somar as linhas arredondadas; aplicar só a partir
+  de um ciclo novo, sem recalcular os fechados. Decisão: usuário + Lucas.
+
 - **Dependência com alerta alto:** `npm audit` aponta `deepmerge-ts`
   (via `prisma`/`@prisma/config`) como alta severidade — a correção exige
   atualizar o Prisma, o que mexe na ferramenta de schema/migrações; fica para

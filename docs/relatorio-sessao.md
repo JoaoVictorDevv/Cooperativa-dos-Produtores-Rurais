@@ -39,8 +39,10 @@ Lucas (schema/API).
 | Grade de pedidos atualiza após importação sem perder edição; campos não ficam presos a outra semana | Pedido das Escolas, Balanço, Produtores, ficha | teste de interface |
 
 ### Preparado sem integração
-- Regras do ciclo (spec 008): `src/lib/domain/cycle.ts` + 32 testes. Não usado
-  por telas, PDFs ou totais.
+- Regras do ciclo (spec 008): `src/lib/domain/cycle.ts` + 40 testes — inclui
+  totais por unidade (kg × dz), situação por escola (entrega registrada ×
+  pedido atendido) e prévia de fechamento com a cobrar/a pagar/faltas
+  encerradas e motivos de bloqueio. Não usado por telas, PDFs ou totais.
 
 ### Implementado, mas não validado com dado oficial
 - Importação com **pedido oficial da prefeitura de Petrópolis** (Excel ou PDF):

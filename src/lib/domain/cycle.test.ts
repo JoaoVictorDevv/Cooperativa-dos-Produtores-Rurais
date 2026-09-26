@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import { schoolNetQty } from "../calc";
 import {
   attendanceRate,
+  closingPreview,
   evaluateSchoolLine,
   evaluateWarehouseReceipt,
   producerPayable,
   schoolReceivable,
   summarizeCycle,
+  summarizeSchools,
   warehouseToSchoolBalance,
   type SchoolLineInput,
 } from "./cycle";
@@ -55,8 +57,8 @@ describe("spec 008 — exemplo obrigatório 200 / 180 / 170", () => {
       schoolLines: [exemploObrigatorio()],
       warehouseReceipts: [{ producerId: "produtor-A", productId: ALFACE, grossQty: 200, rejectedQty: 20 }],
     });
-    expect(summary.totals.acceptedAtWarehouseQty).toBe(180);
-    expect(summary.totals.acceptedAtSchoolQty).toBe(170);
+    expect(summary.totalsByUnit.kg!.acceptedAtWarehouseQty).toBe(180);
+    expect(summary.totalsByUnit.kg!.acceptedAtSchoolQty).toBe(170);
   });
 
   it("falta de 30 sem decisão impede o ciclo de ficar pronto para fechar", () => {
@@ -96,9 +98,9 @@ describe("spec 008 — complemento no mesmo ciclo", () => {
     const [a, b] = summary.warehouseReceipts;
     expect(a.result.acceptedQty).toBe(180);
     expect(b.result.acceptedQty).toBe(30);
-    expect(summary.totals.acceptedAtSchoolQty).toBe(200);
-    expect(summary.totals.rejectedAtSchoolQty).toBe(10);
-    expect(schoolReceivable(summary.totals.acceptedAtSchoolQty, 14.62)).toBe(2924); // cobra 200 uma vez só
+    expect(summary.totalsByUnit.kg!.acceptedAtSchoolQty).toBe(200);
+    expect(summary.totalsByUnit.kg!.rejectedAtSchoolQty).toBe(10);
+    expect(schoolReceivable(summary.totalsByUnit.kg!.acceptedAtSchoolQty, 14.62)).toBe(2924); // cobra 200 uma vez só
     expect(summary.state).toBe("PRONTO_PARA_FECHAR");
   });
 
@@ -270,8 +272,8 @@ describe("spec 008 — excedente não compensa falta de outra linha", () => {
       ],
       warehouseReceipts: [],
     });
-    expect(summary.totals.excessQty).toBe(5);
-    expect(summary.totals.shortageQty).toBe(5);
+    expect(summary.totalsByUnit.kg!.excessQty).toBe(5);
+    expect(summary.totalsByUnit.kg!.shortageQty).toBe(5);
     expect(summary.counts.shortagesWithoutDecision).toBe(1);
     expect(attendanceRate(summary.schoolLines)).toBe(75); // (10 + 5) / 20 — excesso não soma
   });
@@ -323,6 +325,137 @@ describe("spec 008 — estados do ciclo", () => {
       warehouseReceipts: [{ producerId: "produtor-A", productId: ALFACE, grossQty: 200, rejectedQty: 20 }],
     });
     expect(s.state).toBe("PRONTO_PARA_FECHAR");
-    expect(s.totals.shortageClosedQty).toBe(30);
+    expect(s.totalsByUnit.kg!.shortageClosedQty).toBe(30);
+  });
+});
+
+describe("spec 008 — unidades nunca se misturam (kg × dz)", () => {
+  it("totais e atendimento são separados por unidade", () => {
+    const s = summarizeCycle({
+      schoolLines: [
+        { schoolId: "e", productId: ALFACE, unit: "kg", orderedQty: 10, events: [{ kind: "INICIAL", presentedQty: 10, rejectedQty: 0 }] },
+        { schoolId: "e", productId: "ovos", unit: "dz", orderedQty: 5, events: [{ kind: "INICIAL", presentedQty: 3, rejectedQty: 0 }] },
+      ],
+      warehouseReceipts: [
+        { producerId: "p", productId: ALFACE, unit: "kg", grossQty: 10, rejectedQty: 0 },
+        { producerId: "q", productId: "ovos", unit: "dz", grossQty: 3, rejectedQty: 0 },
+      ],
+    });
+    expect(s.totalsByUnit.kg!.orderedQty).toBe(10);
+    expect(s.totalsByUnit.dz!.orderedQty).toBe(5);
+    expect(s.totalsByUnit.dz!.shortageQty).toBe(2);
+    expect(s.totalsByUnit.kg!.acceptedAtWarehouseQty).toBe(10);
+    expect(s.totalsByUnit.dz!.acceptedAtWarehouseQty).toBe(3);
+    expect(s.attendanceByUnit).toEqual({ kg: 100, dz: 60 });
+  });
+});
+
+describe("spec 008 — situação por escola: entrega registrada ≠ pedido atendido", () => {
+  const line = (schoolId: string, orderedQty: number, presented: number | null, extra: object = {}) => ({
+    schoolId,
+    productId: ALFACE,
+    orderedQty,
+    events: [{ kind: "INICIAL" as const, presentedQty: presented, rejectedQty: 0 }],
+    ...extra,
+  });
+  const byId = (lines: Parameters<typeof summarizeCycle>[0]["schoolLines"]) =>
+    Object.fromEntries(summarizeSchools(summarizeCycle({ schoolLines: lines, warehouseReceipts: [] }).schoolLines).map((x) => [x.schoolId, x]));
+
+  it("classifica cada escola nas duas dimensões", () => {
+    const r = byId([
+      line("atendida", 10, 10),
+      line("parcial", 10, 6),
+      line("nada", 10, 0),
+      line("pendente", 10, null),
+      { schoolId: "sem-pedido", productId: ALFACE, orderedQty: 0, events: [] },
+    ]);
+    expect([r.atendida.delivery, r.atendida.attendance]).toEqual(["ENTREGA_REGISTRADA", "ATENDIDO"]);
+    expect([r.parcial.delivery, r.parcial.attendance]).toEqual(["ENTREGA_REGISTRADA", "ATENDIMENTO_PARCIAL"]);
+    expect([r.nada.delivery, r.nada.attendance]).toEqual(["ENTREGA_REGISTRADA", "NAO_ATENDIDO"]);
+    expect([r.pendente.delivery, r.pendente.attendance]).toEqual(["PENDENTE_CONFERENCIA", "A_CONFERIR"]);
+    expect([r["sem-pedido"].delivery, r["sem-pedido"].attendance]).toEqual(["SEM_PEDIDO", "SEM_PEDIDO"]);
+  });
+
+  it("entrega registrada com falta encerrada fica pronta para fechar, mas não 'atendida'", () => {
+    const r = byId([line("e", 10, 6, { shortageDecision: { kind: "ENCERRADA_SEM_ATENDIMENTO", reason: "sem produto", shortageQtyAtDecision: 4 } })]);
+    expect(r.e.attendance).toBe("ATENDIMENTO_PARCIAL");
+    expect(r.e.shortagesClosedWithoutService).toBe(1);
+    expect(r.e.readyToClose).toBe(true);
+  });
+});
+
+describe("spec 008 — prévia de fechamento (a cobrar, a pagar, faltas encerradas)", () => {
+  const PRICE = 14.62;
+  const DED = 3.67;
+  const base = {
+    schoolLines: [
+      exemploObrigatorio({ price: PRICE, shortageDecision: { kind: "ENCERRADA_SEM_ATENDIMENTO", reason: "Sem alface no mercado", shortageQtyAtDecision: 30 } }),
+    ],
+    warehouseReceipts: [{ producerId: "produtor-A", productId: ALFACE, grossQty: 200, rejectedQty: 20, price: PRICE, logisticsDeductionSnapshot: DED }],
+  };
+
+  it("exemplo obrigatório: cobra 170 × preço, paga 180 × (preço − desconto), lista a falta encerrada", () => {
+    const p = closingPreview(base);
+    expect(p.canClose).toBe(true);
+    expect(p.receivableTotal).toBe(2485.4); // 170 × 14,62
+    expect(p.payableTotal).toBe(1971); // 180 × 10,95
+    expect(p.calculatedResult).toBe(514.4);
+    expect(p.closedShortages).toEqual([{ schoolId: "escola-1", productId: ALFACE, unit: "kg", qty: 30, reason: "Sem alface no mercado" }]);
+    expect(p.totalsByUnit.kg!.rejectedAtWarehouseQty).toBe(20);
+    expect(p.totalsByUnit.kg!.rejectedAtSchoolQty).toBe(10);
+  });
+
+  it("falta sem decisão bloqueia e diz por quê; os valores continuam visíveis", () => {
+    const p = closingPreview({ ...base, schoolLines: [exemploObrigatorio({ price: PRICE })] });
+    expect(p.canClose).toBe(false);
+    expect(p.blockers).toContain("1 falta(s) sem decisão.");
+    expect(p.receivableTotal).toBe(2485.4);
+  });
+
+  it("recebimento não conferido e preço ausente bloqueiam; linha pendente não entra no valor", () => {
+    const p = closingPreview({
+      schoolLines: [{ schoolId: "e", productId: ALFACE, orderedQty: 10, price: PRICE, events: [{ kind: "INICIAL", presentedQty: null, rejectedQty: 0 }] }],
+      warehouseReceipts: [{ producerId: "p", productId: ALFACE, grossQty: 10, rejectedQty: 0 }],
+    });
+    expect(p.canClose).toBe(false);
+    expect(p.blockers).toEqual(expect.arrayContaining(["1 item(ns) de escola sem conferência.", "1 recebimento(s) sem preço/desconto congelado."]));
+    expect(p.receivableTotal).toBe(0);
+  });
+
+  it("total = soma das linhas arredondadas (tela, PDF e total batem)", () => {
+    const lines = Array.from({ length: 3 }, (_, i) => ({
+      schoolId: `e${i}`,
+      productId: ALFACE,
+      orderedQty: 0.33,
+      price: 10.05,
+      events: [{ kind: "INICIAL" as const, presentedQty: 0.33, rejectedQty: 0 }],
+    }));
+    const p = closingPreview({ schoolLines: lines, warehouseReceipts: [] });
+    // 0,33 × 10,05 = 3,3165 → 3,32 por linha; 3 × 3,32 = 9,96 (arredondar só no fim daria 9,95)
+    expect(p.receivableLines.map((l) => l.value)).toEqual([3.32, 3.32, 3.32]);
+    expect(p.receivableTotal).toBe(9.96);
+  });
+
+  it("complemento de outro produtor: cada produtor recebe pelo seu aceito; escola cobra 200 uma vez", () => {
+    const p = closingPreview({
+      schoolLines: [
+        exemploObrigatorio({
+          price: PRICE,
+          events: [
+            { kind: "INICIAL", presentedQty: 180, rejectedQty: 10 },
+            { kind: "COMPLEMENTO", presentedQty: 30, rejectedQty: 0, sourceProducerId: "produtor-B" },
+          ],
+        }),
+      ],
+      warehouseReceipts: [
+        { producerId: "produtor-A", productId: ALFACE, grossQty: 200, rejectedQty: 20, price: PRICE, logisticsDeductionSnapshot: DED },
+        { producerId: "produtor-B", productId: ALFACE, grossQty: 30, rejectedQty: 0, price: PRICE, logisticsDeductionSnapshot: DED },
+      ],
+    });
+    expect(p.receivableTotal).toBe(2924); // 200 × 14,62
+    expect(p.payableLines.map((l) => [l.producerId, l.acceptedQty, l.value])).toEqual([
+      ["produtor-A", 180, 1971],
+      ["produtor-B", 30, 328.5],
+    ]);
   });
 });

@@ -24,7 +24,8 @@ substituto em Prisma nem armazenamento paralelo.
 - `src/lib/domain/cycle.ts`: regras puras (galpão, escola, eventos,
   falta/excedente, perda pré-escola, decisões, estados do ciclo, saldo a
   conferir, percentual de atendimento, valores a pagar/a cobrar).
-- `src/lib/domain/cycle.test.ts`: 32 testes cobrindo CA-008.1 a CA-008.8.
+- `src/lib/domain/cycle.test.ts`: 40 testes cobrindo CA-008.1 a CA-008.8 e
+  CA-008.12 a CA-008.14 (unidades, situação por escola, prévia de fechamento).
 - Essas funções **não estão ligadas** a nenhuma tela, PDF ou total oficial.
 
 ## Backend alvo e contrato necessário (para o Lucas)
@@ -60,6 +61,16 @@ oferecer para esta spec:
    a pagar = aceito no galpão × (preço − desconto congelado)), sem alterar a
    view antiga para semanas antigas: marcar o ciclo com a metodologia usada
    (`LEGADO_PEDIDO_MENOS_DEVOLUCAO` × `ACEITE_ESCOLAR`).
+
+## Achado: arredondamento no app atual
+
+Hoje o pagamento aos produtores soma valores já arredondados por linha, mas o
+total a cobrar (`treasuryTotal` em `src/lib/calc.ts`) soma os valores sem
+arredondar e arredonda só no fim. A soma das linhas exibidas (Resumo, PDFs)
+pode diferir do total em centavos. Não foi alterado — mudaria centavos de
+semanas já calculadas. A regra do modelo novo é RN-15 (arredondar por linha e
+somar). Decidir com o usuário/Lucas se o modelo atual deve adotar a mesma
+regra a partir de um ciclo novo, sem recalcular ciclos fechados.
 
 ## Transição do histórico
 

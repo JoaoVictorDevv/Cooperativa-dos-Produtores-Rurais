@@ -88,6 +88,16 @@ pertencem ao **mesmo ciclo**, mesmo atravessando a semana do calendário.
   como tal nos documentos.
 - **RN-13 Termos financeiros**: usar "A pagar", "A cobrar" e "Resultado
   calculado" enquanto não houver registro de quitação.
+- **RN-14 Unidades**: quantidades de unidades diferentes (kg, dz) nunca são
+  somadas; totais e percentual de atendimento são por unidade.
+- **RN-15 Arredondamento**: cada linha (escola × produto a cobrar; produtor ×
+  produto a pagar) é arredondada a centavos; o total é a soma das linhas
+  arredondadas, para que tela, PDF e total batam.
+- **RN-16 Duas dimensões por escola**: "entrega registrada" (conferência
+  feita) e "pedido atendido" (sem falta) são mostradas separadamente:
+  entrega = sem pedido / pendente de conferência / registrada / com erros;
+  atendimento = sem pedido / a conferir / atendido / atendimento parcial /
+  não atendido.
 
 ## Exemplo obrigatório (testado)
 
@@ -132,6 +142,15 @@ a perda de 10 continua registrada, cobrança de 200 uma única vez.
 - **CA-008.8** Excedente de uma escola/produto não compensa falta de outra;
   percentual de atendimento limita cada linha ao próprio pedido e é "não
   aplicável" com demanda zero.
+- **CA-008.12** Totais e percentual de atendimento separados por unidade
+  (kg × dz).
+- **CA-008.13** Situação por escola nas duas dimensões (RN-16); falta
+  encerrada deixa a escola pronta para fechar, mas não "atendida".
+- **CA-008.14** Prévia de fechamento com a cobrar (aceito na escola × preço
+  congelado), a pagar (aceito no galpão × (preço − desconto) congelados),
+  resultado calculado, rejeições e perdas por unidade, faltas encerradas com
+  motivo, e motivos de bloqueio (sem conferência, falta sem decisão, preço não
+  congelado, erro). Total igual à soma das linhas arredondadas.
 - **CA-008.9** Correção de quantidade não altera preço/desconto histórico;
   tela, PDF e balanço mostram os mesmos valores. *(depende da persistência)*
 - **CA-008.10** Tentativa de reduzir recebimento abaixo da rejeição já
