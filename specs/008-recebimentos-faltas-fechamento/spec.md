@@ -92,7 +92,9 @@ pertencem ao **mesmo ciclo**, mesmo atravessando a semana do calendário.
   somadas; totais e percentual de atendimento são por unidade.
 - **RN-15 Arredondamento**: cada linha (escola × produto a cobrar; produtor ×
   produto a pagar) é arredondada a centavos; o total é a soma das linhas
-  arredondadas, para que tela, PDF e total batam.
+  arredondadas, para que tela, PDF e total batam. **Decidido em 26/09/2026 e
+  já aplicado ao modelo atual para ciclos criados a partir de 27/09/2026**
+  (ver plan.md); ciclos anteriores não são recalculados.
 - **RN-16 Duas dimensões por escola**: "entrega registrada" (conferência
   feita) e "pedido atendido" (sem falta) são mostradas separadamente:
   entrega = sem pedido / pendente de conferência / registrada / com erros;

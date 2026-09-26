@@ -62,15 +62,27 @@ oferecer para esta spec:
    view antiga para semanas antigas: marcar o ciclo com a metodologia usada
    (`LEGADO_PEDIDO_MENOS_DEVOLUCAO` × `ACEITE_ESCOLAR`).
 
-## Achado: arredondamento no app atual
+## Arredondamento do total a cobrar — decidido em 26/09/2026
 
-Hoje o pagamento aos produtores soma valores já arredondados por linha, mas o
-total a cobrar (`treasuryTotal` em `src/lib/calc.ts`) soma os valores sem
-arredondar e arredonda só no fim. A soma das linhas exibidas (Resumo, PDFs)
-pode diferir do total em centavos. Não foi alterado — mudaria centavos de
-semanas já calculadas. A regra do modelo novo é RN-15 (arredondar por linha e
-somar). Decidir com o usuário/Lucas se o modelo atual deve adotar a mesma
-regra a partir de um ciclo novo, sem recalcular ciclos fechados.
+**Achado:** o pagamento aos produtores somava linhas já arredondadas, mas o
+total a cobrar (`treasuryTotal`) somava sem arredondar e arredondava só no fim;
+a soma das linhas exibidas podia diferir do total em centavos.
+
+**Decisão do usuário:** somar as linhas já arredondadas a 2 casas (igual à
+planilha), **só para ciclos novos**; ciclos antigos, fechados ou não, não são
+recalculados.
+
+**Implementado (modelo atual):** `src/lib/roundingPolicy.ts` decide pela data
+de criação do ciclo — a partir de 27/09/2026 00:00 (Brasília), ajustável por
+`TREASURY_PER_LINE_ROUNDING_FROM` — e `getWeekFinancialSummary` usa
+`treasuryTotalPerLine` (novo) ou `treasuryTotal` (antigo). Telas de Resumo e
+Balanço e o PDF do Balanço dizem qual método foi usado. Testes:
+`src/lib/roundingPolicy.test.ts` e integração em banco descartável (ciclo
+antigo fechado = R$ 9,95; ciclo novo = R$ 9,96 = soma das linhas).
+
+**Para o Lucas:** a view `v_week_financial_summary` (database/V003) arredonda
+por soma sem arredondar por linha; o banco novo deve seguir a mesma regra
+(RN-15) para ciclos novos, sem recalcular os antigos.
 
 ## Transição do histórico
 

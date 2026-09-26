@@ -24,6 +24,15 @@ export function treasuryTotal(
   );
 }
 
+// Regra decidida em 26/09/2026 (ciclos novos): cada linha e arredondada a
+// centavos e o total e a soma das linhas arredondadas — igual a planilha.
+// A funcao acima (arredonda so no fim) continua valendo para ciclos antigos.
+export function treasuryTotalPerLine(
+  lines: { orderedQty: number; returnedQty: number; price: number }[],
+): number {
+  return round2(lines.reduce((sum, l) => sum + schoolValue(l.orderedQty, l.returnedQty, l.price), 0));
+}
+
 // Regra #6: liquido do produtor = entrega - devolucao
 export function producerNetQty(deliveredQty: number, returnedQty: number): number {
   return round2(deliveredQty - returnedQty);

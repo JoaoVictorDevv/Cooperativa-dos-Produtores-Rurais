@@ -17,6 +17,7 @@ export interface BalanceReportProps {
   producerRows: { name: string; amountLabel: string }[];
   reconciliationOk: boolean;
   reconciliationNote: string;
+  roundingNote: string;
 }
 
 // Balanco Financeiro (plano §12): mesmo conteudo da tela /balanco,
@@ -36,6 +37,7 @@ export function BalanceReportDocument({
   producerRows,
   reconciliationOk,
   reconciliationNote,
+  roundingNote,
 }: BalanceReportProps) {
   return (
     <Document title={`Balanço Financeiro — Semana ${weekNumber}`}>
@@ -50,7 +52,9 @@ export function BalanceReportDocument({
             Atenção: este ciclo ainda está ABERTO. Os valores abaixo podem mudar até o fechamento.
           </Text>
         )}
-        <Text style={pdfStyles.methodNotice}>{LEGACY_BILLING_NOTE}</Text>
+        <Text style={pdfStyles.methodNotice}>
+          {LEGACY_BILLING_NOTE} {roundingNote}
+        </Text>
 
         <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8 }}>
           <View>

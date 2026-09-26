@@ -9,6 +9,7 @@ import {
   schoolNetQty,
   schoolValue,
   treasuryTotal,
+  treasuryTotalPerLine,
   warehouseDifference,
   weekBalance,
   type BalanceStatus,
@@ -16,6 +17,7 @@ import {
   type ReconciliationResult,
 } from "./calc";
 import type { CostCategory } from "@prisma/client";
+import { treasuryRoundingFor, type TreasuryRounding } from "./roundingPolicy";
 
 export interface TreasuryLine {
   schoolId: string;
@@ -114,6 +116,7 @@ export async function getProducerPaymentLines(weekId: string): Promise<ProducerP
 export interface WeekFinancialSummary {
   treasuryLines: TreasuryLine[];
   treasuryTotal: number;
+  treasuryRounding: TreasuryRounding;
   producerLines: ProducerPaymentLine[];
   producersTotal: number;
   grossMargin: number;
@@ -125,15 +128,16 @@ export interface WeekFinancialSummary {
 }
 
 export async function getWeekFinancialSummary(weekId: string): Promise<WeekFinancialSummary> {
-  const [treasuryLines, producerLines, costs] = await Promise.all([
+  const [week, treasuryLines, producerLines, costs] = await Promise.all([
+    prisma.week.findUniqueOrThrow({ where: { id: weekId }, select: { createdAt: true } }),
     getTreasuryLines(weekId),
     getProducerPaymentLines(weekId),
     prisma.weeklyCost.findMany({ where: { weekId } }),
   ]);
 
-  const treasuryTotalValue = treasuryTotal(
-    treasuryLines.map((l) => ({ orderedQty: l.orderedQty, returnedQty: l.returnedQty, price: l.price })),
-  );
+  const treasuryRounding = treasuryRoundingFor(week);
+  const treasuryInput = treasuryLines.map((l) => ({ orderedQty: l.orderedQty, returnedQty: l.returnedQty, price: l.price }));
+  const treasuryTotalValue = treasuryRounding === "POR_LINHA" ? treasuryTotalPerLine(treasuryInput) : treasuryTotal(treasuryInput);
   const producersTotalValue = producerLines.reduce((sum, l) => sum + l.payment, 0);
   const margin = grossMargin(treasuryTotalValue, producersTotalValue);
   const totalCosts = costs.reduce((sum, c) => sum + Number(c.amount), 0);
@@ -148,6 +152,7 @@ export async function getWeekFinancialSummary(weekId: string): Promise<WeekFinan
   return {
     treasuryLines,
     treasuryTotal: treasuryTotalValue,
+    treasuryRounding,
     producerLines,
     producersTotal: Math.round(producersTotalValue * 100) / 100,
     grossMargin: margin,

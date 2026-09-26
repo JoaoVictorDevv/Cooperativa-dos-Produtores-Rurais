@@ -185,12 +185,11 @@ Encontrado lendo `api/` e `database/` (sem executar):
 
 ## 8. Outros achados para o Lucas
 
-- **Arredondamento do total a cobrar** (modelo atual): soma sem arredondar e
-  arredonda no fim, enquanto as linhas exibidas são arredondadas uma a uma —
-  pode haver diferença de centavos entre a soma das linhas e o total. A regra
-  proposta (spec 008, RN-15) é somar as linhas arredondadas; aplicar só a partir
-  de um ciclo novo, sem recalcular os fechados. Decisão: usuário + Lucas.
-
+- **Arredondamento do total a cobrar — DECIDIDO (26/09/2026):** somar as
+  linhas já arredondadas a 2 casas, só em ciclos novos. Já aplicado no app
+  (ciclos criados a partir de 27/09/2026; ver spec 008, plan). **Lucas:**
+  aplicar a mesma regra na view `v_week_financial_summary` do banco novo para
+  ciclos novos, sem recalcular os antigos.
 - **Dependência com alerta alto:** `npm audit` aponta `deepmerge-ts`
   (via `prisma`/`@prisma/config`) como alta severidade — a correção exige
   atualizar o Prisma, o que mexe na ferramenta de schema/migrações; fica para

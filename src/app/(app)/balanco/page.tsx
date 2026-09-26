@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LEGACY_BILLING_NOTE } from "@/lib/methodology";
+import { TREASURY_ROUNDING_NOTE } from "@/lib/roundingPolicy";
 import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
 import { getWeekFinancialSummary } from "@/lib/weekSummary";
@@ -67,7 +68,7 @@ export default async function BalancoPage({ searchParams }: { searchParams: Prom
       </p>
 
       <p className="table-foot-note" style={{ textAlign: "left" }}>
-        {LEGACY_BILLING_NOTE}
+        {LEGACY_BILLING_NOTE} {TREASURY_ROUNDING_NOTE[summary.treasuryRounding]}
       </p>
       <div className="stat-row">
         <div className="card stat money-in">

@@ -60,7 +60,11 @@ Lucas (schema/API).
   núcleo validado com persistência real.
 
 ### Alterações financeiras nesta rodada
-Nenhuma fórmula foi trocada. A cobrança continua `pedido − devolução` (agora
+- **Arredondamento (decisão do usuário, 26/09/2026):** ciclos criados a
+  partir de 27/09/2026 somam as linhas a cobrar já arredondadas (como a
+  planilha); ciclos anteriores continuam com o total arredondado só no fim e
+  não foram recalculados. Telas e PDF indicam o método usado.
+- Nenhuma fórmula de quantidade foi trocada. A cobrança continua `pedido − devolução` (agora
 identificada como "metodologia atual" nas telas e no PDF). Pagamento ao
 produtor continua `(entrega − devolução) × (preço − desconto)`, congelados no
 lançamento. Semanas antigas não foram recalculadas.

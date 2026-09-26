@@ -6,6 +6,7 @@ import { SimpleReportDocument, type ReportColumn } from "./SimpleReport";
 import { SchoolRomaneiosDocument, type SchoolRomaneio } from "./SchoolRomaneiosDocument";
 import { BalanceReportDocument } from "./BalanceReportDocument";
 import type { ReportKey } from "./definitions";
+import { TREASURY_ROUNDING_NOTE } from "@/lib/roundingPolicy";
 import type { ReactElement } from "react";
 import type { DocumentProps } from "@react-pdf/renderer";
 import type { WeekStatus } from "@prisma/client";
@@ -318,6 +319,7 @@ async function buildBalanco(week: WeekMeta, issuedAt: string): Promise<ReportRes
         balanceLabel={fmtMoneyPdf(summary.balance)}
         costRows={summary.costs.map((c) => ({ label: COST_LABELS[c.category] ?? c.category, amountLabel: fmtMoneyPdf(c.amount) }))}
         producerRows={[...byProducer.values()].map((p) => ({ name: p.name, amountLabel: fmtMoneyPdf(p.total) }))}
+        roundingNote={TREASURY_ROUNDING_NOTE[summary.treasuryRounding]}
         reconciliationOk={summary.reconciliation.status === "OK"}
         reconciliationNote={
           summary.reconciliation.status === "OK"
