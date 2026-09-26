@@ -155,7 +155,7 @@ export default async function ProdutoresPage({ searchParams }: { searchParams: P
         </Link>
       </p>
 
-      <ProdutoresTable rows={rows} />
+      <ProdutoresTable key={week.id} rows={rows} />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LEGACY_BILLING_NOTE } from "@/lib/methodology";
 import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
 import { getWeekFinancialSummary } from "@/lib/weekSummary";
@@ -64,9 +65,12 @@ export default async function ResumoPage({ searchParams }: { searchParams: Promi
         </Link>
       </p>
 
+      <p className="table-foot-note" style={{ textAlign: "left" }}>
+        {LEGACY_BILLING_NOTE}
+      </p>
       <div className="stat-row">
         <div className="card stat money-in">
-          <div className="stat-label">Vendas Merenda Escolar (PMP)</div>
+          <div className="stat-label">A cobrar — Merenda Escolar (PMP)</div>
           <div className="stat-value">{fmtMoney(summary.treasuryTotal)}</div>
         </div>
         <div className="card stat money-out">

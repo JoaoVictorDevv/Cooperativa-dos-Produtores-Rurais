@@ -66,8 +66,4 @@ export const COOP_NAME = "COOPERATIVA DOS PRODUTORES RURAIS DE PETRÓPOLIS";
 export const CADASTRO_DISCLAIMER =
   "Nomes, endereços e telefones refletem o cadastro atual (não têm histórico próprio). Quantidades, preços e valores são os registrados neste ciclo.";
 
-// Metodologia de cobrança ainda em uso (spec 008): enquanto não houver
-// registro de entrega por escola/produto, o valor "a cobrar" é calculado por
-// pedido - devolução. Os valores não são quitação (recebido/pago de fato).
-export const LEGACY_BILLING_NOTE =
-  "Metodologia atual: a cobrar = (pedido da escola - devolução) × preço; a pagar = (entrega do produtor - devolução no galpão) × (preço - desconto de logística). A regra confirmada cobra pelo aceito na escola, o que depende do registro de entrega por escola/produto (ainda não disponível). Valores calculados, não quitados.";
+export { LEGACY_BILLING_NOTE } from "../methodology";

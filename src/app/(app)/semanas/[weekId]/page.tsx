@@ -62,7 +62,7 @@ export default async function WeekDetailPage({ params }: { params: Promise<{ wee
 
       <div className="stat-row">
         <div className="card stat money-in">
-          <div className="stat-label">Vendas Merenda Escolar (PMP)</div>
+          <div className="stat-label">A cobrar — Merenda Escolar (PMP)</div>
           <div className="stat-value">{fmtMoney(summary.treasuryTotal)}</div>
         </div>
         <div className="card stat money-out">
@@ -70,7 +70,7 @@ export default async function WeekDetailPage({ params }: { params: Promise<{ wee
           <div className="stat-value">{fmtMoney(summary.producersTotal)}</div>
         </div>
         <div className={`card stat ${summary.balance >= 0 ? "balance-pos" : "balance-neg"}`}>
-          <div className="stat-label">Saldo da semana</div>
+          <div className="stat-label">Resultado calculado</div>
           <div className={`stat-value ${summary.balance >= 0 ? "pos" : "neg"}`}>{fmtMoney(summary.balance)}</div>
         </div>
       </div>

@@ -98,6 +98,7 @@ export default async function SchoolDetailPage({
 
         {week && (
           <DeliveryForm
+            key={week.id}
             weekId={week.id}
             schoolId={school.id}
             initialWeekday={delivery?.weekday ?? null}
@@ -107,6 +108,7 @@ export default async function SchoolDetailPage({
         )}
 
         <div className="rm-table-title">Produtos pedidos nesta semana</div>
+        <div className="table-scroll">
         <table>
           <thead>
             <tr>
@@ -122,7 +124,7 @@ export default async function SchoolDetailPage({
               const existingReturn = returnsByProduct.get(p.id);
               return (
                 <ReturnRow
-                  key={p.id}
+                  key={`${week?.id}-${p.id}`}
                   weekId={week!.id}
                   schoolId={school.id}
                   productId={p.id}
@@ -145,6 +147,7 @@ export default async function SchoolDetailPage({
             )}
           </tbody>
         </table>
+        </div>
 
         <div className="rm-sign">
           <div className="line">Assinatura de quem recebeu</div>
