@@ -97,7 +97,7 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
   organização/IDs, histórico, endpoints, divisão de trabalho; revisão
   técnica da API (devolução × recebimento, preço histórico no upsert,
   fechamento). Em `docs/propostas-pendentes.md`.
-- [~] **R2-8 Validação e integração** — tsc, lint, build, testes; merge na
+- [x] **R2-8 Validação e integração** — merge `fce91a3` na develop, push confirmado — tsc, lint, build, testes; merge na
   develop + push; confirmar commits em `origin/develop`; relatório e
   retomada.
 - [ ] **R2-10 Divisão → pedido aos produtores com prévia** (propostas §6) —

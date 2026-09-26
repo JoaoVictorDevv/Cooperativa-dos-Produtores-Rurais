@@ -105,7 +105,16 @@ apagado depois. Nunca apontar para banco com dados de operação.
 `docs/propostas-pendentes.md`.
 
 ### Integração na develop
-(preenchido ao integrar — ver abaixo)
+- Validação antes de integrar (26/09/2026): `tsc` limpo, `eslint` limpo,
+  110 testes passando (1 opcional pulado), `npm run build` limpo; `origin/develop`
+  conferida antes (sem commits novos do Lucas desde `2997ac2`).
+- Merge explícito na `develop`: **`fce91a3`** ("Integra a Rodada 2 na
+  develop…"), push concluído (`2997ac2..fce91a3`). Este registro entrou por
+  fast-forward logo depois.
+- Não há workflows de CI/deploy no repositório e a `develop` não é protegida;
+  nada foi publicado. `main`/`staging` intocadas (`fcfc7f5`).
+- "Integrar no Git" ≠ "telas conectadas à API Java": as telas continuam no
+  Prisma (ver `docs/propostas-pendentes.md` §7).
 
 ---
 

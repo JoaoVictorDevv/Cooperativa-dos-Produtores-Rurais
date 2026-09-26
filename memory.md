@@ -23,8 +23,10 @@ com estado), `specs/README.md` (regras de produto) e o prompt integral em
   rejeição na escola é perda da cooperativa; faltas se resolvem no mesmo
   ciclo (complemento) ou são encerradas sem atendimento — nunca carregadas
   para a semana seguinte. Detalhes e exemplos: `specs/008-…/spec.md`.
-- Progresso detalhado por etapa: seção "Progresso da Rodada 2" do
-  `docs/relatorio-sessao.md`.
+- Progresso detalhado, evidências e próximo passo: seção "Rodada 2" do
+  `docs/relatorio-sessao.md`. Rodada 2 integrada na develop no merge
+  `fce91a3` (26/09/2026). Próxima etapa independente sugerida: gerar pedidos
+  aos produtores a partir da divisão (propostas §6).
 
 ---
 
