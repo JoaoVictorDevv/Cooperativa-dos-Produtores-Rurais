@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run --exclude **/*.integration.test.ts",
-    "test:integration": "vitest run src/lib/pnae.integration.test.ts",
+    "test:integration": "node scripts/run-integration-tests.mjs",
     "test:watch": "vitest",
     "db:seed": "tsx prisma/seed.ts",
     "db:migrate": "prisma migrate dev",

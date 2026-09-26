@@ -12,3 +12,5 @@
 - [x] T09 Validar a migração e os testes de integração em PostgreSQL isolado.
 
 T09 foi executada no banco local `colheita_test`, separado do ambiente de desenvolvimento. Nunca executar esses testes contra produção.
+
+- [x] T10 (2026-09) Substituir a proteção por nome ("test") por prova de banco descartável: executor cria, marca, migra, testa e apaga; teste confere a marca; sem URL nas mensagens. Evidência (26/09/2026): rodar o arquivo direto contra `colheita_test` → recusado; banco com nome no padrão sem a marca → recusado; `npm run test:integration` → banco criado, migrações aplicadas, 5 testes passando, banco apagado, `colheita_test` intocado. Testes unitários da proteção: `src/lib/testing/disposableDb.test.ts`.

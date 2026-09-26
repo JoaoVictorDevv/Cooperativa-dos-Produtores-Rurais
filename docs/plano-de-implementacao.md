@@ -62,7 +62,7 @@ ponto de retomada. As regras de produto ficam em `specs/` (fonte de verdade).
 Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
 `[B]` bloqueado (dependência externa) · `[P]` preparado sem integração.
 
-- [x] **R2-0 Diagnóstico e registro** (commit `78baa41`) — Git, specs, API/DB do Lucas, arquivos
+- [x] **R2-0 Diagnóstico e registro** (commit `78baa41`); proteção de testes destrutivos por banco descartável comprovado (spec 001, T10) concluída depois — Git, specs, API/DB do Lucas, arquivos
   GZ e MODELO v20; prompt salvo; este plano; commit+push antes de
   implementar.
 - [x] **R2-1 Specs** (004, 008, 009 + adendo 001) — criar `specs/008-recebimentos-faltas-fechamento`,

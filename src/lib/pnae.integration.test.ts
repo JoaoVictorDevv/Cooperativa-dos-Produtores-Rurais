@@ -1,48 +1,30 @@
-import { config } from "dotenv";
-import { resolve } from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { getProducerAnnualTotal } from "./pnae";
+import { checkDisposableMarker, checkDisposableTarget } from "./testing/disposableDb";
 
-// Estes testes rodam contra um banco Postgres real e dedicado
-// (colheita_test) — nao mockam o Prisma, porque os proprios criterios de
-// aceite (historico, preco historico, PNAE) sao sobre persistencia real.
-config({ path: resolve(__dirname, "../../.env.test"), override: true });
-
-// Protecao explicita contra rodar resetDb() (que apaga TODAS as tabelas)
-// em qualquer banco que nao seja claramente um banco de teste. O nome do
-// arquivo .env.test e o comentario acima NAO sao suficientes por si so —
-// se DATABASE_URL apontar pra outro lugar (dev, producao, banco do
-// olucasgon) por engano, essa checagem recusa rodar em vez de apagar dados
-// reais.
-function assertTestDatabaseUrl(url: string | undefined): void {
-  if (!url) {
-    throw new Error("DATABASE_URL nao definida — nao e possivel confirmar que e um banco de teste.");
-  }
-  let dbName: string;
-  try {
-    dbName = new URL(url).pathname.replace(/^\//, "");
-  } catch {
-    throw new Error(`DATABASE_URL invalida, recusando rodar testes destrutivos: ${url}`);
-  }
-  if (!dbName.toLowerCase().includes("test")) {
-    throw new Error(
-      `Recusando rodar testes destrutivos: o banco "${dbName}" nao parece ser um banco de teste ` +
-        `dedicado (o nome do database precisa conter "test"). Aponte .env.test para um banco exclusivo ` +
-        `de testes antes de rodar npm run test:integration.`,
-    );
-  }
-}
-
-assertTestDatabaseUrl(process.env.DATABASE_URL);
+// Estes testes rodam contra um Postgres real (não mockam o Prisma, porque os
+// critérios de aceite são sobre persistência). Só rodam pelo executor
+// `npm run test:integration` (scripts/run-integration-tests.mjs), que cria um
+// banco novo e exclusivo, marca-o com um código desta execução, aplica as
+// migrações e o apaga no fim. Sem essa prova, nada é apagado.
+const target = checkDisposableTarget(process.env);
 
 const prisma = new PrismaClient();
 
+let confirmed = false;
+async function assertDisposableDatabase() {
+  if (confirmed) return;
+  const [row] = await prisma.$queryRaw<{ current_database: string; comment: string | null }[]>`
+    SELECT current_database() AS current_database,
+           shobj_description(d.oid, 'pg_database') AS comment
+    FROM pg_database d WHERE d.datname = current_database()`;
+  checkDisposableMarker(target, { currentDatabase: row.current_database, comment: row.comment }, process.env.COLHEITA_TEST_DB_TOKEN!);
+  confirmed = true;
+}
+
 async function resetDb() {
-  // Reconfirma a cada chamada — resetDb roda em beforeAll/beforeEach/afterAll,
-  // entao mesmo que algo recarregasse o env entre testes, cada limpeza
-  // passa pela mesma checagem antes de apagar qualquer linha.
-  assertTestDatabaseUrl(process.env.DATABASE_URL);
+  await assertDisposableDatabase();
   await prisma.auditLog.deleteMany();
   await prisma.weekReopening.deleteMany();
   await prisma.producerReturn.deleteMany();

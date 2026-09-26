@@ -89,11 +89,16 @@ Esses itens exigem especificações próprias e validação com os responsáveis
 - **Devolução única por origem/produto (US-02)** continua valendo para o
   modelo atual. No novo modelo, a rejeição escolar é limitada pela entrega
   real daquele evento, não pelo pedido (CA-008.6).
-- **Testes seguros (T09)**: o nome `colheita_test` sozinho **não** comprova
-  que o banco é descartável. Desde a Rodada 1, `src/lib/pnae.integration.test.ts`
-  recusa rodar se o nome do banco não contiver "test" — isso é uma trava
-  mínima contra engano, não uma prova de isolamento. Antes de qualquer teste
-  destrutivo é preciso confirmar que o banco é exclusivo e descartável
-  (criado para o teste, sem dados de operação).
+- **Testes seguros (T09 → T10)**: o nome `colheita_test` sozinho **não**
+  comprova que o banco é descartável. Desde 26/09/2026 os testes destrutivos
+  só rodam por `npm run test:integration`
+  (`scripts/run-integration-tests.mjs`), que cria um banco **novo** com nome
+  único (`colheita_descartavel_<data>_<aleatório>`) no servidor local indicado
+  em `.env.test` (o banco citado lá não é usado), grava nele uma marca com um
+  código aleatório desta execução, aplica as migrações existentes, roda os
+  testes e apaga o banco no fim. O teste (`src/lib/testing/disposableDb.ts`)
+  só limpa tabelas depois de conferir no próprio banco a marca com o mesmo
+  código; servidor não local é recusado (salvo `COLHEITA_TEST_ALLOW_REMOTE=1`)
+  e nenhuma mensagem imprime a URL.
 - **Backup**: a suíte de integração chama `resetDb()` e **apaga** os dados;
   nunca usá-la para verificar uma restauração. Ver `docs/propostas-pendentes.md` §5.

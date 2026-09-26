@@ -70,9 +70,10 @@ lançamento. Semanas antigas não foram recalculadas.
 - Interface e documentos (Playwright + build de produção) contra um banco
   **criado para o teste e descartável** (`colheita_r2_descartavel_202609261644`,
   seed fictício, Postgres local do container). Nenhum banco real consultado.
-- `npm run test:integration` **não** foi executado nesta rodada (não havia
-  banco comprovadamente descartável configurado em `.env.test`; o nome
-  `colheita_test` sozinho não comprova isso).
+- `npm run test:integration`: agora cria um banco descartável próprio,
+  marcado com um código da execução, e o apaga no fim (spec 001, T10).
+  Executado em 26/09/2026: 5 testes passando; rodar o arquivo direto ou
+  apontar para um banco sem a marca é recusado sem apagar nada.
 
 ### Comandos seguros de verificação
 ```bash
@@ -81,9 +82,11 @@ npx tsc --noEmit && npx eslint src && npm run build
 npx vitest run --exclude "**/*.integration.test.ts"
 GZ_XLSX_PATH=/caminho/do/anexo.xlsx npx vitest run src/lib/import   # opcional
 ```
-Testes com banco: só num banco criado para isso (ex.: `createdb
-colheita_tmp_x`, `DATABASE_URL=… npx prisma migrate deploy`, `npm run db:seed`),
-apagado depois. Nunca apontar para banco com dados de operação.
+Testes com banco: `npm run test:integration` (cria e apaga o próprio banco
+descartável no servidor local de `.env.test`). Para testar a interface, criar
+um banco só para isso (ex.: `createdb colheita_tmp_x`, `DATABASE_URL=… npx
+prisma migrate deploy`, `npm run db:seed`) e apagá-lo depois. Nunca apontar
+para banco com dados de operação.
 
 ### Próximo passo exato
 1. Levar ao Lucas o resumo de `docs/propostas-pendentes.md` ("Para o Lucas") e
