@@ -1232,6 +1232,9 @@ tbody tr:hover td { background-color: #fafbf8; }
 
 @media (max-width: 860px) {
   .shell { grid-template-columns: 1fr; }
+  /* Repetido aqui porque as regras base de .sidebar vêm depois da media query
+     do topo do arquivo e a anulavam; no celular a navegação é .mobile-top/.mobile-bottom. */
+  .sidebar { display: none; }
   .workspace { min-height: calc(100vh - 58px); }
   .app-topbar { height: 56px; padding: 0 18px; position: static; }
   .app-context { display: none; }

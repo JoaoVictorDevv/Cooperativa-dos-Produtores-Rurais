@@ -202,14 +202,13 @@ Encontrado lendo `api/` e `database/` (sem executar):
   atualizar o Prisma, o que mexe na ferramenta de schema/migrações; fica para
   avaliação do Lucas. `uuid` (via exceljs) segue como moderada, já registrada
   na Rodada 1. A nova dependência `unpdf` não trouxe alertas.
-- **Layout no celular:** em 390 px de largura, o menu lateral continua visível
-  e intercepta cliques sobre o conteúdo em **todas** as telas autenticadas
-  (confirmado em 26/09/2026 em `/produtores` e `/complementos-faltas`). Causa
-  provável em `src/app/globals.css`: a regra base `.sidebar { display: flex }`
-  (e a camada "Colheita 2.0" de `.shell`/`.sidebar`) vem **depois** do
-  `@media (max-width: 860px)` que esconde o menu, e por isso vence. Correção
-  sugerida: repetir a media query no fim do arquivo. Não alterado aqui para
-  preservar o visual; fica para decisão.
+- **Layout no celular — CORRIGIDO (26/09/2026):** em ≤ 860 px o menu lateral
+  continuava visível e interceptava cliques em todas as telas autenticadas,
+  porque a regra base `.sidebar` (e a camada "Colheita 2.0") vinha depois do
+  `@media` que o escondia. Corrigido repetindo `.sidebar { display: none }` na
+  media query de 860 px da camada 2.0 (`src/app/globals.css`). Verificado em
+  13 telas: em 390 px sem menu lateral, sem rolagem lateral e com cliques
+  funcionando; em 1400 px o layout é o mesmo (menu de 260 px).
 
 ## 9. Complementos e encerramento de faltas — o que falta de persistência (etapa 4)
 
@@ -315,5 +314,5 @@ passar a usá-la.
 4. **Desativar Ovos** no banco real (item 4).
 5. **Backup:** infraestrutura e ensaio de restauração com verificação só de
    leitura — nunca com a suíte que apaga dados (item 5).
-6. Avaliar a atualização do Prisma (alerta alto) e o menu lateral no celular
-   (item 8).
+6. Avaliar a atualização do Prisma (alerta alto) (item 8). O menu lateral no
+   celular já foi corrigido.
