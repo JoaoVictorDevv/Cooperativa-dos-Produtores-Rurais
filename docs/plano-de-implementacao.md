@@ -89,17 +89,19 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
   duplicar dados; cabeçalho de ciclo e de tabela repetidos por página,
   paginação; aviso de modelo antigo em "Entregas às Escolas"; teste com 191
   escolas; Ovos no histórico.
-- [ ] **R2-6 Interface confiável** — `useState(initialValue)` desatualizado
+- [x] **R2-6 Interface confiável** (commit `cd85967`) — `useState(initialValue)` desatualizado
   após importação/troca de ciclo; rótulos "A cobrar/A pagar/Resultado
   calculado"; Ovos fora de novos lançamentos (regra de app, sem mexer no
   banco).
-- [ ] **R2-7 Contrato de integração para o Lucas** — backend alvo, sessão,
+- [x] **R2-7 Contrato de integração para o Lucas** (`docs/propostas-pendentes.md` §7) — backend alvo, sessão,
   organização/IDs, histórico, endpoints, divisão de trabalho; revisão
   técnica da API (devolução × recebimento, preço histórico no upsert,
   fechamento). Em `docs/propostas-pendentes.md`.
-- [ ] **R2-8 Validação e integração** — tsc, lint, build, testes; merge na
+- [~] **R2-8 Validação e integração** — tsc, lint, build, testes; merge na
   develop + push; confirmar commits em `origin/develop`; relatório e
   retomada.
+- [ ] **R2-10 Divisão → pedido aos produtores com prévia** (propostas §6) —
+  independente do Lucas; próxima etapa sugerida.
 - [B] **R2-9 Mapa de Montagem** (Etapa 7 do prompt) — só depois do núcleo
   validado com persistência real. Não iniciar nesta rodada enquanto R2-2
   estiver bloqueado.

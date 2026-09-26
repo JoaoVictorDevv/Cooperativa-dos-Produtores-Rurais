@@ -1,226 +1,212 @@
-# Propostas pendentes — decisões de banco e operacionais
+# Propostas pendentes — dependências de banco, API e decisões
 
-Este documento reúne as seções do plano (`docs/plano-de-implementacao.md`)
-que exigem uma decisão do usuário e/ou uma mudança de schema/infraestrutura
-reservada ao olucasgon, e que por isso **não foram implementadas** nesta
-sessão — só analisadas e documentadas, conforme pedido explicitamente
-("continue em outra tarefa independente... documente a proposta").
+**Atualizado na Rodada 2 (26/09/2026).** As regras de negócio que na Rodada 1
+eram "decisões a tomar" foram **confirmadas com Seu Paulo** e estão em
+[`specs/008-recebimentos-faltas-fechamento/spec.md`](../specs/008-recebimentos-faltas-fechamento/spec.md).
+O que continua pendente aqui é a **implementação técnica** que depende do
+Lucas (schema, migrações, API Java, infraestrutura) e o alinhamento de
+integração. Nada deste documento foi implementado no banco ou na API.
 
-Nenhum item aqui envolve código pronto pra aplicar sem decisão prévia.
-Onde uma mudança de schema é sugerida, ela é uma sugestão de formato, não
-uma migração já escrita.
-
----
-
-## 1. Entrega efetiva por escola (plano §8)
-
-**Problema real, com exemplo do próprio plano**: hoje o sistema sabe
-quanto uma escola *pediu* (`SchoolOrder`) e quanto foi *devolvido*
-(`SchoolReturn`), mas não sabe quanto ela **realmente recebeu**. Se uma
-escola pediu 20 kg e só chegaram 15 kg (falta de 5 kg, não devolução),
-isso não tem onde ser registrado hoje. Devolução e falta são conceitos
-diferentes: devolução é "chegou e foi rejeitado"; falta é "não chegou".
-
-**Por que isso importa**: sem isso, alguém pode ser tentado a "forçar" o
-sistema lançando uma devolução de 5 kg pra representar a falta — o que é
-exatamente o que o plano pede pra NÃO fazer ("não usar devolução para
-esconder uma entrega parcial"), porque contamina os relatórios de
-devolução (motivo, produtor associado) com algo que não é devolução.
-
-**Proposta de formato (não implementada)**: adicionar um conceito de
-"entrega efetiva por escola", por semana+escola+produto, com pelo menos:
-- quantidade efetivamente entregue (distinta de pedido e de devolução);
-- uma forma de marcar "ainda não conferido" que seja diferente de "zero
-  confirmado" — mesmo princípio já corrigido nesta sessão pra entrega de
-  produtor (Etapa 1, §4B), aplicado agora do lado da escola;
-- quantidade não entregue = pedido − entregue (derivada, não digitada);
-- um jeito de vincular uma reposição futura ao pedido original, sem
-  contar a quantidade duas vezes (nem na semana da falta, nem na semana
-  da reposição, mais que uma vez).
-
-**Opções de schema a avaliar com o olucasgon** (nenhuma escolhida ainda):
-- (A) Uma tabela nova `SchoolDeliveryLine` (semana+escola+produto+qtd
-  entregue), paralela a `SchoolOrder`/`SchoolReturn`, seguindo o mesmo
-  padrão de tabelas separadas já usado no resto do schema.
-- (B) Estender `SchoolDelivery` (hoje só tem dia/data por escola, sem
-  quantidade por produto) pra ter linhas por produto — mistura conceitos
-  diferentes (confirmação de dia vs. quantidade por produto) e por isso
-  parece pior opção, mas fica registrada.
-- Reposição: provavelmente um campo `relatedOrderId`/`repositionOfId` ou
-  uma tabela de vínculo, apontando pro pedido original — pra somar "o que
-  a escola recebeu no total" sem contar a reposição como um pedido novo
-  independente.
-
-**Não implementado**: esquema exato, migração, telas de lançamento. Fica
-como a base de discussão pro próximo ciclo com o olucasgon e o usuário.
+Resumo em português simples do que o Lucas precisa fazer ou revisar: seção
+[Para o Lucas](#para-o-lucas--resumo).
 
 ---
 
-## 2. Cobrança e fechamento com faltas (plano §9)
+## 1. Entrega real por escola/produto, complementos e faltas (spec 008)
 
-**Regra atual, preservada**: o valor cobrado da prefeitura é sempre
-`(pedido − devolução) × preço`, por escola e produto — implementado em
-`schoolValue()`/`treasuryTotal()` (`src/lib/calc.ts`) e coberto por
-testes automatizados. **Isso não foi alterado nesta sessão** e não deve
-ser alterado sem a decisão abaixo, porque hoje o "pedido" é usado como
-proxy de "atendido" — o que só deixa de ser verdade quando existir
-entrega efetiva por escola (item 1 acima).
+**Antes (Rodada 1):** proposta aberta, com a dúvida "cobrar pelo pedido ou
+pelo entregue?".
+**Agora:** decidido. A prefeitura paga pelo **aceito na escola**; o produtor
+recebe pelo **aceito no galpão**; rejeição na escola é perda da cooperativa;
+falta é resolvida por complemento no mesmo ciclo ou **encerrada sem
+atendimento** antes do fechamento.
 
-**Decisões que faltam tomar** (o usuário e a cooperativa, não é uma
-decisão técnica):
-1. Quando existir uma falta confirmada (ver item 1), a cobrança da
-   prefeitura continua sendo sobre o pedido, ou passa a ser sobre o que
-   foi de fato entregue? Isso muda o valor cobrado pra menos em semanas
-   com falta — impacto financeiro direto, precisa de decisão explícita,
-   não de uma mudança de fórmula silenciosa.
-2. Uma falta justificada (ex.: problema de transporte) permite fechar a
-   semana normalmente, ou o fechamento deveria ficar bloqueado até a
-   falta ser resolvida (repor ou formalmente descartar)?
-3. Se a falta for resolvida por reposição **em outra semana**, como isso
-   aparece no histórico da semana original (que já está fechada) sem
-   reabri-la e sem alterar valores/documentos já emitidos daquela semana?
+**O que falta (Lucas):** persistência. Tanto o Prisma atual quanto o SQL novo
+guardam só a data de entrega por escola (uma por ciclo) e não têm quantidade
+por produto, complemento, perda antes da escola nem decisão de falta. Dados e
+validações necessários: [`specs/008…/plan.md`](../specs/008-recebimentos-faltas-fechamento/plan.md)
+(itens 1 a 6).
 
-**Enquanto isso não é decidido**: a regra `pedido − devolução` continua
-valendo exatamente como está — não é uma lacuna, é a regra vigente até
-haver uma decisão explícita de mudá-la.
+**Testes de aceitação:** os casos de `src/lib/domain/cycle.test.ts` (exemplo
+200/180/170, complemento de 30, falta encerrada em 170, vazio × zero, pedido 30
++ complemento 20 com inicial vazio, excesso × falta). A API deve reproduzir os
+mesmos números.
+
+**Já preparado (Claude):** regras puras e testadas em `src/lib/domain/cycle.ts`
+— não ligadas a telas nem totais.
+
+## 2. Cobrança e fechamento com faltas
+
+Substituído pelas regras confirmadas (spec 008, RN-04, RN-09, RN-10). A antiga
+proposta de **carregar reposições pendentes para a semana seguinte está
+descartada**. Enquanto a persistência do item 1 não existir:
+- a cobrança continua `pedido − devolução` no código (`src/lib/calc.ts`) e na
+  view `v_week_financial_summary` — e agora isso está **escrito nas telas e
+  no PDF do Balanço** ("Metodologia atual…");
+- o fechamento continua bloqueando só por "registro de entrega existe"
+  (spec 001, CA-03.*).
+
+**Transição do histórico (Lucas + Claude):** ciclos fechados antes da troca
+mantêm a metodologia antiga e são marcados assim; nada é recalculado. Sugestão:
+um campo de metodologia por ciclo (`LEGADO_PEDIDO_MENOS_DEVOLUCAO` /
+`ACEITE_ESCOLAR`).
+
+## 3. Pedido do próximo ciclo sem fechar o atual
+
+Sem mudança: continua proposta para o Lucas (status `PLANEJAMENTO` ou
+equivalente). A regra "uma semana aberta" não foi removida. Detalhe: o ciclo
+real atravessa semanas do calendário (pedido na quinta, entrega na segunda);
+o identificador de ciclo e suas datas precisam cobrir isso sem reatribuir
+registros antigos.
+
+## 4. Ovos fora do fluxo ativo
+
+**Feito no app (sem mexer no banco):** `src/lib/productPolicy.ts` marca Ovos
+como retirado. Efeito: não aparece para novos pedidos (tela de escolas,
+divisão/pedido de produtores), o servidor recusa **criar** novo lançamento de
+Ovos, a importação lista a coluna como fora da oferta. O histórico continua
+visível em ciclos que têm Ovos (tela, ficha, PDFs) — testado com Ovos
+desativado num banco descartável.
+
+**Falta (Lucas):** `UPDATE products SET active = false WHERE slug = 'ovos'` no
+banco real (e o equivalente no banco novo). Depois disso a lista
+`RETIRED_PRODUCT_SLUGS` pode ser esvaziada.
+
+## 5. Backup e restauração (correção importante)
+
+**Correção da Rodada 1:** o texto anterior sugeria rodar
+`npm run test:integration` contra a cópia restaurada. **Não fazer isso**: essa
+suíte chama `resetDb()` e **apaga** os dados restaurados. Verificação de uma
+restauração deve ser **só leitura**:
+- contagens por tabela (escolas, produtores, produtos, preços, ciclos, pedidos,
+  entregas, devoluções, custos, auditoria) comparadas com a origem;
+- relacionamentos (nenhum pedido/entrega sem ciclo, escola, produto ou preço);
+- totais conhecidos de ciclos fechados (a cobrar, a pagar, custos) iguais aos
+  PDFs/relatórios emitidos antes;
+- um ciclo **aberto** incluído na cópia.
+
+Testes destrutivos só em outro banco, criado para o teste e descartado depois
+(como feito nesta rodada: `colheita_r2_descartavel_*`).
+
+**Precisa ser recuperável:** ciclos e datas, pedidos das escolas, divisão e
+pedidos aos produtores, recebimentos e rejeições no galpão, entregas/rejeições
+nas escolas e complementos (quando existirem), decisões de falta, preços e
+descontos históricos (`price_id`, snapshot de logística), custos, reaberturas e
+auditoria. PDFs não substituem backup.
+
+**Infraestrutura, retenção e ensaio real de restauração: Lucas.**
+
+## 6. Divisão → pedido aos produtores sem redigitar
+
+Continua pendente. Há suporte no modelo atual (`ProducerAllocation` →
+`ProducerOrder`). Proposta: ação "Gerar pedidos a partir da divisão" com prévia,
+sem sobrescrever pedido já digitado diferente sem decisão explícita, sem tocar
+em entregas. Pode ser feito pelo Claude numa próxima etapa sem depender de
+schema.
+
+## 7. Contrato de integração Next.js ↔ API Java (proposta para alinhar)
+
+**Situação:** as telas usam Prisma direto no banco antigo (IDs cuid, sem
+organização). A API do Lucas (`api/`, Spring Boot) usa o banco novo
+(`database/`, schema `colheita`, UUID, `organization_id`, JWT). Não estão
+ligadas. **Integrar os commits no Git (feito) é diferente de conectar as telas
+à API (não feito).** Trocar a URL do banco não resolve.
+
+### 7.1 Backend de destino
+- Fonte única de dados: a API Java sobre o banco novo.
+- O Next vira cliente: Server Components/Actions chamam a API **no servidor**
+  (nunca expor token ao navegador). Uma camada `src/lib/api/*` substitui as
+  consultas Prisma tela a tela.
+- Durante a transição, as duas bases não podem receber lançamentos ao mesmo
+  tempo (evitar dois núcleos concorrentes). Corte por ciclo.
+
+### 7.2 Autenticação e sessão
+- Login no Next chama `POST /api/v1/auth/login`; o Next guarda access e refresh
+  token em cookie `httpOnly`, `secure`, `sameSite=lax`; renova com
+  `/auth/refresh` (rotação) e encerra com `/auth/logout`.
+- Papéis ADMIN/OPERADOR/CONSULTA já coincidem. Permissões vêm do JWT; o Next
+  só esconde botões — a autorização é da API.
+- Organização: uma só (Cooperativa de Petrópolis) por enquanto; slug fixo em
+  configuração.
+
+### 7.3 IDs e dados históricos
+- Migração dos dados do banco antigo para o novo (Lucas): tabela de
+  correspondência cuid → UUID mantida; chaves naturais para conferir
+  (código da escola, slug do produto, `internalId` do produtor, número da
+  semana).
+- Preservar em cada lançamento o `price_id` e o snapshot de logística
+  originais; migrar reaberturas e auditoria.
+- Conferência da migração por totais de cada ciclo (a cobrar, a pagar, custos)
+  antes/depois — mesma lista do item 5.
+
+### 7.4 Endpoints que faltam (além dos existentes)
+- Eventos de entrega à escola por produto, complementos, perda antes da escola,
+  decisão de falta (spec 008).
+- Gravação em lote do pedido das escolas (importação), com as garantias da
+  spec 009: transação única, atualização condicionada ao valor anterior (ou
+  versão), auditoria com origem.
+- Resumo por ciclo com a metodologia (spec 008, item 6 do plan) e dados dos
+  documentos (spec 004) — ou listas paginadas suficientes para o Next montar os
+  PDFs.
+- Gerar pedidos a partir da divisão (item 6), se feito no servidor.
+
+### 7.5 Revisão técnica da API atual (para revisão conjunta)
+Encontrado lendo `api/` e `database/` (sem executar):
+1. `OperationJdbcAdapter.upsertProducerDelivery` sobrescreve `price_id` e
+   `logistics_deduction_snapshot` no `ON CONFLICT DO UPDATE` com o que o
+   cliente enviar — o histórico de preço/desconto precisa ser congelado no
+   servidor (atualizar só quantidade/data em correções). Mesmo problema em
+   `upsertSchoolOrder` e `upsertProducerOrder` (`price_id`).
+2. Nenhuma validação de devolução × pedido/entrega (nem no serviço nem no SQL,
+   que só impede negativos). Também não impede reduzir entrega abaixo da
+   devolução já lançada. Precisa de checagem no servidor com controle de
+   concorrência (trava de linha ou versão).
+3. `OperationService.mutate` grava auditoria com `before`/`after` nulos —
+   perde o valor anterior de correções.
+4. Fechamento (`WeekJdbcAdapter.closingBlockers`) só verifica existência de
+   registro de entrega — não representa aceite por produto, complementos nem
+   decisão de falta (spec 008, CA-008.5).
+5. `v_week_financial_summary` calcula a cobrança por pedido − devolução
+   (metodologia antiga).
+6. `UNIQUE (organization_id, week_id, school_id)` em `school_deliveries` e
+   `UNIQUE (…, producer_id, product_id)` em `producer_deliveries` impedem
+   complementos e segunda entrega.
+
+### 7.6 Quem faz o quê (proposta)
+| Parte | Responsável |
+|---|---|
+| Schema/migrações novas (spec 008), correções 1–6 acima | Lucas |
+| Migração dos dados antigos + conferência por totais | Lucas (conferência junto) |
+| Autenticação na API e política de tokens | Lucas |
+| Cliente da API no Next (`src/lib/api`), troca tela a tela | Claude, depois do contrato fechado |
+| Regras puras e casos de teste (spec 008) como referência para o Java | Claude (feito) |
+| Leitura de Excel/PDF (spec 009) | Claude (feito; pode ficar no Next) |
+| Backup e restauração | Lucas |
+
+## 8. Outros achados para o Lucas
+
+- **Dependência com alerta alto:** `npm audit` aponta `deepmerge-ts`
+  (via `prisma`/`@prisma/config`) como alta severidade — a correção exige
+  atualizar o Prisma, o que mexe na ferramenta de schema/migrações; fica para
+  avaliação do Lucas. `uuid` (via exceljs) segue como moderada, já registrada
+  na Rodada 1. A nova dependência `unpdf` não trouxe alertas.
+- **Layout no celular:** em 390 px de largura, o menu lateral intercepta
+  cliques sobre o conteúdo em algumas telas (visto no teste automatizado da
+  importação). É do layout "Colheita 2.0" — não alterado aqui.
 
 ---
 
-## 3. Pedidos de semanas futuras (plano §14)
+## Para o Lucas — resumo
 
-**Restrição atual**: só pode haver uma `Week` com `status = ABERTA` por
-vez (regra reforçada pelo olucasgon em `weekPolicy.ts` e no schema). Isso
-significa que não dá pra começar a receber o pedido da próxima semana
-enquanto a atual ainda está em operação — a cooperativa fica sem essa
-folga de planejamento.
-
-**Proposta a avaliar com o olucasgon** (schema, não implementado): um
-novo status intermediário pra `Week`, algo como `PLANEJAMENTO`, que:
-- permite lançar `SchoolOrder`/`ProducerOrder` pra essa semana futura
-  desde já, sem contar pra nenhum total financeiro ainda;
-- não conta como a "semana aberta" pra fins de `weekPolicy.ts` (a
-  semana ABERTA de verdade continua sendo só uma);
-- vira ABERTA de verdade só quando a semana anterior fecha (uma
-  transição controlada, não uma segunda semana aberta simultânea).
-
-Isso exigiria alterar o enum `WeekStatus` no schema
-(`ABERTA | FECHADA` → `PLANEJAMENTO | ABERTA | FECHADA`) e revisar toda
-lógica que hoje assume só duas possibilidades — mudança de schema e de
-regra de negócio importante o bastante pra ser do olucasgon decidir o
-formato, não só aplicar.
-
-**Não implementado**: nenhuma mudança de schema, nenhum novo status.
-
----
-
-## 4. Retirada de Ovos do fluxo ativo (plano §15)
-
-**O que já foi preparado nesta sessão (código, sem tocar em dado real)**:
-o fluxo de importação de Excel (Etapa 5) já reconhece um produto
-desativado pelo nome (ex.: "Ovos") numa planilha importada e avisa
-explicitamente "esse produto não é mais atendido pelo fluxo ativo" — em
-vez de tratar a coluna como desconhecida/erro genérico. Ver
-`src/lib/importSchoolOrders.ts` (campo `inactiveProductColumns`) e o
-teste correspondente em `importSchoolOrders.test.ts`.
-
-**O que falta pra decisão completar isso**: o produto `Ovos` já tem um
-campo `active` no schema (nenhuma migração necessária!) — desativá-lo é
-literalmente `UPDATE products SET active = false WHERE slug = 'ovos'`,
-uma operação de dado normal, não de schema. Isso automaticamente:
-- tira Ovos das telas de pedido/entrega (`escolas`, `produtores`), que já
-  filtram por `active: true`;
-- **preserva** todo o histórico já lançado (semanas antigas com Ovos
-  continuam corretas nos relatórios, PDFs, Diferença — nenhuma dessas
-  telas filtra por `active`, só pelas linhas que já existem na semana);
-- é revertível (só voltar `active` pra `true`).
-
-**Por que não fiz essa mudança de dado eu mesmo**: essa é uma operação no
-banco real da cooperativa (não no meu ambiente local de testes) — o
-plano pede explicitamente pra coordenar mudanças de dado/banco com o
-olucasgon, mesmo quando é "só" um `UPDATE` sem schema novo. Fica pronta
-pra ser aplicada assim que combinado.
-
----
-
-## 5. Backup (plano §16)
-
-**O que existe hoje**: nada de backup automatizado foi encontrado no
-repositório — nem script, nem configuração, nem documentação prévia.
-Cada ambiente de desenvolvimento (o meu, o do olucasgon) tem seu próprio
-Postgres local, sem replicação nem exportação agendada. **Isso não é
-crítico enquanto o app está em fase de teste com dados fictícios**, mas
-vira crítico antes de qualquer piloto com dados reais.
-
-**Requisitos levantados a partir do próprio plano**:
-- Precisa recuperar TODOS os dados da operação semanal, **incluindo uma
-  semana ainda aberta** (não só semanas fechadas/históricas).
-- PDFs e histórico dentro do próprio banco **não substituem** backup —
-  se o banco cair, os PDFs não recriam os dados de uma semana aberta que
-  ainda não foi fechada.
-
-**Proposta pra alinhar** (nada disso foi configurado):
-- **Armazenamento**: se o deploy final for Postgres gerenciado (Neon foi
-  mencionado no início do projeto), a maioria dos provedores gerenciados
-  já oferece snapshot automático — precisa confirmar qual plano/provedor
-  e ativar explicitamente, não assumir que "vem de graça".
-- **Frequência**: diário deveria ser o mínimo, considerando que a
-  operação é semanal — um backup diário cobre o pior caso (perder no
-  máximo um dia de lançamentos).
-- **Retenção**: sugestão inicial de 30 dias rolantes + um backup mensal
-  guardado por mais tempo (ex.: 1 ano), mas isso é decisão de custo/risco
-  da cooperativa, não técnica.
-- **Teste de restauração**: a única forma de saber se um backup funciona
-  é restaurá-lo de verdade, num banco separado (nunca por cima do banco
-  real), e rodar a suíte de testes de integração (`npm run
-  test:integration`, já com a proteção de banco-de-teste desta sessão)
-  contra ele pra confirmar que os dados restaurados fazem sentido.
-
-**Não implementado**: nenhuma infraestrutura de backup real, nenhum
-script de restauração. Isso depende de decisões de provedor/custo que
-não são técnicas.
-
----
-
-## 6. Divisão → Pedido aos produtores sem redigitar (plano §17)
-
-**Observação**: hoje `ProducerAllocation` (divisão planejada) e
-`ProducerOrder` (pedido efetivo) são tabelas independentes de propósito
-— e devem continuar sendo, pra manter planejamento e pedido efetivo
-conceitualmente separados (regra absoluta do projeto). Na prática,
-porém, quando a divisão já reflete o que vai ser pedido, o operador
-acaba digitando a mesma quantidade duas vezes (uma vez em "Divisão",
-outra em "Pedido").
-
-**Proposta a avaliar** (nenhuma implementação ainda, por depender de
-confirmação do fluxo real com o usuário): uma ação explícita tipo
-"Confirmar divisão e gerar pedidos", que:
-- mostra uma prévia (produtor × produto × quantidade da divisão) antes
-  de aplicar — nunca silenciosa;
-- copia os valores de `ProducerAllocation` pra `ProducerOrder` só pra
-  quem ainda não tem pedido lançado naquele produto (não sobrescreve um
-  pedido já digitado manualmente, pra não perder ajuste feito à mão);
-  quem já tem pedido lançado fica de fora da cópia — o operador ajusta
-  esses manualmente se precisar mudar algo lá;
-- **nunca** toca em `ProducerDelivery` (entrega real) — essa ação é só
-  sobre planejamento → pedido, entrega continua sendo lançada à parte,
-  sempre.
-
-**Por que não implementei já**: o comportamento exato de "o que fazer
-quando já existe um pedido diferente da divisão" precisa de confirmação
-do usuário (sobrescrever? avisar e pular? deixar escolher por linha?) —
-implementar às cegas arriscaria um comportamento que apaga um ajuste
-manual sem querer. Fica como proposta pronta pra construir assim que
-confirmado.
-
----
-
-## Resumo — o que cada um decide
-
-| Item | Quem decide | Bloqueia o quê |
-|---|---|---|
-| 1. Entrega efetiva por escola | Usuário (regra de negócio) + olucasgon (schema) | Cobrança com faltas (item 2), indicadores de atendimento (plano §11) |
-| 2. Cobrança com faltas | Usuário/cooperativa | Nada tecnicamente — regra atual continua valendo até decidir |
-| 3. Semanas futuras | olucasgon (schema) + usuário (fluxo) | Nada urgente — só conveniência operacional |
-| 4. Retirar Ovos | Usuário (confirma) + olucasgon (aplica o UPDATE no banco real) | Nada — código já preparado, só falta aplicar o dado |
-| 5. Backup | Usuário (custo/provedor) + olucasgon (infra) | Qualquer piloto com dados reais |
-| 6. Divisão → Pedido | Usuário (confirma o comportamento) | Nada — é conveniência, não correção |
+1. **Banco/API para entrega real por escola/produto, complementos e decisão de
+   falta** (item 1; `specs/008…/plan.md`). Aceite: `src/lib/domain/cycle.test.ts`.
+2. **Corrigir na API:** preço/desconto congelados em correções, validação de
+   devolução × entrega com concorrência, auditoria com antes/depois, fechamento
+   pelos estados da spec 008 (item 7.5).
+3. **Combinar o contrato de integração** (item 7) antes de qualquer tela
+   passar a consumir a API.
+4. **Desativar Ovos** no banco real (item 4).
+5. **Backup:** infraestrutura e ensaio de restauração com verificação só de
+   leitura — nunca com a suíte que apaga dados (item 5).
+6. Avaliar a atualização do Prisma (alerta alto) e o menu lateral no celular
+   (item 8).
