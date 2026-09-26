@@ -28,7 +28,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ weekId:
   return new NextResponse(new Uint8Array(zipBuffer), {
     headers: {
       "Content-Type": "application/zip",
-      "Content-Disposition": `attachment; filename="semana-${week.number}-documentos.zip"`,
+      "Content-Disposition": `attachment; filename="semana-${week.number}-${week.startDate.toISOString().slice(0, 10)}-documentos.zip"`,
     },
   });
 }

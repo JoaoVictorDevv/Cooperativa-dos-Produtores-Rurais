@@ -65,7 +65,7 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
 - [x] **R2-0 Diagnóstico e registro** (commit `78baa41`) — Git, specs, API/DB do Lucas, arquivos
   GZ e MODELO v20; prompt salvo; este plano; commit+push antes de
   implementar.
-- [~] **R2-1 Specs** (008 e 009 criadas; 004 pendente) — criar `specs/008-recebimentos-faltas-fechamento`,
+- [x] **R2-1 Specs** (004, 008, 009 + adendo 001) — criar `specs/008-recebimentos-faltas-fechamento`,
   `specs/009-importacao-pedido-prefeitura`, promover `SPEC-004 Relatórios e
   exportações` do backlog para `specs/004-relatorios-exportacoes`, adendo na
   001 (testes seguros, substituição de CA-03). Atualizar `specs/README.md` e
@@ -84,7 +84,7 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
 - [x] **R2-4 Importação PDF com texto** (spec 009) — layout tabular simples testado; PDF oficial não testado [B] — extração local, sem
   serviço externo; reaproveita prévia/confirmação. OCR: [B] infraestrutura
   não autorizada.
-- [ ] **R2-5 Documentos** (spec 004) — romaneio com "Data da entrega /
+- [x] **R2-5 Documentos** (spec 004) — ver `specs/004…/tasks.md`; romaneio de complemento/aceite real [B] spec 008 — romaneio com "Data da entrega /
   Horário da entrega" manuais, conferência em branco, opção de 4 vias sem
   duplicar dados; cabeçalho de ciclo e de tabela repetidos por página,
   paginação; aviso de modelo antigo em "Entregas às Escolas"; teste com 191

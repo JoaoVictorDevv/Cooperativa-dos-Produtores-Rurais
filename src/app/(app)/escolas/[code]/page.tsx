@@ -55,9 +55,15 @@ export default async function SchoolDetailPage({
         ← Voltar para Pedido das Escolas
       </Link>
 
-      {week && week.status === "ABERTA" && (
+      {week && (
         <div className="rm-actions">
-          <PrintButton />
+          {week.status === "ABERTA" && <PrintButton />}
+          <a className="btn-ghost" href={`/api/semanas/${week.id}/pdf/romaneios-escolas?escola=${encodeURIComponent(school.code)}`}>
+            Romaneio desta escola (PDF)
+          </a>
+          <a className="btn-ghost" href={`/api/semanas/${week.id}/pdf/romaneios-escolas?escola=${encodeURIComponent(school.code)}&vias=4`}>
+            4 vias (PDF)
+          </a>
         </div>
       )}
       {!week && <p>Não há semana aberta — exibindo apenas o cadastro da escola.</p>}

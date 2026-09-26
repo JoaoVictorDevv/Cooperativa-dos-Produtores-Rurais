@@ -126,10 +126,15 @@ export default async function WeekDetailPage({ params }: { params: Promise<{ wee
         <a className="btn-primary" href={`/api/semanas/${week.id}/pdf/zip`}>
           Baixar tudo (.zip)
         </a>
+        <a className="btn-ghost" href={`/api/semanas/${week.id}/pdf/romaneios-escolas?vias=4`}>
+          Romaneios em 4 vias (para imprimir)
+        </a>
       </div>
       <p className="table-foot-note" style={{ textAlign: "left" }}>
         Os documentos usam os preços e quantidades registrados nesta semana. Nomes e endereços de escolas/produtores
-        refletem o cadastro atual (não têm histórico próprio).
+        refletem o cadastro atual (não têm histórico próprio). &quot;Romaneios das Escolas&quot; reúne todas as escolas num
+        só PDF (uma página por escola); o romaneio de uma escola só, em 1 ou 4 vias, fica na ficha da escola. O .zip traz
+        uma via de cada documento.
         {week.status === "ABERTA" && " Esta semana ainda está ABERTA — os valores podem mudar até o fechamento."}
       </p>
 
