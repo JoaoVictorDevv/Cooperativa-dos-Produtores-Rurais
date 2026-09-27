@@ -131,8 +131,7 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
 - [x] **R2-16 Planilha MODELO v22** (27/09/2026) — nova referência
   operacional versionada (vazia) em `docs/referencia-planilha/`; mudanças e
   diferenças com o app documentadas, sem mudança de código
-  (`docs/referencia-planilha/atualizacao_v20_para_v22.md`,
-  `docs/propostas-pendentes.md` §12).
+  (`docs/propostas-pendentes.md` §12).
 - [x] **R2-17 Ajustes da v22 e reorganização** (27/09/2026):
   - ficha do produtor com Aceito, Preço líquido, data e horário (spec 004
     RD-15);
@@ -161,7 +160,7 @@ correspondentes, vinculados aos critérios de aceite.
 - `controle_escolas_produtores_2026_MODELO_v22.xlsx` — **referência atual**
   de campos, cálculos e romaneios desde 27/09/2026. Versionada, vazia, em
   `docs/referencia-planilha/`. O que mudou em relação à v20 e as diferenças
-  com o app estão em `docs/referencia-planilha/atualizacao_v20_para_v22.md`.
+  com o app estão em `docs/propostas-pendentes.md` §12.
   A lógica financeira não mudou.
 - `controle_escolas_produtores_2026_MODELO_v20.xlsx` — referência anterior
   (anexo do prompt v2), substituída pela v22. Não versionada.

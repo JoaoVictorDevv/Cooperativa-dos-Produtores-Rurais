@@ -567,11 +567,40 @@ criado `vitest.config.ts`, que só acrescenta o atalho `@/` do tsconfig.)
 
 ## 12. Planilha MODELO v22 × app (27/09/2026)
 
-A MODELO v22 é a **referência oficial** da planilha. Substitui a v20, e a
-v35 foi retirada do repositório. Está em `docs/referencia-planilha/`, vazia,
-e a comparação completa está em
-`docs/referencia-planilha/atualizacao_v20_para_v22.md`. A lógica financeira
-da planilha não mudou. Situação de cada ponto:
+A MODELO v22 é a **referência oficial** da planilha. Substitui a v20, e a v35
+foi retirada do repositório. O arquivo, vazio, está em
+`docs/referencia-planilha/controle_escolas_produtores_2026_MODELO_v22.xlsx`.
+Os únicos números digitados nele são preços, códigos de motivo, a ordem das
+paradas e as capacidades do mapa de produção. Planilha com pedido real ou
+simulação não é versionada.
+
+### O que mudou da v20 para a v22
+
+A comparação foi célula por célula, nas 225 abas. **A lógica financeira não
+mudou.**
+
+- **Fichas de produtor** (as 22 abas "PROD - …"):
+  - entrou a coluna **Aceito (kg) = Entrega − Devolução**;
+  - as colunas passaram a ser Pedido, Entrega, Devolução, Aceito, Preço
+    líquido (`preço − 3,67`), Valor a pagar (`Aceito × Preço líquido`),
+    Cód. motivo e Motivo, estes dois ocultos na impressão;
+  - Pedido e Entrega vêm da Entrada de Dados; **só a Devolução é digitada
+    na ficha**;
+  - área de impressão `A1:I31`, colunas mais largas e campo "Horário" ao lado
+    da data do recebimento.
+- **Resumo e Balanço:** acompanharam a troca de colunas (código do motivo na
+  coluna H, total a pagar em `G25`).
+- **Índice:**
+  - o passo 2 foi corrigido: a Entrega se digita no bloco ENTREGA PRODUTORES
+    e só a Devolução na ficha. A v20 mandava digitar as duas na ficha;
+  - as orientações "Onde registrar cada rejeição" e "Complemento: primeira
+    carga ou outra viagem" ficaram visíveis na impressão, com o mesmo texto.
+- **Complementos:** o comprovante de entrega à escola diz "já pago no
+  recebimento no galpão".
+- **Fichas de escola:** só o cabeçalho da tabela ficou mais alto na
+  impressão.
+
+### v22 × app — situação de cada ponto
 
 - **Bate com o app:**
   - aceito no galpão = entrega − devolução;
@@ -611,6 +640,22 @@ da planilha não mudou. Situação de cada ponto:
     ficha do produtor;
   - no app, as duas ficam na mesma linha de "Divisão / Pedido / Entrega";
   - é o mesmo dado, sem efeito no cálculo.
+- **Motivo da devolução no galpão:** a planilha tem as colunas, mas ocultas na
+  impressão. O app pede o motivo na tela e, no modelo novo, o torna
+  obrigatório (RN-21, com "Motivo não identificado").
+
+### Regras que vieram de versões anteriores da planilha (v27 → v35)
+
+Todas já estão no app:
+- o teto PNAE de R$ 40.000 por produtor por ano é calculado do histórico
+  semanal, sem controle manual;
+- Ovos é vendido por dúzia e nunca entra em total de kg (RN-14);
+- a devolução nunca passa do pedido (escola) nem da entrega (produtor), com
+  trava contra salvamentos simultâneos (§11.6);
+- a Diferença do galpão por produto tem situação FALTA / SOBRA / OK.
+
+O Mapa de Montagem (18 rotas fixas) está descrito em `specs/backlog.md`,
+Etapa 7.
 
 ---
 

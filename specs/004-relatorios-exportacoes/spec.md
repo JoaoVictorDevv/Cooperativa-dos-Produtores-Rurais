@@ -37,7 +37,7 @@ os recria: registra as regras e corrige o que o prompt v2 (§13, §14) exige.
   `semana-<n>-<AAAA-MM-DD>-documentos.zip`, com uma via de cada documento.
 - **RD-05 Romaneio** (referência: MODELO v22, abas por escola — iguais às da
   v20 exceto a altura do cabeçalho na impressão; ver
-  `docs/referencia-planilha/atualizacao_v20_para_v22.md`):
+  `docs/propostas-pendentes.md` §12):
   - um documento por escola/código, inclusive escolas no mesmo endereço;
   - identificação do documento (`S<ciclo>-<código>`), ciclo, escola (nome,
     código, bairro, endereço, telefone);

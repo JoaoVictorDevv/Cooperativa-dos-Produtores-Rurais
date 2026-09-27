@@ -22,7 +22,8 @@ O código pode explicar **como** algo funciona. As especificações devem explic
 - As pastas `api/` e `database/` não foram tocadas, e nenhum banco real foi
   consultado ou alterado.
 - A referência operacional da planilha é a **MODELO v22**
-  ([`docs/referencia-planilha/`](../docs/referencia-planilha/atualizacao_v20_para_v22.md)).
+  (`docs/referencia-planilha/`; diferenças com o app em
+  [`docs/propostas-pendentes.md` §12](../docs/propostas-pendentes.md#12-planilha-modelo-v22--app-27092026)).
 
 ### Funciona hoje, no app atual
 

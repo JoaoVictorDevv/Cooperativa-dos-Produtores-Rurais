@@ -25,8 +25,7 @@ nunca tocadas. Nenhum banco real consultado ou alterado.
 
 **Planilha de referência (27/09/2026):** a **MODELO v22** é a oficial, vazia,
 em `docs/referencia-planilha/`. A v35 foi retirada. A v22 não muda a lógica
-financeira (`docs/referencia-planilha/atualizacao_v20_para_v22.md`,
-`docs/propostas-pendentes.md` §12).
+financeira (`docs/propostas-pendentes.md` §12).
 
 Decidido e feito em 27/09/2026:
 - ficha do produtor com Aceito, Preço líquido, data e horário (spec 004

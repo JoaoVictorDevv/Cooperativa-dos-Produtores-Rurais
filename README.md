@@ -33,10 +33,9 @@ Onde está cada coisa:
 A referência **oficial** da operação é a planilha **MODELO v22**, vazia:
 [`docs/referencia-planilha/controle_escolas_produtores_2026_MODELO_v22.xlsx`](./docs/referencia-planilha/controle_escolas_produtores_2026_MODELO_v22.xlsx).
 O que mudou em relação à v20 e as diferenças com o app estão em
-[`atualizacao_v20_para_v22.md`](./docs/referencia-planilha/atualizacao_v20_para_v22.md).
-As versões anteriores (v20, v27, v35) não são referência. A v35 foi retirada da
-pasta em 27/09/2026. A nota `atualizacao_v27_para_v35.md` fica só como
-histórico. Planilhas com pedido real ou simulação não são versionadas.
+[`docs/propostas-pendentes.md` §12](./docs/propostas-pendentes.md#12-planilha-modelo-v22--app-27092026).
+As versões anteriores (v20, v27, v35) não são referência e não ficam no
+repositório. Planilhas com pedido real ou simulação não são versionadas.
 
 ## Módulos existentes
 
