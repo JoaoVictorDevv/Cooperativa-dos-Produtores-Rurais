@@ -1,6 +1,6 @@
 // Textos e utilitários dos componentes de complementos e faltas (spec 008).
 import type { AttendanceStatus, CycleState, ReceiptStatus, ShortageStatus } from "@/lib/domain/cycle";
-import type { SupplySource } from "@/lib/domain/cycleLedger";
+import type { AuditEntry, SupplySource } from "@/lib/domain/cycleLedger";
 
 export interface CycleCoreNames {
   schools: Record<string, string>;
@@ -71,4 +71,45 @@ export function fmtDateTime(iso: string | null): string {
 
 export function newSubmissionKey(): string {
   return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `k-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+export const ACTION_LABEL: Record<AuditEntry["action"], string> = {
+  REGISTRAR_ENTREGA_INICIAL: "Entrega inicial registrada",
+  REGISTRAR_COMPLEMENTO: "Complemento registrado",
+  CORRIGIR_EVENTO: "Lançamento corrigido",
+  MARCAR_FALTA_EM_RESOLUCAO: "Falta marcada em resolução",
+  ENCERRAR_FALTA_SEM_ATENDIMENTO: "Falta encerrada sem atendimento",
+  REVOGAR_DECISAO_FALTA: "Decisão de falta revogada",
+};
+
+const FIELD_LABEL: Record<string, string> = {
+  presentedQty: "entregue",
+  rejectedQty: "rejeitado",
+  rejectionReason: "motivo da rejeição",
+  lossBeforeSchoolQty: "perda antes da escola",
+  lossReason: "motivo da perda",
+  source: "origem",
+  deliveredAt: "entrega real",
+  receivedBy: "recebido por",
+  kind: "decisão",
+  reason: "motivo",
+  shortageQtyAtDecision: "falta na decisão",
+};
+
+const DECISION_LABEL: Record<string, string> = { EM_RESOLUCAO: "em resolução", ENCERRADA_SEM_ATENDIMENTO: "encerrada sem atendimento" };
+
+// Auditoria em texto legível ("entregue: 180; rejeitado: 10") em vez de JSON.
+export function describeAuditValues(values: Record<string, unknown> | null, names: CycleCoreNames): string {
+  if (!values) return "—";
+  const parts = Object.entries(values)
+    .filter(([, v]) => v !== null && v !== undefined && v !== "")
+    .map(([k, v]) => {
+      const label = FIELD_LABEL[k] ?? k;
+      if (k === "source") return `${label}: ${sourceLabel(v as SupplySource, names)}`;
+      if (k === "deliveredAt") return `${label}: ${fmtDateTime(String(v))}`;
+      if (k === "kind") return `${label}: ${DECISION_LABEL[String(v)] ?? String(v)}`;
+      if (typeof v === "number") return `${label}: ${fmtQty(v)}`;
+      return `${label}: ${String(v)}`;
+    });
+  return parts.length ? parts.join("; ") : "—";
 }

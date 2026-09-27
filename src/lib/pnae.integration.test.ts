@@ -2,7 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { getProducerAnnualTotal } from "./pnae";
 import { getWeekFinancialSummary } from "./weekSummary";
-import { checkDisposableMarker, checkDisposableTarget } from "./testing/disposableDb";
+import { checkDisposableTarget } from "./testing/disposableDb";
+import { resetDisposableDb } from "./testing/integrationDb";
 
 // Estes testes rodam contra um Postgres real (não mockam o Prisma, porque os
 // critérios de aceite são sobre persistência). Só rodam pelo executor
@@ -13,39 +14,9 @@ const target = checkDisposableTarget(process.env);
 
 const prisma = new PrismaClient();
 
-let confirmed = false;
-async function assertDisposableDatabase() {
-  if (confirmed) return;
-  const [row] = await prisma.$queryRaw<{ current_database: string; comment: string | null }[]>`
-    SELECT current_database() AS current_database,
-           shobj_description(d.oid, 'pg_database') AS comment
-    FROM pg_database d WHERE d.datname = current_database()`;
-  checkDisposableMarker(target, { currentDatabase: row.current_database, comment: row.comment }, process.env.COLHEITA_TEST_DB_TOKEN!);
-  confirmed = true;
-}
-
-async function resetDb() {
-  await assertDisposableDatabase();
-  await prisma.auditLog.deleteMany();
-  await prisma.weekReopening.deleteMany();
-  await prisma.producerReturn.deleteMany();
-  await prisma.producerDelivery.deleteMany();
-  await prisma.producerOrder.deleteMany();
-  await prisma.producerAllocation.deleteMany();
-  await prisma.schoolReturn.deleteMany();
-  await prisma.schoolDelivery.deleteMany();
-  await prisma.schoolOrder.deleteMany();
-  await prisma.weeklyCost.deleteMany();
-  await prisma.week.deleteMany();
-  await prisma.price.deleteMany();
-  await prisma.productionMapEntry.deleteMany();
-  await prisma.returnReason.deleteMany();
-  await prisma.school.deleteMany();
-  await prisma.producer.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.settings.deleteMany();
-}
+// Confere nome + marca do banco descartável e só então apaga os dados
+// (mesmo auxiliar dos outros testes de integração).
+const resetDb = () => resetDisposableDb(prisma, target, process.env.COLHEITA_TEST_DB_TOKEN!);
 
 beforeAll(async () => {
   await resetDb();

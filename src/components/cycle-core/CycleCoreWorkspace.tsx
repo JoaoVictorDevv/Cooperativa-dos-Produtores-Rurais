@@ -7,7 +7,7 @@ import type { CycleCoreRepository } from "@/lib/cycleCore/repository";
 import { AttendanceSummaryTable } from "./AttendanceSummaryTable";
 import { ClosingPreviewPanel } from "./ClosingPreviewPanel";
 import { SchoolLinePanel } from "./SchoolLinePanel";
-import { fmtDateTime, type CycleCoreNames } from "./labels";
+import { ACTION_LABEL, describeAuditValues, fmtDateTime, type CycleCoreNames } from "./labels";
 
 type Filter = "TODAS" | "PENDENTES" | "FALTAS";
 
@@ -124,7 +124,7 @@ export function CycleCoreWorkspace(props: {
       {lines.length === 0 && <p className="stat-sub">Nenhuma linha neste filtro.</p>}
 
       <details className="card" style={{ padding: 16 }}>
-        <summary style={{ cursor: "pointer", fontWeight: 600 }}>Auditoria ({ledger.audit.length})</summary>
+        <summary style={{ cursor: "pointer", fontWeight: 600 }}>Auditoria: quem fez o quê ({ledger.audit.length})</summary>
         <div className="table-scroll" style={{ marginTop: 10 }}>
           <table>
             <thead>
@@ -143,12 +143,12 @@ export function CycleCoreWorkspace(props: {
                 <tr key={i}>
                   <td>{fmtDateTime(a.at)}</td>
                   <td>{a.actorId}</td>
-                  <td className="code-tag">{a.action}</td>
+                  <td>{ACTION_LABEL[a.action] ?? a.action}</td>
                   <td>
                     {props.names.schools[a.schoolId] ?? a.schoolId} — {props.names.products[a.productId] ?? a.productId}
                   </td>
-                  <td className="code-tag">{a.before ? JSON.stringify(a.before) : "—"}</td>
-                  <td className="code-tag">{a.after ? JSON.stringify(a.after) : "—"}</td>
+                  <td style={{ fontSize: 12.5 }}>{describeAuditValues(a.before, props.names)}</td>
+                  <td style={{ fontSize: 12.5 }}>{describeAuditValues(a.after, props.names)}</td>
                   <td>{a.reason ?? "—"}</td>
                 </tr>
               ))}

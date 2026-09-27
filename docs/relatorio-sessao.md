@@ -110,14 +110,38 @@ lançamento. Semanas antigas não foram recalculadas.
   (idêntica; adulteração detectada; proteção de ciclo fechado preservada na
   cópia). Infraestrutura, agendamento e ensaio real em produção: **Lucas**.
 
+### Trabalho autônomo da noite (27/09/2026) — ver `docs/propostas-pendentes.md` §11
+- **Alerta do Prisma:** sem correção simples (a última 6.x fixa o
+  `deepmerge-ts` vulnerável); não chega ao app em execução; documentado para
+  decisão junto com a migração para o Prisma 7 (Lucas).
+- **Revisão de segurança e código (todas as etapas):** corrigidos: página sem
+  checagem própria de sessão (13 de 15), login revelando e-mails pelo tempo,
+  erro interno do banco indo para a tela, JSON de validação na tela,
+  arredondamento silencioso de 3+ casas, falta de teto de valor, categoria de
+  custo sem checagem, escola/produtor inativo aceito no servidor, textos sem
+  limite; 2 testes-fantasma (um provado por mutação). Documentados para o
+  Lucas: limite de tentativas de login, revogação de sessão, senha padrão no seed.
+- **Carga e corridas:** **defeito real encontrado e corrigido** — devolução
+  podia ficar maior que o pedido/entrega com duas pessoas ao mesmo tempo (40
+  de 40 → 0 de 40), inclusive via importação; teste de carga com as ações
+  reais (1.910 pedidos em paralelo, fechamento no meio de gravações, criação
+  simultânea de semana, confirmação dupla da divisão). Estável em 3 execuções.
+- **Tela de validação do ciclo fechado** (`/semanas/<id>/validacao`, só
+  leitura, só ADMIN): em produção, um ADMIN valida um ciclo real sem acesso ao
+  banco.
+- **Pacote de aceitação** `docs/aceitacao/` (15 cenários + 5 cálculos + JSON
+  Schema dos comandos) para a API Java.
+- **Arrumação:** teste antigo no auxiliar comum; textos da demonstração.
+
 ### Testes e ambiente
 - `npx tsc --noEmit`, `npx eslint`, `npm run build`: limpos.
-- `npx vitest run --exclude "**/*.integration.test.ts"`: 187 passando,
+- `npx vitest run --exclude "**/*.integration.test.ts"`: 220 passando,
   2 pulados (opcionais: GZ real com `GZ_XLSX_PATH=<anexo>`; volume de PDFs com `PDF_VOLUME=1`).
-- `npm run test:integration` (27/09/2026): 14 passando em 3 arquivos, um por
-  vez, no banco descartável da execução (ciclo/histórico/preço, validação de
-  ciclo fechado com o script só leitura, ensaio de backup com segundo banco
-  descartável). Todos os bancos descartáveis apagados.
+- `npm run test:integration` (27/09/2026, noite): 21 passando em 4 arquivos,
+  um por vez, no banco descartável da execução (ciclo/histórico/preço,
+  validação de ciclo fechado com o script só leitura, ensaio de backup com
+  segundo banco descartável, carga e corridas com as ações reais). Rodado 3×
+  seguidas sem instabilidade. Todos os bancos descartáveis apagados.
 - Varredura de interface (27/09/2026, build de produção, banco descartável
   apagado depois): 13 telas × 1400 e 390 px sem erro, sem rolagem lateral e
   sem menu lateral no celular; os 7 PDFs e o ZIP da semana; ZIP da

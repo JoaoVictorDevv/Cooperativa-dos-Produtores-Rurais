@@ -482,6 +482,18 @@ Varredura de 205 testes (sem `expect`, retorno antecipado, `expect` dentro de
   `GZ_XLSX_PATH`; volume de PDFs com `PDF_VOLUME=1`); o único mock é o de
   `console.error` no teste do `publicError`.
 
+### 11.8 Arrumação
+
+- Teste de integração antigo (`pnae.integration.test.ts`) passou a usar o
+  mesmo auxiliar de limpeza dos novos (`src/lib/testing/integrationDb.ts`:
+  confere nome + marca do banco descartável antes de apagar).
+- Demonstração (`/complementos-faltas`): roteiro de apresentação em 5 passos
+  (uma regra por escola fictícia); auditoria em português legível ("rejeitado:
+  10 → 0", "Lançamento corrigido") em vez de códigos e JSON; texto do que falta
+  para funcionar de verdade sem jargão técnico.
+- Tela de validação: o "não validado" mostra o valor em reais e o método de
+  arredondamento por extenso (antes: `1358.73`, `TOTAL_LEGADO`).
+
 ### 11.7 Pacote de aceitação para o Lucas (27/09/2026)
 
 `docs/aceitacao/`: 15 cenários (spec 008, galpão, fechamento, permissões,
