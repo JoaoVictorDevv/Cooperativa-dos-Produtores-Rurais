@@ -1,18 +1,130 @@
-# Propostas pendentes — dependências de banco, API e decisões
+# O que falta no Colheita, e de quem depende
 
-**Atualizado na Rodada 2 (26/09/2026).** As regras de negócio que na Rodada 1
-eram "decisões a tomar" foram **confirmadas com Seu Paulo** e estão em
-[`specs/008-recebimentos-faltas-fechamento/spec.md`](../specs/008-recebimentos-faltas-fechamento/spec.md).
-O que continua pendente aqui é a **implementação técnica** que depende do
-Lucas (schema, migrações, API Java, infraestrutura) e o alinhamento de
-integração. Nada deste documento foi implementado no banco ou na API.
+Este arquivo tem duas partes:
 
-Tudo o que falta, agrupado por responsável (Lucas, Operação, Claude) e com a
-tarefa correspondente de cada spec: seção
-[Pendências por responsável](#pendências-por-responsável). O que já está
-pronto, spec por spec: [`specs/README.md`](../specs/README.md), "Estado geral".
+1. **Comece por aqui:** o que falta, em ordem, com o responsável e com o que
+   conta como "pronto" em cada item.
+2. **Detalhes (§1 a §12):** o histórico de cada assunto e os detalhes
+   técnicos. Só é preciso abrir a seção indicada na tabela.
+
+Cada tarefa também está no `tasks.md` da spec correspondente, marcada com
+"Responsável: …".
 
 ---
+
+## Comece por aqui
+
+### A situação em cinco linhas
+
+- **O app em uso funciona no modelo antigo.** A cobrança é
+  `pedido − devolução`, gravada nas tabelas atuais do Prisma. É o que a
+  cooperativa usa hoje.
+- **As regras novas já foram decididas com a operação** e estão em
+  `specs/008-recebimentos-faltas-fechamento/spec.md`, regras RN-01 a RN-22:
+  - a prefeitura paga pelo **aceito na escola**;
+  - o produtor recebe pelo **aceito no galpão**;
+  - as faltas são cobertas por complemento ou encerradas sem atendimento;
+  - há um romaneio por escola e visita.
+- **No Next, o modelo novo está pronto só em memória:** regras testadas,
+  telas (`/complementos-faltas`, demonstração), PDFs e o pacote de testes para
+  a API (`docs/aceitacao/`).
+- **Falta onde gravar.** O banco e a API ainda não guardam a entrega por
+  escola e produto, os complementos nem as decisões de falta. Isso é a parte
+  do Lucas: pastas `api/` e `database/`, schema, migrações, seed, conexão,
+  credenciais e infraestrutura. Nada disso foi tocado.
+- Quando o banco e a API existirem, o Next só troca a fonte de dados: as telas
+  já falam com uma "porta" (`src/lib/cycleCore/repository.ts`) que hoje é em
+  memória e depois será a API.
+
+### Ordem de leitura para o Lucas (cerca de 20 minutos)
+
+1. Esta seção.
+2. As regras: `specs/008-recebimentos-faltas-fechamento/spec.md`, RN-01 a
+   RN-22 e o "Exemplo obrigatório" (200 / 180 / 170).
+3. O que o banco precisa ter: `specs/008-recebimentos-faltas-fechamento/plan.md`,
+   seção "Backend alvo e contrato necessário", e o **§9** abaixo (campos e
+   validações).
+4. Como saber se a API está certa: `docs/aceitacao/README.md`.
+5. A revisão da API atual: **§7.5** abaixo (seis pontos encontrados lendo o
+   código).
+
+### Pendências por responsável
+
+#### Lucas — em ordem (os primeiros destravam o resto)
+
+| # | O quê | Por quê | Detalhes | Pronto quando | Tarefa |
+|---|---|---|---|---|---|
+| L1 | **Combinar o contrato Next ↔ API**: login feito pelo servidor do Next (tokens em cookie, nunca no navegador), organização única fixa, IDs e como as telas chamam a API | Sem isso nenhuma tela pode trocar o Prisma pela API | §7.1 a §7.4 | Contrato combinado e registrado no §7 | spec 008 T08 |
+| L2 | **Gravar a entrega por escola e produto**: eventos inicial e complemento, com origem, **viagem** (mesma/outra, RN-22), rejeição, perda antes da escola, data/hora real e quem recebeu. Ajustar as restrições `UNIQUE` que impedem complemento e segunda entrega | É o dado que falta para cobrar pelo aceito na escola | §9 (item 1), §7.5 (ponto 6), plan 008 | Os comandos de entrega e complemento se comportam como em `docs/aceitacao/` | spec 008 T05 |
+| L3 | **Gravar a decisão de falta** (em resolução ou encerrada sem atendimento), com versão | Sem isso não dá para fechar ciclo com falta | §9 (item 2) | Idem, cenários de falta | spec 008 T05 |
+| L4 | **Auditoria na mesma transação**, com antes e depois de cada mudança e o motivo | Hoje a API grava antes e depois vazios | §9 (item 3), §7.5 (ponto 3) | A correção mostra o valor anterior e o novo | spec 008 T05 e T06 |
+| L5 | **Endpoint de comando e endpoint de leitura do ciclo**. A leitura traz pedidos, recebimentos, eventos, decisões, custos e nomes | É o que o Next vai chamar | §9 (item 4), §10 (itens 3 e 4), `docs/aceitacao/contrato-comandos.schema.json` | O formato bate com o contrato (JSON Schema) | spec 008 T05 |
+| L6 | **Corrigir a API atual:** não sobrescrever preço/desconto em correções; devolução ≤ entrega com trava contra dois salvamentos ao mesmo tempo | Hoje uma correção pode trocar o preço histórico, e duas pessoas salvando juntas furam o limite | §7.5 (pontos 1 e 2), §11.6 (a trava do Next em `src/lib/locks.ts` serve de modelo) | CA-008.9 e CA-008.10 | spec 008 T06 |
+| L7 | **Regra de cobrança gravada em cada ciclo** (`LEGADO_PEDIDO_MENOS_DEVOLUCAO` ou `ACEITE_ESCOLAR`). Os ciclos antigos ficam no legado para sempre | Para trocar a cobrança sem recalcular o passado | §10 (item 2), §2 | A leitura do ciclo informa a regra | spec 008 T09 |
+| L8 | **Fechamento pelos estados da spec 008** | Hoje só confere se existe registro de entrega | §7.5 (ponto 4), CA-008.5 | Bloqueia sem conferência, com falta sem decisão ou com erro | spec 008 T07 |
+| L9 | **Passar no pacote de aceitação** | É a prova de que API e Next calculam igual | `docs/aceitacao/README.md` | 17 cenários e 5 cálculos com o mesmo resultado | spec 008 T12 |
+| L10 | **Migrar os dados do banco antigo para o novo**, com tabela de correspondência de IDs e sem perder preço histórico, reaberturas e auditoria | Para o histórico continuar valendo | §7.3, §5 (o que precisa ser recuperável) | Totais de cada ciclo (a cobrar, a pagar, custos) iguais antes e depois | spec 008 T15 |
+| L11 | **Arredondamento por linha** na view `v_week_financial_summary`, só para ciclos novos | Tela, PDF e banco precisam dar o mesmo total | §8, plan 008 "Arredondamento" | Caso `arredondamento-por-linha` do pacote (R$ 9,96) | spec 008 T14 |
+| L12 | **Segurança**: limite de tentativas de login, revogação de sessão, `ADMIN_PASSWORD` obrigatória no seed, decisão sobre o Prisma 7 | Achados da revisão de segurança | §11.1 e §11.2 | Cada item resolvido ou decidido por escrito | spec 001 T11–T14 |
+| L13 | **Backup em produção** com agendamento, retenção e um ensaio real de restauração | Hoje não há backup automático | §5, `docs/backup-e-restauracao.md` | Restauração ensaiada e conferida com `scripts/backup-verify.ts` | spec 001 T15 |
+| L14 | **Desativar Ovos** no banco real (o app já esconde) | Ovos saiu do fluxo | §4 | `active = false` no banco antigo e no novo | spec 001 T16 |
+| L15 | Depois, se a operação precisar: arquivar os PDFs emitidos; guardar associações entre importações; OCR de PDF escaneado | Melhorias, não bloqueiam | spec 004 e 009 | — | spec 004 T10; spec 009 T11 e T12 |
+| L16 | **A decidir:** abrir o pedido do próximo ciclo sem fechar o atual (status `PLANEJAMENTO` ou equivalente) | O ciclo real atravessa semanas: pedido na quinta, entrega na segunda | §3 | Decisão com a operação | `specs/backlog.md` |
+
+**O que o Lucas não precisa refazer:**
+- as regras de cálculo, as telas, os PDFs e a importação do pedido já estão
+  prontos no Next;
+- as regras servem de referência executável para o Java
+  (`src/lib/domain/cycle.ts`, `cycleLedger.ts` e os testes);
+- a ferramenta de verificação de backup e o roteiro também já existem.
+
+#### Operação (cooperativa, um ADMIN com acesso ao sistema real) e prefeitura
+
+- **Conseguir um pedido oficial da prefeitura** (Excel e/ou PDF), para testar
+  a importação com o arquivo de verdade. Spec 009 T10.
+- **Validar um ciclo real já fechado**, só leitura: um ADMIN abre "Validar
+  este ciclo fechado" na página da semana (`docs/validacao-ciclo-fechado.md`).
+  Galpão, custos e diferença podem ser conferidos hoje. A cobrança por escola
+  não pode ser conferida com nenhum ciclo antigo, porque não há entrega por
+  escola registrada. Spec 008 T13.
+- Confirmar a desativação de Ovos com o Lucas (L14) e decidir o item L16.
+
+#### Claude (Next), quando as dependências acima chegarem
+
+1. Ligar as telas à API: adaptador da porta `CycleCoreRepository`, e
+   `/complementos-faltas` passa a gravar. Depende de L1 a L5. Spec 008 T08.
+2. Trocar a fonte do Resumo, Balanço, Diferença, página da semana e PDFs nos
+   ciclos `ACEITE_ESCOLAR`. Depende de L7. Spec 008 T09 e T10; spec 004 T09.
+3. Tela de fechamento pelos estados da spec 008. Depende de L8. Spec 008 T07.
+4. Teste de ponta a ponta e de volume com 191 escolas. Spec 008 T11.
+5. Importar o pedido oficial em banco descartável e ajustar ao layout. Spec
+   009 T10.
+6. Só depois do núcleo gravado e validado: a Etapa 7, Mapa de Montagem
+   (`specs/backlog.md`).
+
+Nada fica pendente só do lado do Claude: o que dava para fazer sem banco, sem
+API e sem arquivo oficial está feito e testado.
+
+### Índice dos detalhes
+
+| Seção | Assunto | Situação |
+|---|---|---|
+| §1 | Entrega real por escola, complementos e faltas | Regras decididas; falta gravar (L2–L5) |
+| §2 | Cobrança e fechamento com faltas | Decidido na spec 008; histórico |
+| §3 | Pedido do próximo ciclo sem fechar o atual | Proposta a decidir (L16) |
+| §4 | Ovos fora do fluxo ativo | Feito no app; falta no banco (L14) |
+| §5 | Backup e restauração | Ferramenta e roteiro prontos; falta produção (L13) |
+| §6 | Divisão → pedido aos produtores | Feito (spec 010) |
+| §7 | Contrato Next ↔ API e revisão da API atual | A combinar (L1, L6, L8, L10) |
+| §8 | Outros achados (arredondamento, Prisma, celular) | L11, L12; celular corrigido |
+| §9 | Campos e validações da persistência de complementos e faltas | Referência técnica de L2–L5 |
+| §10 | Telas e documentos pela regra nova | Prontos no Next; dependem de L5 e L7 |
+| §11 | Revisão de segurança, código e testes (27/09/2026) | Corrigido no Next; pendências em L12 |
+| §12 | Planilha MODELO v22 × app | Alinhado; diferenças registradas |
+
+---
+
+# Detalhes
 
 ## 1. Entrega real por escola/produto, complementos e faltas (spec 008)
 
@@ -656,88 +768,3 @@ Todas já estão no app:
 
 O Mapa de Montagem (18 rotas fixas) está descrito em `specs/backlog.md`,
 Etapa 7.
-
----
-
-## Pendências por responsável
-
-Cada item aponta a tarefa da spec onde está o critério de pronto. Tudo o que
-depende do Lucas é de banco, API ou infraestrutura: a área reservada a ele
-(pastas `api/` e `database/`, schema, migrações, seed, conexão, credenciais).
-
-### Lucas (banco, API, infraestrutura) — o que destrava o resto
-
-1. **Gravar a entrega real por escola/produto**: eventos inicial e
-   complemento, com origem, **viagem do complemento** (RN-22), rejeição,
-   perda antes da escola, data/hora real e quem recebeu (§9, item 1). Spec 008
-   T05.
-2. **Gravar a decisão de falta** (em resolução ou encerrada sem atendimento),
-   com versão (§9, item 2). Spec 008 T05.
-3. **Auditoria** na mesma transação de cada comando: antes/depois, motivo,
-   usuário (§9, item 3). Spec 008 T05.
-4. **Endpoint de comando e endpoint de leitura do ciclo** no formato de
-   `src/lib/domain/cycleLedger.ts`, com pedidos, recebimentos, eventos,
-   decisões, custos reais e nomes do cadastro (§9, item 4; §10, itens 3 e 4).
-   Contrato: `docs/aceitacao/contrato-comandos.schema.json`. Spec 008 T05.
-5. **Metodologia gravada por ciclo** (`LEGADO_PEDIDO_MENOS_DEVOLUCAO` ×
-   `ACEITE_ESCOLAR`). Os ciclos antigos ficam no legado para sempre (§10,
-   item 2). Spec 008 T09.
-6. **A API passar no pacote de aceitação** `docs/aceitacao/` (versão 2: 17
-   cenários, 5 cálculos) antes de qualquer tela consumi-la (§11.7). A
-   referência executável das mesmas regras está em
-   `src/lib/domain/cycle.test.ts` e `src/lib/domain/cycleLedger.test.ts`.
-   Spec 008 T12.
-7. **Correções na API atual:**
-   - preço e desconto congelados também nas correções;
-   - devolução ≤ entrega com trava contra corrida (a mesma de
-     `src/lib/locks.ts`, §11.6);
-   - auditoria com antes/depois;
-   - fechamento pelos estados da spec 008 (§7.5).
-
-   Spec 008 T06 e T07.
-8. **Combinar o contrato Next ↔ API** (autenticação, IDs, dados históricos)
-   antes de qualquer tela passar a consumir a API (§7). Spec 008 T08.
-9. **Arredondamento por linha** na view `v_week_financial_summary`, só para
-   ciclos novos (§8). Spec 008 T14.
-10. **Segurança** (§11), spec 001 T11–T14:
-    - limite de tentativas de login e revogação de sessão (precisam de
-      armazenamento);
-    - `ADMIN_PASSWORD` obrigatória sempre no seed;
-    - decidir a migração para o Prisma 7 (alerta alto em `deepmerge-ts`, só
-      na ferramenta de linha de comando).
-11. **Backup em produção**: infraestrutura, agendamento, retenção e ensaio
-    real de restauração. A verificação só leitura e o roteiro estão prontos:
-    `docs/backup-e-restauracao.md` (§5). Spec 001 T15.
-12. **Desativar Ovos** no banco real (§4). Spec 001 T16.
-13. Arquivamento imutável dos PDFs emitidos (spec 004 T10); associações
-    persistidas entre importações e OCR, se a operação precisar (spec 009 T11
-    e T12).
-
-### Operação (cooperativa, ADMIN com acesso ao sistema real) e prefeitura
-
-- **Pedido oficial da prefeitura** (Excel e/ou PDF), para validar a
-  importação com o arquivo de verdade. Spec 009 T10.
-- **Validar um ciclo real fechado**, só leitura: um ADMIN abre "Validar este
-  ciclo fechado" na página da semana (`docs/validacao-ciclo-fechado.md`).
-  Galpão, custos e diferença podem ser conferidos hoje. A cobrança por escola
-  não pode ser validada com nenhum ciclo antigo, porque não há entrega por
-  escola registrada. Spec 008 T13.
-- Confirmar a desativação de Ovos junto com o Lucas. Spec 001 T16.
-
-### Claude (Next), quando as dependências acima chegarem
-
-1. Adaptador da porta `CycleCoreRepository` para a API (as telas de
-   `src/components/cycle-core/` não mudam) e `/complementos-faltas` gravando
-   de verdade. Spec 008 T08.
-2. Trocar a fonte dos PDFs e das telas Resumo, Balanço, Diferença e página da
-   semana nos ciclos `ACEITE_ESCOLAR` (`DOCUMENT_SOURCES`,
-   `methodologyOfRealCycle()`). Spec 008 T09 e T10; spec 004 T09.
-3. Tela de fechamento pelos estados da spec 008. Spec 008 T07.
-4. Teste ponta a ponta e de volume com 191 escolas. Spec 008 T11.
-5. Importar o pedido oficial em banco descartável e ajustar ao layout. Spec
-   009 T10.
-6. Só depois do núcleo persistido e validado, a Etapa 7 (Mapa de Montagem),
-   em `specs/backlog.md`.
-
-Nada fica pendente só do lado do Claude: o que dava para fazer sem banco,
-API ou arquivo oficial está feito e testado.

@@ -16,6 +16,11 @@ Itens candidatos não são autorização para implementação. Cada um precisa d
    - definir exatamente quais documentos a prefeitura, a contabilidade e os produtores recebem;
    - gerar arquivos reproduzíveis a partir de semanas fechadas.
 
+4. **Pedido do próximo ciclo sem fechar o atual** *(proposta a decidir; `docs/propostas-pendentes.md` §3 e item L16)*
+   - o ciclo real atravessa semanas: pedido na quinta, entrega na segunda;
+   - status `PLANEJAMENTO` ou equivalente, sem remover a regra de uma semana aberta para lançamentos;
+   - decisão com a **Operação**; schema e API com o **Lucas**.
+
 ## P2 — operação em produção
 
 4. **SPEC-005 — Backup, restauração e observabilidade**

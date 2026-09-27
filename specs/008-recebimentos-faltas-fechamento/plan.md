@@ -13,14 +13,14 @@
 
    Regras, telas, PDFs e o pacote de aceitação existem, mas nada disso é
    gravado. **O que falta é banco e API** (Lucas): tarefas T05, T06, T09,
-   T12 e T14 em `tasks.md`.
+   T12, T14 e T15 em `tasks.md`.
 3. **As pastas `api/` e `database/` não foram tocadas.** O mesmo vale para
    schema, migrações, seed, conexão, credenciais e infraestrutura do banco.
    Nenhum banco real foi consultado ou alterado.
 
 Cada tarefa pendente, com o responsável, está em `tasks.md`. As mesmas
 pendências, agrupadas por responsável e com os detalhes técnicos, estão em
-`docs/propostas-pendentes.md` ("Pendências por responsável").
+`docs/propostas-pendentes.md` ("Comece por aqui").
 
 ## Estado do banco (conferido em 26/09/2026)
 

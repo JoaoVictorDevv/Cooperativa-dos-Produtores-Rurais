@@ -6,6 +6,10 @@ Toda tarefa pendente indica o **responsável**:
 - **Claude**: regras, telas, documentos e testes no Next;
 - **Operação**: a cooperativa e um ADMIN com acesso ao sistema real.
 
+A lista em ordem, com o que conta como "pronto" em cada item, está em
+`docs/propostas-pendentes.md`, "Comece por aqui". Os itens L1 a L16 de lá
+apontam para as tarefas abaixo.
+
 - [x] T01 Registrar regras confirmadas, exemplos e critérios de aceite (spec.md).
 - [x] T02 Levantar o suporte existente no Prisma e no SQL novo (plan.md, tabela "Estado do banco").
 - [x] T03 Regras de domínio puras + testes para CA-008.1 a CA-008.8 (`src/lib/domain/cycle.ts`, 32 testes). *Não conclui a funcionalidade: não há persistência nem tela.*
@@ -29,6 +33,7 @@ Toda tarefa pendente indica o **responsável**:
 - [B] T11 Teste ponta a ponta CA-008.11 e teste de volume com 191 escolas no banco real de homologação — **Responsável: Claude**, com a operação acompanhando. Depende de T05–T10.
 - [B] T12 A API passar no pacote de aceitação `docs/aceitacao/` (versão 2: 17 cenários, 5 cálculos, contrato dos comandos em JSON Schema) antes de qualquer tela consumi-la — **Responsável: Lucas**.
 - [B] T13 Validar um ciclo real já fechado (galpão, custos e diferença; só leitura) — **Responsável: Operação**: um ADMIN abre "Validar este ciclo fechado" na página da semana, ou alguém com acesso roda `scripts/validate-closed-cycle.ts` (`docs/validacao-ciclo-fechado.md`). A cobrança por escola não é validável com nenhum ciclo antigo, porque não há entrega por escola registrada.
+- [B] T15 Migrar os dados do banco antigo (Prisma, IDs cuid) para o banco novo (UUID, organização): tabela de correspondência de IDs; preço, desconto, reaberturas e auditoria preservados; conferência por totais de cada ciclo (a cobrar, a pagar, custos) antes e depois — **Responsável: Lucas**, com a conferência feita junto (propostas §7.3 e §5).
 - [B] T14 Arredondamento por linha (RN-15) também na view `v_week_financial_summary` do banco novo, só para ciclos novos — **Responsável: Lucas** (plan.md, "Arredondamento").
 
 Evidência T03/T03b: `npx vitest run src/lib/domain` → 40 testes passando (26/09/2026, ambiente local, sem banco).

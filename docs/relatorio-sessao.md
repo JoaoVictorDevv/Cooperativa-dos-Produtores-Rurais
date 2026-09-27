@@ -21,7 +21,7 @@ nunca tocadas. Nenhum banco real consultado ou alterado.
 - o que funciona e o que só existe em demonstração: `specs/README.md`,
   "Estado geral";
 - o que falta, com o responsável: o `tasks.md` de cada spec e
-  `docs/propostas-pendentes.md` ("Pendências por responsável").
+  `docs/propostas-pendentes.md` ("Comece por aqui").
 
 **Planilha de referência (27/09/2026):** a **MODELO v22** é a oficial, vazia,
 em `docs/referencia-planilha/`. A v35 foi retirada. A v22 não muda a lógica

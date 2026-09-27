@@ -52,9 +52,10 @@ O código pode explicar **como** algo funciona. As especificações devem explic
 
 ### O que falta e de quem depende
 
-Cada spec lista as tarefas pendentes com o responsável (Lucas, Operação ou
-Claude) no seu `tasks.md`. A visão agrupada por responsável fica em
-[`docs/propostas-pendentes.md`](../docs/propostas-pendentes.md#pendências-por-responsável).
+Comece por [`docs/propostas-pendentes.md`](../docs/propostas-pendentes.md),
+seção "Comece por aqui": a lista em ordem por responsável (Lucas, Operação,
+Claude), com o que conta como pronto e a ordem de leitura. Cada spec repete as
+suas tarefas, com o responsável, no próprio `tasks.md`.
 
 ## Incrementos
 

@@ -24,7 +24,7 @@ As decisões e os critérios de aceite ficam em [`specs/`](./specs/README.md). A
 Onde está cada coisa:
 
 - **Estado geral** (o que funciona, o que só existe em demonstração): [`specs/README.md`](./specs/README.md), "Estado geral".
-- **O que falta e de quem depende** (Lucas, Operação, Claude): o `tasks.md` de cada spec e, agrupado por responsável, [`docs/propostas-pendentes.md`](./docs/propostas-pendentes.md#pendências-por-responsável).
+- **O que falta e de quem depende** (Lucas, Operação, Claude): [`docs/propostas-pendentes.md`](./docs/propostas-pendentes.md), seção **"Comece por aqui"**, com a lista em ordem, o que conta como pronto e a ordem de leitura para o Lucas. As mesmas tarefas estão no `tasks.md` de cada spec, com o responsável.
 - **Histórico da sessão e ponto de retomada:** [`docs/relatorio-sessao.md`](./docs/relatorio-sessao.md).
 - **Plano e lista única de etapas:** [`docs/plano-de-implementacao.md`](./docs/plano-de-implementacao.md).
 
