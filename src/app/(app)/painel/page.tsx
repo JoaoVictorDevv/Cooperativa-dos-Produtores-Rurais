@@ -4,6 +4,7 @@ import { getOpenWeek } from "@/lib/week";
 import { getWeekFinancialSummary, getPendingProducerDeliveries } from "@/lib/weekSummary";
 import { formatQty } from "@/lib/format";
 import { Icon } from "@/components/Icon";
+import { verifySession } from "@/lib/dal";
 
 function fmtMoney(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -13,6 +14,8 @@ function fmt(date: Date) {
 }
 
 export default async function DashboardPage() {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const week = await getOpenWeek();
 
   const producers = await prisma.producer.findMany({ where: { active: true } });

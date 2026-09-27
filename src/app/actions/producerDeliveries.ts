@@ -7,6 +7,7 @@ import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable, getCurrentPrice, getSettings } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
 import type { SaveResult } from "./schoolOrders";
+import { publicErrorMessage } from "@/lib/publicError";
 
 // CA-ENT-PROD-01..07, regra absoluta #2 e #4: entrega real (normalmente
 // domingo) — e esta tabela, nunca o pedido, que alimenta o pagamento.
@@ -96,6 +97,6 @@ export async function saveProducerDelivery(
     revalidatePath("/produtores");
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+    return { ok: false, error: publicErrorMessage(err, "Erro desconhecido") };
   }
 }

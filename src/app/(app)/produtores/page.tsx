@@ -5,10 +5,13 @@ import { producerPayment } from "@/lib/calc";
 import { isOfferedForNewEntries } from "@/lib/productPolicy";
 import { ProdutoresTable } from "./ProdutoresTable";
 import { GenerateOrdersFromAllocation } from "./GenerateOrdersFromAllocation";
+import { verifySession } from "@/lib/dal";
 
 // Aceita ?week=<id> pra consultar (so leitura) uma semana ja fechada —
 // sem o parametro, mostra a semana aberta atual.
 export default async function ProdutoresPage({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const { week: weekIdParam } = await searchParams;
   const week = weekIdParam ? await prisma.week.findUnique({ where: { id: weekIdParam } }) : await getOpenWeek();
 

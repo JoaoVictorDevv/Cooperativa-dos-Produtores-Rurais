@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
 import { getWarehouseDifferenceLines } from "@/lib/weekSummary";
 import { DiferencaTable } from "./DiferencaTable";
+import { verifySession } from "@/lib/dal";
 
 function fmt(date: Date) {
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit" }).format(date);
@@ -13,6 +14,8 @@ function fmt(date: Date) {
 // fechada), igual ao Resumo e ao Balanco — sem parametro, mostra a
 // semana aberta atual.
 export default async function DiferencaPage({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const { week: weekIdParam } = await searchParams;
   const week = weekIdParam ? await prisma.week.findUnique({ where: { id: weekIdParam } }) : await getOpenWeek();
 

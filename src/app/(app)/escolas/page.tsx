@@ -4,11 +4,14 @@ import { getOpenWeek } from "@/lib/week";
 import { isOfferedForNewEntries } from "@/lib/productPolicy";
 import { EscolasTable } from "./EscolasTable";
 import { ImportSchoolOrders } from "./ImportSchoolOrders";
+import { verifySession } from "@/lib/dal";
 
 // CA-HIST-*: aceita ?week=<id> pra consultar (so leitura, sem reabrir) o
 // pedido de uma semana ja fechada — sem o parametro, mostra a semana
 // aberta atual, igual sempre foi.
 export default async function EscolasPage({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const { week: weekIdParam } = await searchParams;
   const week = weekIdParam ? await prisma.week.findUnique({ where: { id: weekIdParam } }) : await getOpenWeek();
 

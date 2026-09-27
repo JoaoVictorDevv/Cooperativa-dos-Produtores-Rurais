@@ -6,12 +6,14 @@ import { requireOperator } from "@/lib/dal";
 import { assertWeekEditable, getCurrentPrice } from "@/lib/week";
 import { productUnit } from "@/lib/format";
 import { isOfferedForNewEntries } from "@/lib/productPolicy";
+import { assertProducerAcceptsNewEntries } from "@/lib/entityPolicy";
 import {
   allocationPlanSignature,
   planOrdersFromAllocation,
   type AllocationPlanDecisions,
   type AllocationPlanInput,
 } from "@/lib/producerOrdersFromAllocation";
+import { publicErrorMessage } from "@/lib/publicError";
 
 export interface AllocationPreviewResult {
   ok: boolean;
@@ -52,7 +54,7 @@ export async function previewOrdersFromAllocation(weekId: string): Promise<Alloc
     const producers = await prisma.producer.findMany({ where: { id: { in: producerIds } }, select: { id: true, name: true, internalId: true } });
     return { ok: true, input, producers };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro ao montar a prévia." };
+    return { ok: false, error: publicErrorMessage(err, "Erro ao montar a prévia.") };
   }
 }
 
@@ -101,6 +103,7 @@ export async function confirmOrdersFromAllocation(
         for (const w of plan.toWrite) {
           const where = { weekId_producerId_productId: { weekId: week.id, producerId: w.producerId, productId: w.productId } };
           if (w.currentQty === null) {
+            await assertProducerAcceptsNewEntries(tx, w.producerId);
             const product = await tx.product.findUniqueOrThrow({ where: { id: w.productId } });
             if (!isOfferedForNewEntries(product)) throw new Error(`${product.name} está fora da oferta ativa.`);
             const saved = await tx.producerOrder.create({
@@ -137,6 +140,6 @@ export async function confirmOrdersFromAllocation(
     revalidatePath(`/semanas/${week.id}`);
     return { ok: true, ...result };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro ao gerar os pedidos." };
+    return { ok: false, error: publicErrorMessage(err, "Erro ao gerar os pedidos.") };
   }
 }

@@ -7,6 +7,8 @@ import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable, getCurrentPrice } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
 import { isOfferedForNewEntries } from "@/lib/productPolicy";
+import { publicErrorMessage } from "@/lib/publicError";
+import { assertSchoolAcceptsNewEntries } from "@/lib/entityPolicy";
 
 export interface SaveResult {
   ok: boolean;
@@ -49,6 +51,7 @@ export async function saveSchoolOrder(
         where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
       });
       if (!existing) {
+        await assertSchoolAcceptsNewEntries(tx, schoolId);
         const product = await tx.product.findUniqueOrThrow({ where: { id: productId } });
         if (!isOfferedForNewEntries(product)) {
           throw new Error(`${product.name} está fora da oferta ativa: não recebe novos pedidos (lançamentos antigos continuam no histórico).`);
@@ -76,6 +79,6 @@ export async function saveSchoolOrder(
     revalidatePath("/escolas");
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+    return { ok: false, error: publicErrorMessage(err, "Erro desconhecido") };
   }
 }

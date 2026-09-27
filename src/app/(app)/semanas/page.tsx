@@ -2,12 +2,15 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
 import { NewWeekForm } from "./NewWeekForm";
+import { verifySession } from "@/lib/dal";
 
 function fmt(date: Date) {
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
 }
 
 export default async function SemanasPage() {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const [openWeek, weeks] = await Promise.all([
     getOpenWeek(),
     prisma.week.findMany({ orderBy: { number: "desc" }, take: 60 }),

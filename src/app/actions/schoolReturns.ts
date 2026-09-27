@@ -7,6 +7,7 @@ import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
 import type { SaveResult } from "./schoolOrders";
+import { publicErrorMessage } from "@/lib/publicError";
 
 // CA-DEV-01/03/04/05/06/07/08: devolucao da escola, vinculada a
 // semana+produto, com motivo obrigatorio. Regra operacional definida
@@ -96,6 +97,6 @@ export async function saveSchoolReturn(
     revalidatePath("/escolas");
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+    return { ok: false, error: publicErrorMessage(err, "Erro desconhecido") };
   }
 }

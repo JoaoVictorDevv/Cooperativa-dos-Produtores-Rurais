@@ -6,6 +6,7 @@ import { getOpenWeek } from "@/lib/week";
 import { getWeekFinancialSummary } from "@/lib/weekSummary";
 import { CostCell } from "./CostCell";
 import type { CostCategory } from "@prisma/client";
+import { verifySession } from "@/lib/dal";
 
 function fmtMoney(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -24,6 +25,8 @@ const COST_LABELS: Record<CostCategory, string> = {
 const COST_ORDER = Object.keys(COST_LABELS) as CostCategory[];
 
 export default async function BalancoPage({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const { week: weekIdParam } = await searchParams;
   const week = weekIdParam ? await prisma.week.findUnique({ where: { id: weekIdParam } }) : await getOpenWeek();
   if (!week) {

@@ -5,6 +5,7 @@ import { getOpenWeek } from "@/lib/week";
 import { producerPayment } from "@/lib/calc";
 import { formatQty, formatQtyNumber } from "@/lib/format";
 import { PrintButton } from "@/components/PrintButton";
+import { verifySession } from "@/lib/dal";
 
 function fmtMoney(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -19,6 +20,8 @@ export default async function ProducerDetailPage({
   params: Promise<{ internalId: string }>;
   searchParams: Promise<{ week?: string }>;
 }) {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const { internalId } = await params;
   const { week: weekIdParam } = await searchParams;
   const producer = await prisma.producer.findUnique({ where: { internalId } });

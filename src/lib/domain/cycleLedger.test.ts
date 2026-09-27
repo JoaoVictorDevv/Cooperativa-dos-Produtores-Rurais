@@ -95,11 +95,18 @@ describe("etapa 4 — encerrar falta sem atendimento", () => {
       inicial180,
       { type: "ENCERRAR_FALTA_SEM_ATENDIMENTO", schoolId: "E1", productId: ALFACE, reason: "Sem produto", expectedShortageQty: 30, expectedVersion: null },
     ]);
-    // O ciclo seguinte começa só com os pedidos novos da prefeitura.
-    const next = ledger({ cycleId: "c2", orders: [{ schoolId: "E1", productId: ALFACE, orderedQty: 100, unit: "kg", price: PRICE }], warehouseReceipts: [] });
-    expect(next.decisions).toHaveLength(0);
-    expect(evaluateLedgerLine(next, "E1", ALFACE).orderedQty).toBe(100);
-    expect(state.decisions).toHaveLength(1); // continua no histórico do ciclo 1
+    // Antes este teste montava o ciclo seguinte à mão e conferia que ele não
+    // tinha decisões — só testava o próprio dado (tautologia). O que dá para
+    // provar: a falta encerrada fica registrada só neste ciclo, não é cobrada,
+    // não deixa pendência que impeça fechar, e não há nada a levar adiante (o
+    // núcleo não tem operação de "carregar falta"; um ciclo novo só nasce dos
+    // pedidos da prefeitura).
+    const preview = ledgerClosingPreview(state);
+    expect(state.decisions).toEqual([expect.objectContaining({ schoolId: "E1", productId: ALFACE, kind: "ENCERRADA_SEM_ATENDIMENTO", shortageQtyAtDecision: 30 })]);
+    expect(preview.canClose).toBe(true);
+    expect(preview.blockers).toEqual([]);
+    expect(preview.receivableLines.map((l) => l.acceptedQty)).toEqual([170]);
+    expect(preview.closedShortages).toHaveLength(1);
   });
 
   it("só encerra depois de conferir: entrega não informada não é zero", () => {
@@ -214,8 +221,7 @@ describe("etapa 4 — complementos", () => {
     expect(evaluateLedgerLine(state, "E2", COUVE).receiptStatus).toBe("PENDENTE_CONFERENCIA");
     expect(results[0].ok && results[0].warnings.join(" ")).toMatch(/registre zero confirmado/);
     const zero = executeCommand(state, { type: "REGISTRAR_ENTREGA_INICIAL", idempotencyKey: "k-zero", schoolId: "E2", productId: COUVE, presentedQty: 0, rejectedQty: 0 }, operador, c);
-    expect(zero.ok).toBe(true);
-    if (!zero.ok) return;
+    if (!zero.ok) throw new Error(`recusado: ${zero.error}`);
     expect(evaluateLedgerLine(zero.ledger, "E2", COUVE)).toMatchObject({ receiptStatus: "CONFERIDO", acceptedQty: 20, shortageQty: 10, shortageStatus: "SEM_DECISAO" });
     const closed = executeCommand(zero.ledger, { type: "ENCERRAR_FALTA_SEM_ATENDIMENTO", schoolId: "E2", productId: COUVE, reason: "Produtor sem couve", expectedShortageQty: 10, expectedVersion: null }, operador, c);
     expect(closed.ok).toBe(true);
@@ -234,8 +240,7 @@ describe("etapa 4 — correções auditadas e decisões que ficam incoerentes", 
     const { state, ctx: c } = run(ledger(), [inicial180]);
     const id = state.events[0].id;
     const r = executeCommand(state, { type: "CORRIGIR_EVENTO", eventId: id, expectedVersion: 1, changes: { presentedQty: 185 }, reason: "Erro de digitação" }, operador, c);
-    expect(r.ok).toBe(true);
-    if (!r.ok) return;
+    if (!r.ok) throw new Error(`recusado: ${r.error}`);
     expect(r.ledger.events[0]).toMatchObject({ presentedQty: 185, version: 2 });
     expect(r.audit[0]).toMatchObject({ action: "CORRIGIR_EVENTO", before: { presentedQty: 180 }, after: { presentedQty: 185 }, reason: "Erro de digitação" });
     expect(r.ledger.events).toHaveLength(1); // não virou nova entrega

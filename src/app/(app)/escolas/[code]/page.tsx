@@ -5,6 +5,7 @@ import { getOpenWeek } from "@/lib/week";
 import { PrintButton } from "@/components/PrintButton";
 import { ReturnRow } from "./ReturnRow";
 import { DeliveryForm } from "./DeliveryForm";
+import { verifySession } from "@/lib/dal";
 
 // Aceita ?week=<id> pra abrir a ficha de uma semana especifica (aberta ou
 // ja fechada) — sem o parametro, cai na semana aberta atual (comportamento
@@ -16,6 +17,8 @@ export default async function SchoolDetailPage({
   params: Promise<{ code: string }>;
   searchParams: Promise<{ week?: string }>;
 }) {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const { code } = await params;
   const { week: weekIdParam } = await searchParams;
   const school = await prisma.school.findUnique({ where: { code } });

@@ -380,6 +380,107 @@ existe entrega por escola/produto registrada (bloqueio de persistência, Lucas).
 
 ---
 
+## 11. Revisão noturna de segurança, código e testes (27/09/2026)
+
+Revisão de todas as etapas (Rodada 1 e 2). Legenda: **Corrigido** = mudado e
+testado nesta revisão; **Documentado** = precisa de decisão ou da área do Lucas.
+
+### 11.1 Dependências (npm audit: 3 altos, 4 moderados)
+
+| Pacote | Gravidade | Chega ao app em execução? | Situação |
+|---|---|---|---|
+| `deepmerge-ts` 7.1.5 (via `prisma` → `@prisma/config` 6.19.3) | alta (estouro de pilha ao mesclar objetos recursivos) | **Não**: só na ferramenta de linha de comando do Prisma (config local); não está no pacote do servidor (`.next/server`) | **Documentado.** Não há correção simples: 6.19.3 é a última 6.x e fixa essa versão; as saídas são voltar para 6.12 (regressão) ou migrar para Prisma 7 (versão principal, exige adaptadores de driver). Forçar `overrides` mudaria a ferramenta de migrações sem suporte do fabricante. **Lucas** decide junto com a migração para o Prisma 7. |
+| `uuid` 8.3.2 (via `exceljs` 4.4.0) | moderada (sem checagem de limite quando `buf` é passado, v3/v5/v6) | Não explorável: o exceljs só usa `v4()` sem `buf` | Documentado; a "correção" do npm é voltar o exceljs para 3.4 (pior). |
+| `vitest` 3.2.7 / `@vitest/mocker` | moderada (leitura de arquivo em mock) | Não: só roda nos testes | Documentado; correção exige vitest 4/5 (versão principal). |
+
+### 11.2 Permissão e sessão
+
+- **Corrigido — páginas sem checagem própria de sessão.** 13 de 15 páginas
+  autenticadas dependiam só do layout. Pela documentação do Next (Autenticação,
+  "Layouts and auth checks"), o layout não roda de novo na navegação; o proxy
+  só confere a assinatura do cookie. Um usuário **desativado** com cookie
+  válido podia continuar lendo dados ao navegar. Agora toda página chama
+  `verifySession()` (que confere no banco se o usuário está ativo).
+- **Corrigido — login revelava quais e-mails têm conta pelo tempo de
+  resposta** (sem usuário, respondia sem rodar o bcrypt). Agora sempre compara
+  (hash fictício quando não há usuário).
+- **Documentado — sem limite de tentativas de login** (força bruta). Um
+  limitador em memória não funciona com várias instâncias/serverless; precisa
+  de armazenamento compartilhado (tabela ou Redis) — **Lucas**.
+- **Documentado — sessão de 7 dias sem revogação no servidor.** Mitigado:
+  toda leitura/ação confere no banco se o usuário está ativo e qual o papel
+  atual. Sair apaga o cookie, mas um cookie copiado antes continua válido até
+  expirar para quem não foi desativado. Revogação real exigiria lista de
+  sessões no banco — **Lucas**.
+- **Documentado — senha padrão de admin no seed** (`prisma/seed.ts`, usada
+  quando `ADMIN_PASSWORD` não está definida fora de produção). Uma homologação
+  ou preview sem a variável teria admin com senha conhecida (o código está no
+  repositório). Sugestão: exigir `ADMIN_PASSWORD` sempre. Seed é área do **Lucas**.
+- Conferido sem achado: todas as ações de servidor exigem sessão e papel
+  (ADMIN para preços e reabertura; OPERADOR para lançamentos; CONSULTA só lê);
+  todas as rotas de PDF/ZIP e da demonstração exigem login; cookie `httpOnly`,
+  `sameSite=lax`, `secure` em produção; JWT HS256 com segredo ≥ 32 caracteres;
+  nenhum `.env` real versionado (só `.env.example` com textos de exemplo).
+
+### 11.3 Dados sensíveis em erro ou log
+
+- **Corrigido — mensagens de erro cruas do banco iam para a tela.** 13 ações
+  devolviam `err.message`; um erro do Prisma pode conter nome de tabela,
+  coluna, valores ou trecho de consulta. Agora `src/lib/publicError.ts`: regra
+  de negócio passa como está; gatilho de semana fechada vira texto amigável
+  (sem o id); duplicidade/registro sumido viram orientação; o resto vira
+  mensagem genérica e só o **código** técnico vai para o log do servidor.
+- **Corrigido — erro de validação aparecia como JSON técnico** (o `.parse` do
+  zod lança um erro cuja mensagem é o JSON das regras). Agora mostra só a
+  primeira regra violada.
+- Conferido sem achado: nenhum `console.log` no código do app; scripts de
+  teste, validação e backup nunca imprimem a URL do banco (testado); o seed
+  imprime só o e-mail do admin.
+
+### 11.4 Validação só na tela
+
+- **Corrigido — mais de 2 casas decimais era arredondado em silêncio pelo
+  banco** (colunas `Decimal(10,2)`/`(12,2)`: 1,005 virava 1,01). Agora o
+  servidor recusa com "Use no máximo 2 casas decimais".
+- **Corrigido — sem teto de valor**: número acima da capacidade da coluna
+  estourava no banco; agora mensagem clara.
+- **Corrigido — categoria de custo** vinha do navegador sem checagem; agora só
+  as 8 categorias do cadastro.
+- **Corrigido — escola/produtor inativo** era escondido só na tela; o servidor
+  aceitava pedido, divisão ou pedido ao produtor novo enviado direto. Agora
+  recusa lançamento **novo** (corrigir o que já existe continua permitido). Não
+  aplicado ao **recebimento no galpão** de propósito: entrega física de
+  produtor desativado no meio do ciclo não deve ser impedida — **decisão sua**
+  se quiser bloquear também.
+- **Corrigido — observações da semana e motivo de reabertura sem limite de
+  tamanho**; agora até 2.000 caracteres.
+- Conferido sem achado: quantidades nunca negativas no servidor; devolução ≤
+  pedido/entrega e motivo ativo checados no servidor; semana fechada recusada
+  no servidor e por gatilho no banco; importação e divisão→pedido recalculam
+  tudo no servidor e comparam assinatura; datas da semana validadas no
+  servidor.
+
+### 11.5 Testes-fantasma
+
+Varredura de 205 testes (sem `expect`, retorno antecipado, `expect` dentro de
+`if`/`catch`, pulados, tautologias):
+
+- **Corrigido — `disposableDb.test.ts` "nenhuma mensagem expõe a senha"**: um
+  "deveria ter recusado" lançado no `try` era engolido pelo próprio `catch`;
+  se a proteção aceitasse um banco remoto, o teste continuava verde. Provado
+  por mutação: com a recusa desligada, o teste antigo passaria; o novo falha.
+- **Corrigido — `cycleLedger.test.ts` "falta encerrada não vira pedido no
+  ciclo seguinte"**: montava o ciclo seguinte à mão e conferia que ele não
+  tinha decisões (tautologia). Agora testa o que existe: decisão registrada
+  só no ciclo, fechamento liberado, falta não cobrada.
+- **Ajustado** — dois `if (!x.ok) return;` (já precedidos de
+  `expect(ok).toBe(true)`, então não eram fantasma) viraram `throw`, explícitos.
+- Conferido: os 2 testes pulados são opcionais e declarados (GZ real com
+  `GZ_XLSX_PATH`; volume de PDFs com `PDF_VOLUME=1`); o único mock é o de
+  `console.error` no teste do `publicError`.
+
+---
+
 ## Para o Lucas — resumo
 
 1. **Banco/API para entrega real por escola/produto, complementos e decisão de
@@ -401,3 +502,6 @@ existe entrega por escola/produto registrada (bloqueio de persistência, Lucas).
    celular já foi corrigido.
 7. **Rodar a validação de um ciclo real fechado** (só leitura):
    `scripts/validate-closed-cycle.ts` — ver `docs/validacao-ciclo-fechado.md`.
+8. **Revisão de segurança (§11):** limite de tentativas de login e revogação
+   de sessão (precisam de armazenamento); exigir `ADMIN_PASSWORD` sempre no
+   seed; decidir a migração para o Prisma 7 (alerta alto em `deepmerge-ts`).

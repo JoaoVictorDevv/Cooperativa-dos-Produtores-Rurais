@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { verifySession } from "@/lib/dal";
 
 type MonthKey = "out" | "nov" | "dez" | "jan" | "fev" | "mar" | "abr" | "mai" | "jun" | "jul" | "ago" | "set";
 
@@ -27,6 +28,8 @@ async function getEntries() {
 // CA-MAPA-01..05: so consulta — referencia do plano anual (ciclo PNAE
 // out-set), usada para decidir a divisao do pedido entre produtores.
 export default async function MapaProducaoPage() {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const entries = await getEntries();
   const products = await prisma.product.findMany({ where: { active: true }, orderBy: { name: "asc" } });
 

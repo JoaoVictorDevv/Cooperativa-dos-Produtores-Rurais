@@ -8,6 +8,8 @@ import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
 import type { SaveResult } from "./schoolOrders";
+import { publicErrorMessage } from "@/lib/publicError";
+import { assertProducerAcceptsNewEntries } from "@/lib/entityPolicy";
 
 // CA-DIV-01..06: divisao/planejamento — como a demanda foi repartida
 // entre produtores. E uma tabela propria: alterar isto nunca toca no
@@ -30,6 +32,7 @@ export async function saveProducerAllocation(
         where: { weekId_productId_producerId: { weekId, productId, producerId } },
       });
       if (!existing) {
+        await assertProducerAcceptsNewEntries(tx, producerId);
         const product = await tx.product.findUniqueOrThrow({ where: { id: productId } });
         if (!isOfferedForNewEntries(product)) {
           throw new Error(`${product.name} está fora da oferta ativa: não recebe novos lançamentos (os antigos continuam no histórico).`);
@@ -55,6 +58,6 @@ export async function saveProducerAllocation(
     revalidatePath("/produtores");
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+    return { ok: false, error: publicErrorMessage(err, "Erro desconhecido") };
   }
 }

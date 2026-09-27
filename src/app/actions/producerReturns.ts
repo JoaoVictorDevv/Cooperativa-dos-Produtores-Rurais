@@ -7,6 +7,7 @@ import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
 import type { SaveResult } from "./schoolOrders";
+import { publicErrorMessage } from "@/lib/publicError";
 
 // CA-DEV-*: devolucao do produtor (mercadoria rejeitada no galpao).
 // Regra operacional para CA-DEV-08: bloqueia devolucao maior que a
@@ -92,6 +93,6 @@ export async function saveProducerReturn(
     revalidatePath("/produtores");
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+    return { ok: false, error: publicErrorMessage(err, "Erro desconhecido") };
   }
 }

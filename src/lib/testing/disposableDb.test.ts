@@ -41,12 +41,16 @@ describe("proteção de testes destrutivos", () => {
       { DATABASE_URL: `postgresql://postgres:${SECRET}@%%%/x`, COLHEITA_TEST_DB_TOKEN: TOKEN },
     ];
     for (const env of cases) {
+      // Antes, um "deveria ter recusado" lançado aqui era engolido pelo próprio
+      // catch e o teste passava mesmo se o destino fosse aceito (teste-fantasma).
+      let message: string | null = null;
       try {
         checkDisposableTarget(env);
-        throw new Error("deveria ter recusado");
       } catch (err) {
-        expect((err as Error).message).not.toContain(SECRET);
+        message = (err as Error).message;
       }
+      expect(message, `deveria recusar ${env.DATABASE_URL.replace(SECRET, "***")}`).not.toBeNull();
+      expect(message).not.toContain(SECRET);
     }
   });
 });

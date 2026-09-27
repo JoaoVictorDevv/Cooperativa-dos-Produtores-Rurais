@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import type { WeekStatus } from "@prisma/client";
+import { verifySession } from "@/lib/dal";
 
 function fmt(date: Date) {
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
@@ -9,6 +10,8 @@ function fmt(date: Date) {
 // CA-HIST-01/02/09: lista semanas fechadas (e a aberta), filtro por
 // status sem alterar nenhum dado — so leitura.
 export default async function HistoricoPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const { status } = await searchParams;
   const filterStatus = status === "ABERTA" || status === "FECHADA" ? (status as WeekStatus) : undefined;
 

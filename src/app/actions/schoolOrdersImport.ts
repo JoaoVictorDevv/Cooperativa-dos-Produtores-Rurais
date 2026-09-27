@@ -12,6 +12,7 @@ import { readPdf } from "@/lib/import/pdf";
 import { parseSheet } from "@/lib/import/parseSheet";
 import { buildImportPlan, lineKey, planSignature, type ImportDecisions, type PlanContext } from "@/lib/import/plan";
 import type { ParsedWorkbook, RawWorkbook } from "@/lib/import/types";
+import { publicErrorMessage } from "@/lib/publicError";
 
 // Mesmo valor de experimental.serverActions.bodySizeLimit (next.config.ts),
 // com folga para o envelope multipart.
@@ -98,7 +99,7 @@ export async function previewSchoolOrdersImport(formData: FormData): Promise<Pre
       week: { id: week.id, number: week.number, startDate: week.startDate.toISOString(), endDate: week.endDate.toISOString() },
     };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro ao ler o arquivo." };
+    return { ok: false, error: publicErrorMessage(err, "Erro ao ler o arquivo.") };
   }
 }
 
@@ -217,6 +218,6 @@ export async function confirmSchoolOrdersImport(formData: FormData): Promise<Con
     revalidatePath(`/semanas/${week.id}`);
     return { ok: true, written };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro ao gravar a importação." };
+    return { ok: false, error: publicErrorMessage(err, "Erro ao gravar a importação.") };
   }
 }

@@ -7,6 +7,7 @@ import { requireOperator } from "@/lib/dal";
 import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable } from "@/lib/week";
 import type { SaveResult } from "./schoolOrders";
+import { publicErrorMessage } from "@/lib/publicError";
 
 const WeekdaySchema = z.enum(["SEGUNDA", "TERCA", "EXCEPCIONAL"]);
 
@@ -57,6 +58,6 @@ export async function saveSchoolDelivery(
     revalidatePath("/escolas");
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+    return { ok: false, error: publicErrorMessage(err, "Erro desconhecido") };
   }
 }
