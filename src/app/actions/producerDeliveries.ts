@@ -8,6 +8,7 @@ import { assertWeekEditable, getCurrentPrice, getSettings } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
 import type { SaveResult } from "./schoolOrders";
 import { publicErrorMessage } from "@/lib/publicError";
+import { lockLine } from "@/lib/locks";
 
 // CA-ENT-PROD-01..07, regra absoluta #2 e #4: entrega real (normalmente
 // domingo) — e esta tabela, nunca o pedido, que alimenta o pagamento.
@@ -43,11 +44,10 @@ export async function saveProducerDelivery(
     ]);
 
     await prisma.$transaction(async (tx) => {
-      // Checagem contra devolucao dentro da MESMA transacao que a
-      // gravacao, pra reduzir a janela de corrida entre ler e escrever
-      // (duas edicoes simultaneas ainda podem colidir sob READ COMMITTED —
-      // uma protecao a prova de concorrencia de verdade precisaria de uma
-      // constraint no banco, documentado como pendencia pro olucasgon).
+      // Trava da linha (produtor × produto × semana), a mesma usada pela
+      // devolução: a checagem abaixo e a gravação não podem ser furadas por
+      // uma devolução simultânea (antes: corrida sob READ COMMITTED).
+      await lockLine(tx, "galpao", weekId, producerId, productId);
       const existingReturn = await tx.producerReturn.findUnique({
         where: { weekId_producerId_productId: { weekId, producerId, productId } },
       });

@@ -479,6 +479,45 @@ Varredura de 205 testes (sem `expect`, retorno antecipado, `expect` dentro de
   `GZ_XLSX_PATH`; volume de PDFs com `PDF_VOLUME=1`); o único mock é o de
   `console.error` no teste do `publicError`.
 
+### 11.6 Carga leve e condições de corrida
+
+Teste novo `src/lib/concurrency.integration.test.ts`: roda as **ações de
+servidor reais** (transação, validação, auditoria) em paralelo no banco
+descartável; só a sessão é trocada por um usuário de teste. (Para isso foi
+criado `vitest.config.ts`, que só acrescenta o atalho `@/` do tsconfig.)
+
+- **Corrigido — devolução podia ficar maior que o pedido ou a entrega.**
+  Reproduzido **40 em 40** rodadas: uma pessoa reduz o pedido (20 → 5)
+  enquanto outra lança devolução de 10; as duas passavam (a devolução lia o
+  pedido **fora** da transação e o pedido lia a devolução em outra). O mesmo no
+  galpão (entrega × devolução ao produtor). O código já tinha um comentário
+  reconhecendo a janela. Corrigido sem schema: trava de transação do Postgres
+  (`pg_advisory_xact_lock`) por ciclo × escola/produtor × produto, usada pelas
+  duas ações do par; a leitura do pedido/entrega passou para dentro da
+  transação, depois da trava (`src/lib/locks.ts`). Depois: **0 em 40**, em 3
+  execuções seguidas.
+- **Corrigido — importação da prefeitura** também podia reduzir um pedido
+  enquanto alguém lançava devolução; agora trava (em ordem fixa, sem impasse)
+  só as linhas em que o pedido diminui, antes de ler as devoluções.
+- **Documentado para o Lucas:** a regra "devolução ≤ pedido/entrega" continua
+  só no app (agora sem corrida). Uma checagem no próprio banco protegeria
+  também gravações feitas por fora do app — e **a API Java precisa da mesma
+  trava** (ou da checagem no banco), senão a corrida volta por ela.
+- **Documentado — armadilha de código:** `saveProducerAllocation(semana,
+  produto, produtor, qtd)` recebe produto antes do produtor, ao contrário das
+  outras ações de produtor; como os dois são texto, o compilador não acusa a
+  troca. A tela chama na ordem certa (conferido). Não alterado para não mexer
+  nas chamadas existentes; sugestão: passar um objeto com nomes.
+- Conferido sem achado (e agora coberto por teste):
+  - 1.910 pedidos (191 escolas × 10 produtos) gravados em paralelo, de 25 em 25: nenhuma linha perdida ou duplicada, auditoria de cada um, total certo;
+  - a mesma escola/produto gravada 10 vezes ao mesmo tempo: uma linha, valor final de uma das gravações, auditoria só das que deram certo, erro sem detalhe interno;
+  - fechar a semana no meio de 100 gravações: cada linha fica com o valor de quem conseguiu gravar, nada é gravado nem auditado depois do fechamento;
+  - três pessoas criando semana ao mesmo tempo: uma única semana aberta;
+  - duas confirmações simultâneas da divisão → pedido: nenhum pedido duplicado, auditoria única.
+- Repetição: suíte unitária 3× (197 passando, 2 opcionais), integração 3×
+  (21 passando), volume de PDFs 1× (191 escolas: 69 + 211 + 57 páginas em
+  cerca de 17 s). Nenhuma instabilidade.
+
 ---
 
 ## Para o Lucas — resumo
@@ -504,4 +543,6 @@ Varredura de 205 testes (sem `expect`, retorno antecipado, `expect` dentro de
    `scripts/validate-closed-cycle.ts` — ver `docs/validacao-ciclo-fechado.md`.
 8. **Revisão de segurança (§11):** limite de tentativas de login e revogação
    de sessão (precisam de armazenamento); exigir `ADMIN_PASSWORD` sempre no
-   seed; decidir a migração para o Prisma 7 (alerta alto em `deepmerge-ts`).
+   seed; decidir a migração para o Prisma 7 (alerta alto em `deepmerge-ts`);
+   na API Java, a mesma trava (ou checagem no banco) para devolução ≤
+   pedido/entrega (§11.6).

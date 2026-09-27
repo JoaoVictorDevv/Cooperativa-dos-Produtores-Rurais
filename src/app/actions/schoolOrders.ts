@@ -9,6 +9,7 @@ import { qtySchema } from "@/lib/validation";
 import { isOfferedForNewEntries } from "@/lib/productPolicy";
 import { publicErrorMessage } from "@/lib/publicError";
 import { assertSchoolAcceptsNewEntries } from "@/lib/entityPolicy";
+import { lockLine } from "@/lib/locks";
 
 export interface SaveResult {
   ok: boolean;
@@ -34,6 +35,7 @@ export async function saveSchoolOrder(
     const price = await getCurrentPrice(productId, week.referenceDate);
 
     await prisma.$transaction(async (tx) => {
+      await lockLine(tx, "escola", weekId, schoolId, productId);
       // Checagem contra devolucao dentro da mesma transacao que a
       // gravacao (ver mesmo comentario em producerDeliveries.ts).
       const existingReturn = await tx.schoolReturn.findUnique({

@@ -8,6 +8,7 @@ import { assertWeekEditable } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
 import type { SaveResult } from "./schoolOrders";
 import { publicErrorMessage } from "@/lib/publicError";
+import { lockLine } from "@/lib/locks";
 
 // CA-DEV-01/03/04/05/06/07/08: devolucao da escola, vinculada a
 // semana+produto, com motivo obrigatorio. Regra operacional definida
@@ -59,21 +60,20 @@ export async function saveSchoolReturn(
       return { ok: false, error: "Selecione o motivo da devolucao." };
     }
 
-    const order = await prisma.schoolOrder.findUnique({
-      where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
-    });
-    const orderedQty = order ? Number(order.orderedQty) : 0;
-    if (returnedQty > orderedQty) {
-      return {
-        ok: false,
-        error: `Devolucao (${returnedQty}) nao pode ser maior que o pedido (${orderedQty}).`,
-      };
-    }
-
     const reason = await prisma.returnReason.findFirst({ where: { id: returnReasonId, active: true } });
     if (!reason) return { ok: false, error: "Selecione um motivo de devolucao ativo." };
 
     await prisma.$transaction(async (tx) => {
+      // Mesma trava do pedido: a checagem devolução ≤ pedido é feita dentro da
+      // transação, depois da trava (antes era lida fora e podia ser furada).
+      await lockLine(tx, "escola", weekId, schoolId, productId);
+      const order = await tx.schoolOrder.findUnique({
+        where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
+      });
+      const orderedQty = order ? Number(order.orderedQty) : 0;
+      if (returnedQty > orderedQty) {
+        throw new Error(`Devolucao (${returnedQty}) nao pode ser maior que o pedido (${orderedQty}).`);
+      }
       const existing = await tx.schoolReturn.findUnique({
         where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
       });

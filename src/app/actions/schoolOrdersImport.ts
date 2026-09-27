@@ -13,6 +13,7 @@ import { parseSheet } from "@/lib/import/parseSheet";
 import { buildImportPlan, lineKey, planSignature, type ImportDecisions, type PlanContext } from "@/lib/import/plan";
 import type { ParsedWorkbook, RawWorkbook } from "@/lib/import/types";
 import { publicErrorMessage } from "@/lib/publicError";
+import { lockLine } from "@/lib/locks";
 
 // Mesmo valor de experimental.serverActions.bodySizeLimit (next.config.ts),
 // com folga para o envelope multipart.
@@ -161,6 +162,13 @@ export async function confirmSchoolOrdersImport(formData: FormData): Promise<Con
       async (tx) => {
         const current = await tx.week.findUniqueOrThrow({ where: { id: week.id } });
         assertWeekEditable(current);
+        // Linhas em que o pedido diminui: travadas (mesma trava da devolução)
+        // antes de ler as devoluções, em ordem fixa para não haver impasse
+        // entre duas importações simultâneas.
+        const reduced = toWrite
+          .filter((l) => l.currentQty !== null && l.newQty < l.currentQty)
+          .sort((a, b) => lineKey(a.schoolId, a.productId).localeCompare(lineKey(b.schoolId, b.productId)));
+        for (const l of reduced) await lockLine(tx, "escola", week.id, l.schoolId, l.productId);
         const returns = await tx.schoolReturn.findMany({
           where: { weekId: week.id, schoolId: { in: [...new Set(toWrite.map((l) => l.schoolId))] } },
           select: { schoolId: true, productId: true, returnedQty: true },
