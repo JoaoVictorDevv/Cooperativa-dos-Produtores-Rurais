@@ -17,7 +17,7 @@ O projeto está em preparação para o primeiro piloto. Ainda não deve ser publ
 - aplicar as migrações em um PostgreSQL de homologação;
 - executar os testes de integração nesse banco isolado;
 - validar um ciclo semanal completo em paralelo com a planilha;
-- confirmar backup, responsáveis e credenciais de produção.
+- confirmar backup, responsáveis e credenciais de produção (roteiro e verificação: [`docs/backup-e-restauracao.md`](./docs/backup-e-restauracao.md)).
 
 As decisões e os critérios de aceite ficam em [`specs/`](./specs/README.md). A especificação ativa é [`SPEC-001 — Integridade operacional`](./specs/001-integridade-operacional/spec.md).
 

@@ -96,7 +96,16 @@ nas escolas e complementos (quando existirem), decisões de falta, preços e
 descontos históricos (`price_id`, snapshot de logística), custos, reaberturas e
 auditoria. PDFs não substituem backup.
 
-**Infraestrutura, retenção e ensaio real de restauração: Lucas.**
+**Feito (etapa 6, 27/09/2026):** roteiro em
+[`docs/backup-e-restauracao.md`](./backup-e-restauracao.md); verificação só
+leitura `scripts/backup-verify.ts` (impressão digital por tabela com hash do
+conteúdo, integridade e totais por ciclo; `--salvar` na origem, `--comparar`
+na cópia); ensaio automatizado dump → banco novo → restauração → comparação em
+bancos descartáveis (cópia idêntica; adulteração detectada; proteção de ciclo
+fechado preservada na cópia).
+
+**Infraestrutura, agendamento, retenção, criptografia e ensaio real de
+restauração: Lucas** (sugestões no roteiro).
 
 ## 6. Divisão → pedido aos produtores sem redigitar
 
@@ -341,6 +350,15 @@ conteúdo no novo modelo:
   pendente era somada como falta). Vale para o núcleo (`cycle.ts`), telas e
   PDFs.
 
+### Validação contra ciclo fechado (27/09/2026)
+
+Galpão (recebimento, rejeição, a pagar), custos e diferença: a lógica corrigida
+bate com o modelo atual num ciclo fechado fictício, linha a linha; script só
+leitura pronto para rodar num ciclo real por quem tem acesso
+(`docs/validacao-ciclo-fechado.md`). **Ciclo real: não executado** (sem acesso
+nesta sessão). **Cobrança escolar: não validável em nenhum ciclo** — não
+existe entrega por escola/produto registrada (bloqueio de persistência, Lucas).
+
 ### O que falta para ligar nas semanas reais (Lucas + integração)
 
 1. Tudo do §9 (eventos de entrega por escola/produto, decisões de falta,
@@ -376,7 +394,10 @@ conteúdo no novo modelo:
 3. **Combinar o contrato de integração** (item 7) antes de qualquer tela
    passar a consumir a API.
 4. **Desativar Ovos** no banco real (item 4).
-5. **Backup:** infraestrutura e ensaio de restauração com verificação só de
-   leitura — nunca com a suíte que apaga dados (item 5).
+5. **Backup:** infraestrutura, agendamento, retenção e ensaio real de
+   restauração (item 5). Ferramenta de verificação só leitura e roteiro
+   prontos: `docs/backup-e-restauracao.md`.
 6. Avaliar a atualização do Prisma (alerta alto) (item 8). O menu lateral no
    celular já foi corrigido.
+7. **Rodar a validação de um ciclo real fechado** (só leitura):
+   `scripts/validate-closed-cycle.ts` — ver `docs/validacao-ciclo-fechado.md`.

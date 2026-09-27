@@ -101,4 +101,6 @@ Esses itens exigem especificações próprias e validação com os responsáveis
   código; servidor não local é recusado (salvo `COLHEITA_TEST_ALLOW_REMOTE=1`)
   e nenhuma mensagem imprime a URL.
 - **Backup**: a suíte de integração chama `resetDb()` e **apaga** os dados;
-  nunca usá-la para verificar uma restauração. Ver `docs/propostas-pendentes.md` §5.
+  nunca usá-la para verificar uma restauração. Verificação só leitura e roteiro
+  em `docs/backup-e-restauracao.md` (`scripts/backup-verify.ts`; ensaio em
+  `src/lib/backup/backupDrill.integration.test.ts`).

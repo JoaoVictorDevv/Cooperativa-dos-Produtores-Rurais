@@ -111,6 +111,19 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
   ponto de troca por metodologia prontos e testados; usados só na
   demonstração. Semanas reais continuam no modelo atual até a persistência e
   a metodologia por ciclo ([B] Lucas, `docs/propostas-pendentes.md` §10).
+- [~] **R2-13 Validação contra ciclo fechado** — galpão (recebimento,
+  rejeição, a pagar), custos e diferença conferem entre modelo atual e lógica
+  corrigida num ciclo fechado fictício; script só leitura pronto
+  (`docs/validacao-ciclo-fechado.md`). Ciclo **real**: não executado (sem
+  acesso nesta sessão). Cobrança escolar: **não validável** em nenhum ciclo —
+  [B] Lucas (não existe entrega por escola/produto). Troca de fonte das
+  semanas reais continua desligada.
+- [x] **R2-14 Backup recuperável e validação completa** (etapa 6) —
+  verificação só leitura (`scripts/backup-verify.ts`), roteiro
+  (`docs/backup-e-restauracao.md`), ensaio dump → banco novo → restauração →
+  comparação em bancos descartáveis; validação completa (tipos, lint,
+  unitários, integração, build, 13 telas × 2 larguras, 7 PDFs + ZIP).
+  Infraestrutura e ensaio real em produção: [B] Lucas.
 - [B] **R2-9 Mapa de Montagem** (Etapa 7 do prompt) — só depois do núcleo
   validado com persistência real. Não iniciar nesta rodada enquanto R2-2
   estiver bloqueado.

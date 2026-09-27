@@ -89,10 +89,39 @@ identificada como "metodologia atual" nas telas e no PDF). Pagamento ao
 produtor continua `(entrega − devolução) × (preço − desconto)`, congelados no
 lançamento. Semanas antigas não foram recalculadas.
 
+### Validação contra ciclo fechado e backup (27/09/2026)
+- **Galpão (recebimento, rejeição, a pagar), custos e diferença:** lógica
+  corrigida = modelo atual, linha a linha, num ciclo **fechado fictício** em
+  banco descartável (a pagar 2.451,39 nos dois lados). Script só leitura para
+  rodar num **ciclo real** por quem tem acesso:
+  `scripts/validate-closed-cycle.ts` (`docs/validacao-ciclo-fechado.md`).
+  **Ciclo real não validado nesta sessão**: a leitura do banco configurado no
+  ambiente foi bloqueada pela política de permissões e as planilhas de
+  referência são modelos vazios.
+- **Limitação — cobrança escolar:** a cobrança pelo aceito na escola (e falta,
+  excedente, rejeição por escola, complementos) **não é validável em nenhum
+  ciclo real**, porque não existe entrega por escola/produto registrada. É
+  bloqueio de persistência do **Lucas**, não pendência do app. Os ciclos
+  existentes continuam com o valor oficial do modelo atual, sem recálculo; a
+  troca de fonte das semanas reais segue **desligada**.
+- **Backup (etapa 6):** `scripts/backup-verify.ts` (só leitura; `--salvar` na
+  origem, `--comparar` na cópia), roteiro em `docs/backup-e-restauracao.md`,
+  ensaio automatizado dump → banco novo → restauração → comparação
+  (idêntica; adulteração detectada; proteção de ciclo fechado preservada na
+  cópia). Infraestrutura, agendamento e ensaio real em produção: **Lucas**.
+
 ### Testes e ambiente
 - `npx tsc --noEmit`, `npx eslint`, `npm run build`: limpos.
-- `npx vitest run --exclude "**/*.integration.test.ts"`: 184 passando,
+- `npx vitest run --exclude "**/*.integration.test.ts"`: 187 passando,
   2 pulados (opcionais: GZ real com `GZ_XLSX_PATH=<anexo>`; volume de PDFs com `PDF_VOLUME=1`).
+- `npm run test:integration` (27/09/2026): 14 passando em 3 arquivos, um por
+  vez, no banco descartável da execução (ciclo/histórico/preço, validação de
+  ciclo fechado com o script só leitura, ensaio de backup com segundo banco
+  descartável). Todos os bancos descartáveis apagados.
+- Varredura de interface (27/09/2026, build de produção, banco descartável
+  apagado depois): 13 telas × 1400 e 390 px sem erro, sem rolagem lateral e
+  sem menu lateral no celular; os 7 PDFs e o ZIP da semana; ZIP da
+  demonstração.
 - Interface e documentos (Playwright + build de produção) contra um banco
   **criado para o teste e descartável** (`colheita_r2_descartavel_202609261644`,
   seed fictício, Postgres local do container). Nenhum banco real consultado.
@@ -122,6 +151,8 @@ para banco com dados de operação.
    com a prévia (demanda × divisão × pedidos) e ajustar textos se preciso.
 3. Validar a importação assim que houver um pedido oficial da prefeitura
    (Excel e/ou PDF).
+3b. Rodar `scripts/validate-closed-cycle.ts` num ciclo real fechado (quem tem
+   acesso; só leitura) e anexar o relatório em `docs/validacao-ciclo-fechado.md`.
 4. Mostrar a demonstração `/complementos-faltas` ao Seu Paulo e confirmar as
    hipóteses de `docs/propostas-pendentes.md` §9 (quem encerra falta; origem
    "saldo do galpão"; motivo obrigatório).
@@ -141,7 +172,8 @@ para banco com dados de operação.
 `src/lib/domain/cycleLedger.ts`, `src/lib/cycleCore/*`, `src/components/cycle-core/*`,
 `src/app/(app)/complementos-faltas/*`, `src/lib/cycleCore/documents.ts`,
 `src/lib/pdf/{cycleCoreReports,EventRomaneiosDocument,AcceptedBalanceDocument}.tsx`,
-`src/app/api/demonstracao/documentos/*`,
+`src/app/api/demonstracao/documentos/*`, `src/lib/cycleCore/{currentTables,galpaoParity}.ts`,
+`src/lib/backup/fingerprint.ts`, `scripts/{validate-closed-cycle,backup-verify}.ts`,
 `src/app/(app)/escolas/{ImportSchoolOrders,SchoolOrderCell,EscolasTable}.tsx`,
 `src/app/api/semanas/[weekId]/pdf/*`, `next.config.ts`, `specs/004|008|009|010`,
 `docs/propostas-pendentes.md`.
@@ -162,7 +194,8 @@ para banco com dados de operação.
   núcleo (`855d33a`), arredondamento por linha (`5e02600`), divisão → pedido
   (spec 010, `e44895f`), complementos/faltas em demonstração (etapa 4,
   `166dec2`), menu lateral no celular (`75bd811`) e telas/PDFs pela lógica
-  corrigida (etapa 5, commit seguinte a este registro). Conferir com
+  corrigida (etapa 5, `028193a`) e validação de ciclo fechado + backup
+  (etapa 6, commit seguinte a este registro). Conferir com
   `git log --oneline origin/develop -5`.
 
 ---
@@ -423,7 +456,8 @@ individuais, aqui só os pontos de entrada):
 `src/lib/domain/cycleLedger.ts`, `src/lib/cycleCore/*`, `src/components/cycle-core/*`,
 `src/app/(app)/complementos-faltas/*`, `src/lib/cycleCore/documents.ts`,
 `src/lib/pdf/{cycleCoreReports,EventRomaneiosDocument,AcceptedBalanceDocument}.tsx`,
-`src/app/api/demonstracao/documentos/*`, `src/app/(app)/escolas/ImportSchoolOrders.tsx` — importação de Excel (Etapa 5).
+`src/app/api/demonstracao/documentos/*`, `src/lib/cycleCore/{currentTables,galpaoParity}.ts`,
+`src/lib/backup/fingerprint.ts`, `scripts/{validate-closed-cycle,backup-verify}.ts`, `src/app/(app)/escolas/ImportSchoolOrders.tsx` — importação de Excel (Etapa 5).
 - `docs/plano-de-implementacao.md`, `docs/propostas-pendentes.md`, `docs/relatorio-sessao.md`, `memory.md` — planejamento e documentação.
 
 **Dependências novas** (`package.json`): `@react-pdf/renderer`, `jszip`,

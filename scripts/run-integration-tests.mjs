@@ -59,7 +59,8 @@ try {
   const migrate = spawnSync(npx, ["prisma", "migrate", "deploy"], { env: childEnv, stdio: "inherit", shell: process.platform === "win32" });
   if (migrate.status !== 0) throw new Error("Falha ao aplicar as migrações no banco descartável.");
 
-  const tests = spawnSync(npx, ["vitest", "run", "src/lib/pnae.integration.test.ts"], { env: childEnv, stdio: "inherit", shell: process.platform === "win32" });
+  // Todos os *.integration.test.ts, um arquivo por vez (compartilham o mesmo banco descartável).
+  const tests = spawnSync(npx, ["vitest", "run", "--no-file-parallelism", ".integration.test.ts"], { env: childEnv, stdio: "inherit", shell: process.platform === "win32" });
   status = tests.status ?? 1;
 } catch (err) {
   console.error(err instanceof Error ? err.message : "Erro no executor de testes de integração.");
