@@ -6,6 +6,38 @@
 > `docs/prompts/2026-09-24-prompt-v2-operacao-specs-develop.md`. Confira o Git
 > antes de agir (os hashes abaixo são uma fotografia).
 
+## PONTO DE RETOMADA (27/09/2026) — ler primeiro
+
+**Situação:** tudo o que dava para fazer sem depender de ninguém foi feito,
+testado e integrado na `develop`. O trabalho **parou de propósito**: o que
+falta depende do Lucas, de um pedido oficial da prefeitura ou de um ciclo real.
+
+**Git:** trabalho na branch `feat/relatorios-diferencas-importacao`,
+integrado por fast-forward na `develop` (as duas no mesmo commit — conferir
+com `git log --oneline origin/develop -3`). `main`/`staging` em `fcfc7f5`,
+nunca tocadas. Nenhum banco real consultado ou alterado.
+
+**Decisões confirmadas pelo usuário (27/09/2026):** ADMIN e OPERADOR
+encerram falta (RN-19); complemento com produto já no galpão é aceito (RN-20);
+motivo obrigatório com "Motivo não identificado" (RN-21); recebimento no
+galpão continua aceitando produtor inativo (entrega física não é impedida).
+
+**Retomar quando chegar cada coisa:**
+
+| Quando chegar | Fazer | Onde |
+|---|---|---|
+| **Lucas**: persistência de entrega por escola/produto, complementos e decisões de falta + metodologia por ciclo + contrato da API | Adaptador da porta `CycleCoreRepository` para a API (as telas de `src/components/cycle-core/` não mudam); ligar `/complementos-faltas` ao banco; trocar a fonte das rotas de PDF e das telas Resumo/Balanço/Diferença para ciclos `ACEITE_ESCOLAR` (`DOCUMENT_SOURCES`, `methodologyOfRealCycle()`); fechamento pelos estados da spec 008. A API precisa passar antes em `docs/aceitacao/`. | `docs/propostas-pendentes.md` §9, §10, §11.6, §11.7 |
+| **Pedido oficial da prefeitura** (Excel e/ou PDF) | Importar em banco descartável, conferir reconhecimento, pendências e totais; ajustar o que o layout oficial exigir | spec 009, `src/lib/import/*` |
+| **Ciclo real fechado** | ADMIN abre "Validar este ciclo fechado" na página da semana (ou `scripts/validate-closed-cycle.ts`); anexar o resultado | `docs/validacao-ciclo-fechado.md` |
+| **Lucas**: decisões de segurança/infra | Limite de tentativas de login, revogação de sessão, `ADMIN_PASSWORD` obrigatória no seed, migração para Prisma 7, backup em produção | `docs/propostas-pendentes.md` §5, §11 |
+| Núcleo persistido e validado | Só então a Etapa 7 (Mapa de Montagem) | prompt v2 §17.1 |
+
+**Antes de mexer:** `service postgresql start` (o Postgres do container cai
+quando ele reinicia); depois rodar `npx tsc --noEmit && npx eslint && npx vitest
+run --exclude "**/*.integration.test.ts" && npm run test:integration && npm run
+build`. Estado validado em 27/09/2026: 220 testes unitários (+2 opcionais),
+21 de integração, build limpo.
+
 ## Rodada 2 (24–26/09/2026) — situação atual
 
 ### Em uma frase
@@ -168,24 +200,9 @@ prisma migrate deploy`, `npm run db:seed`) e apagá-lo depois. Nunca apontar
 para banco com dados de operação.
 
 ### Próximo passo exato
-1. Levar ao Lucas o resumo de `docs/propostas-pendentes.md` ("Para o Lucas") e
-   fechar o contrato de integração (§7).
-2. ~~Gerar pedidos aos produtores a partir da divisão~~ — feito (spec 010).
-   Próximo independente do Lucas: revisar com a operação a tela de Produtores
-   com a prévia (demanda × divisão × pedidos) e ajustar textos se preciso.
-3. Validar a importação assim que houver um pedido oficial da prefeitura
-   (Excel e/ou PDF).
-3b. Rodar `scripts/validate-closed-cycle.ts` num ciclo real fechado (quem tem
-   acesso; só leitura) e anexar o relatório em `docs/validacao-ciclo-fechado.md`.
-4. Mostrar a demonstração `/complementos-faltas` ao Seu Paulo e confirmar as
-   hipóteses de `docs/propostas-pendentes.md` §9 (quem encerra falta; origem
-   "saldo do galpão"; motivo obrigatório).
-5. Depois da persistência do Lucas (incluindo a metodologia por ciclo): escrever
-   o adaptador da porta `CycleCoreRepository` para a API (a tela não muda),
-   ligar a conferência na escola/galpão, fechamento e cobrança (T05–T11 da
-   spec 008) e trocar a fonte dos documentos e das telas Resumo/Balanço/
-   Diferença nos ciclos `ACEITE_ESCOLAR` (`docs/propostas-pendentes.md` §10);
-   só então a Etapa 7 (Mapa de Montagem).
+Ver **PONTO DE RETOMADA** no topo deste arquivo (substitui a lista antiga:
+divisão → pedido feita; demonstração mostrada e decisões confirmadas em
+27/09/2026; o resto depende do Lucas, do pedido oficial ou de um ciclo real).
 
 ### Arquivos principais desta rodada
 `src/lib/import/*`, `src/lib/domain/cycle.ts`, `src/lib/productPolicy.ts`,

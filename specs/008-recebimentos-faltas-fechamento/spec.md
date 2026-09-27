@@ -112,9 +112,17 @@ pertencem ao **mesmo ciclo**, mesmo atravessando a semana do calendário.
   duplo clique com a mesma chave não cria outro evento. Correção usa a versão
   aberta na tela; se outra pessoa corrigiu antes, a correção é recusada.
 - **RN-19 Quem decide a falta**: perfis que operam o ciclo (ADMIN e OPERADOR —
-  os mesmos que fecham a semana hoje); CONSULTA só vê. *(Hipótese adotada;
-  confirmar.)* A decisão guarda motivo, responsável, data e a falta no momento
-  da decisão.
+  os mesmos que fecham a semana hoje); CONSULTA só vê. **Confirmado em
+  27/09/2026.** A decisão guarda motivo, responsável, data e a falta no
+  momento da decisão.
+- **RN-20 Complemento com produto já no galpão**: aceito, com origem "saldo do
+  galpão" (produto já recebido e pago a quem entregou). **Confirmado em
+  27/09/2026.** Sobra vinda de outro ciclo não é modelada; por isso escolas
+  com mais do que o galpão aceitou num produto geram só aviso de saldo a
+  conferir.
+- **RN-21 Motivo obrigatório**: rejeição e perda antes da escola exigem motivo,
+  com a opção "Motivo não identificado" (sem inventar culpados). **Confirmado
+  em 27/09/2026.**
 
 ## Exemplo obrigatório (testado)
 

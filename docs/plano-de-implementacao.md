@@ -124,6 +124,10 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
   comparação em bancos descartáveis; validação completa (tipos, lint,
   unitários, integração, build, 13 telas × 2 larguras, 7 PDFs + ZIP).
   Infraestrutura e ensaio real em produção: [B] Lucas.
+- [x] **R2-15 Revisão noturna** (27/09/2026) — segurança, testes-fantasma,
+  corrida devolução × pedido/entrega corrigida, carga leve, tela de validação
+  do ciclo fechado, pacote de aceitação (`docs/propostas-pendentes.md` §11).
+  Decisões da etapa 4 confirmadas como definitivas (spec 008 RN-19 a RN-21).
 - [B] **R2-9 Mapa de Montagem** (Etapa 7 do prompt) — só depois do núcleo
   validado com persistência real. Não iniciar nesta rodada enquanto R2-2
   estiver bloqueado.

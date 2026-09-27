@@ -289,23 +289,24 @@ não muda.
   conferido desse produtor no galpão (ele não seria pago). Escolas com mais do
   que o galpão aceitou num produto é só **aviso** ("saldo a conferir").
 
-### Decisões que podem precisar de confirmação (hipóteses adotadas)
+### Decisões confirmadas (27/09/2026 — antes eram hipóteses)
 
-- **Quem decide a falta:** ADMIN e OPERADOR (os mesmos que podem fechar a
-  semana hoje). Se só o ADMIN puder encerrar, é uma troca de uma linha.
-- **Origem "saldo do galpão":** aceita para complemento feito com produto já
-  recebido e pago a quem entregou. Sobra vinda de outro ciclo não é modelada;
-  por isso o excesso das escolas sobre o galpão é aviso, não bloqueio.
-- **Motivo obrigatório** em rejeição e perda (com a opção "Motivo não
-  identificado", sem inventar culpados).
-- **Segundo recebimento do mesmo produtor no mesmo ciclo** (ex.: volta à
-  tarde) continua sem suporte no galpão (1 linha por produtor/produto).
+- **Quem decide a falta:** ADMIN e OPERADOR (os mesmos que fecham a semana).
+  Definitivo (spec 008 RN-19).
+- **Origem "saldo do galpão":** aceita para complemento com produto já
+  recebido e pago a quem entregou. Definitivo (RN-20). Sobra de outro ciclo não
+  é modelada; excesso das escolas sobre o galpão é aviso, não bloqueio.
+- **Motivo obrigatório** em rejeição e perda, com a opção "Motivo não
+  identificado". Definitivo (RN-21).
+
+Continua em aberto (depende do Lucas): **segundo recebimento do mesmo
+produtor no mesmo ciclo** (ex.: volta à tarde) — hoje 1 linha por
+produtor/produto no galpão.
 
 ### Aceite
 
-Os mesmos números de `src/lib/domain/cycleLedger.test.ts` e
-`src/lib/cycleCore/repository.test.ts` devem sair da API antes de a tela
-passar a usá-la.
+Os casos de `docs/aceitacao/` (§11.7) — que cobrem `cycleLedger.test.ts` —
+devem passar na API antes de a tela usá-la.
 
 ## 10. Telas e documentos pela lógica corrigida — o que falta de persistência (etapa 5)
 
@@ -453,8 +454,8 @@ testado nesta revisão; **Documentado** = precisa de decisão ou da área do Luc
   aceitava pedido, divisão ou pedido ao produtor novo enviado direto. Agora
   recusa lançamento **novo** (corrigir o que já existe continua permitido). Não
   aplicado ao **recebimento no galpão** de propósito: entrega física de
-  produtor desativado no meio do ciclo não deve ser impedida — **decisão sua**
-  se quiser bloquear também.
+  produtor desativado no meio do ciclo não deve ser impedida. **Confirmado em
+  27/09/2026: mantém como está.**
 - **Corrigido — observações da semana e motivo de reabertura sem limite de
   tamanho**; agora até 2.000 caracteres.
 - Conferido sem achado: quantidades nunca negativas no servidor; devolução ≤
