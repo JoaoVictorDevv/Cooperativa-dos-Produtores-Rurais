@@ -358,6 +358,9 @@ leitura pronto para rodar num ciclo real por quem tem acesso
 (`docs/validacao-ciclo-fechado.md`). **Ciclo real: não executado** (sem acesso
 nesta sessão). **Cobrança escolar: não validável em nenhum ciclo** — não
 existe entrega por escola/produto registrada (bloqueio de persistência, Lucas).
+**Tela no app (27/09/2026):** `/semanas/<id>/validacao`, só leitura e só
+ADMIN, com link na página de cada semana fechada — em produção, um ADMIN valida
+um ciclo real sem acesso ao banco e sem rodar script.
 
 ### O que falta para ligar nas semanas reais (Lucas + integração)
 
@@ -539,7 +542,8 @@ criado `vitest.config.ts`, que só acrescenta o atalho `@/` do tsconfig.)
    prontos: `docs/backup-e-restauracao.md`.
 6. Avaliar a atualização do Prisma (alerta alto) (item 8). O menu lateral no
    celular já foi corrigido.
-7. **Rodar a validação de um ciclo real fechado** (só leitura):
+7. **Validar um ciclo real fechado** (só leitura): um ADMIN abre "Validar
+   este ciclo fechado" na página da semana, ou alguém com acesso roda
    `scripts/validate-closed-cycle.ts` — ver `docs/validacao-ciclo-fechado.md`.
 8. **Revisão de segurança (§11):** limite de tentativas de login e revogação
    de sessão (precisam de armazenamento); exigir `ADMIN_PASSWORD` sempre no
