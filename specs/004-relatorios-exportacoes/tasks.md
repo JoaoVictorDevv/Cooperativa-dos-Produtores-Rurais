@@ -4,7 +4,7 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído · `[B]` bloqu
 
 - [x] T01 (Rodada 1) 7 documentos + ZIP por semana.
 - [x] T02 Identificação do ciclo e cabeçalho da tabela repetidos; "Página X de Y" (CA-004.2).
-- [x] T03 Romaneio pelo MODELO v20: conferência em branco, data/horário real, nome, assinatura, observações (CA-004.3).
+- [x] T03 Romaneio pelo MODELO v20 (fichas de escola sem mudança de conteúdo na v22, referência atual): conferência em branco, data/horário real, nome, assinatura, observações (CA-004.3).
 - [x] T04 Quatro vias como opção de impressão; romaneio individual por escola (CA-004.3).
 - [x] T05 Aviso de modelo antigo (Entregas às Escolas) e nota de metodologia + termos "A cobrar/A pagar/Resultado calculado" (Balanço) (CA-004.6).
 - [x] T06 Nomes de arquivo com ciclo e data; datas em UTC e emissão no fuso de Petrópolis.

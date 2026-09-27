@@ -63,7 +63,7 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
 `[B]` bloqueado (dependência externa) · `[P]` preparado sem integração.
 
 - [x] **R2-0 Diagnóstico e registro** (commit `78baa41`); proteção de testes destrutivos por banco descartável comprovado (spec 001, T10) concluída depois — Git, specs, API/DB do Lucas, arquivos
-  GZ e MODELO v20; prompt salvo; este plano; commit+push antes de
+  GZ e MODELO v20 (hoje substituída pela MODELO v22); prompt salvo; este plano; commit+push antes de
   implementar.
 - [x] **R2-1 Specs** (004, 008, 009 + adendo 001) — criar `specs/008-recebimentos-faltas-fechamento`,
   `specs/009-importacao-pedido-prefeitura`, promover `SPEC-004 Relatórios e
@@ -128,6 +128,12 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
   corrida devolução × pedido/entrega corrigida, carga leve, tela de validação
   do ciclo fechado, pacote de aceitação (`docs/propostas-pendentes.md` §11).
   Decisões da etapa 4 confirmadas como definitivas (spec 008 RN-19 a RN-21).
+- [x] **R2-16 Planilha MODELO v22** (27/09/2026) — nova referência
+  operacional versionada (vazia) em `docs/referencia-planilha/`; mudanças e
+  diferenças com o app documentadas, sem mudança de código
+  (`docs/referencia-planilha/atualizacao_v20_para_v22.md`,
+  `docs/propostas-pendentes.md` §12). Guia de entrada para o Lucas:
+  `docs/para-o-lucas.md`.
 - [B] **R2-9 Mapa de Montagem** (Etapa 7 do prompt) — só depois do núcleo
   validado com persistência real. Não iniciar nesta rodada enquanto R2-2
   estiver bloqueado.
@@ -143,8 +149,13 @@ correspondentes, vinculados aos critérios de aceite.
   sintética da estrutura dele (`src/lib/import/fixtures/`). Há um teste
   opcional que roda contra o arquivo real se a variável `GZ_XLSX_PATH`
   apontar para ele.
-- `controle_escolas_produtores_2026_MODELO_v20.xlsx` — referência atual de
-  campos, cálculos e romaneios (anexo do prompt v2). Não versionado.
+- `controle_escolas_produtores_2026_MODELO_v22.xlsx` — **referência atual**
+  de campos, cálculos e romaneios desde 27/09/2026. Versionada, vazia, em
+  `docs/referencia-planilha/`. O que mudou em relação à v20 e as diferenças
+  com o app estão em `docs/referencia-planilha/atualizacao_v20_para_v22.md`.
+  A lógica financeira não mudou.
+- `controle_escolas_produtores_2026_MODELO_v20.xlsx` — referência anterior
+  (anexo do prompt v2), substituída pela v22. Não versionada.
 - `TESTE_CICLO_FINANCEIRO_v3.xlsx` — citado no prompt, **não foi anexado**
   nesta sessão.
 

@@ -17,6 +17,16 @@ integrado por fast-forward na `develop` (as duas no mesmo commit — conferir
 com `git log --oneline origin/develop -3`). `main`/`staging` em `fcfc7f5`,
 nunca tocadas. Nenhum banco real consultado ou alterado.
 
+**Guia de entrada (o que foi feito, o que falta e de quem depende):**
+`docs/para-o-lucas.md`.
+
+**Planilha de referência (27/09/2026):** MODELO v22, vazia, em
+`docs/referencia-planilha/`. Substitui a v20 e não muda a lógica financeira.
+As diferenças com o app estão só documentadas, sem mudança de código:
+`docs/referencia-planilha/atualizacao_v20_para_v22.md` e
+`docs/propostas-pendentes.md` §12. Fica em aberto uma decisão da operação:
+complemento na mesma viagem vai em um romaneio ou em dois.
+
 **Decisões confirmadas pelo usuário (27/09/2026):** ADMIN e OPERADOR
 encerram falta (RN-19); complemento com produto já no galpão é aceito (RN-20);
 motivo obrigatório com "Motivo não identificado" (RN-21); recebimento no
@@ -31,6 +41,7 @@ galpão continua aceitando produtor inativo (entrega física não é impedida).
 | **Ciclo real fechado** | ADMIN abre "Validar este ciclo fechado" na página da semana (ou `scripts/validate-closed-cycle.ts`); anexar o resultado | `docs/validacao-ciclo-fechado.md` |
 | **Lucas**: decisões de segurança/infra | Limite de tentativas de login, revogação de sessão, `ADMIN_PASSWORD` obrigatória no seed, migração para Prisma 7, backup em produção | `docs/propostas-pendentes.md` §5, §11 |
 | Núcleo persistido e validado | Só então a Etapa 7 (Mapa de Montagem) | prompt v2 §17.1 |
+| Pedido para ajustar a ficha do produtor à v22 | Colunas Aceito e Preço líquido e campo Horário em `/produtores/[código]` (tela, sem banco) | `docs/propostas-pendentes.md` §12 |
 
 **Antes de mexer:** `service postgresql start` (o Postgres do container cai
 quando ele reinicia); depois rodar `npx tsc --noEmit && npx eslint && npx vitest

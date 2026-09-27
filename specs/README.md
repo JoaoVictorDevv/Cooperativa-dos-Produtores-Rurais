@@ -14,6 +14,10 @@ O código pode explicar **como** algo funciona. As especificações devem explic
 
 ## Incrementos
 
+> Visão geral em linguagem simples (o que está pronto, o que só existe em
+> demonstração, o que falta e de quem depende): [`docs/para-o-lucas.md`](../docs/para-o-lucas.md).
+> Referência da planilha: MODELO v22 em [`docs/referencia-planilha/`](../docs/referencia-planilha/atualizacao_v20_para_v22.md).
+
 - [`001-integridade-operacional`](./001-integridade-operacional/spec.md): endurecimento da fundação antes do primeiro piloto (ver adendo de 2026-09 sobre fechamento e testes seguros).
 - [`004-relatorios-exportacoes`](./004-relatorios-exportacoes/spec.md): documentos do ciclo em PDF/ZIP e romaneio escolar (data/horário real, 4 vias). Implementada no modelo atual; conteúdos de aceite real dependem da 008.
 - [`008-recebimentos-faltas-fechamento`](./008-recebimentos-faltas-fechamento/spec.md): dois recebimentos (galpão e escola), complementos, faltas e fechamento. Regras confirmadas e testadas em memória; persistência bloqueada (Lucas).

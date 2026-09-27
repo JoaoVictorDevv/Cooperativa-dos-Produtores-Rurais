@@ -19,6 +19,8 @@ O projeto está em preparação para o primeiro piloto. Ainda não deve ser publ
 - validar um ciclo semanal completo em paralelo com a planilha;
 - confirmar backup, responsáveis e credenciais de produção (roteiro e verificação: [`docs/backup-e-restauracao.md`](./docs/backup-e-restauracao.md)).
 
+**Para entender o estado atual (o que foi feito e o que falta, e de quem depende):** [`docs/para-o-lucas.md`](./docs/para-o-lucas.md).
+
 As decisões e os critérios de aceite ficam em [`specs/`](./specs/README.md). A especificação ativa é [`SPEC-001 — Integridade operacional`](./specs/001-integridade-operacional/spec.md).
 
 ## Módulos existentes
@@ -43,7 +45,7 @@ Requisitos: Node.js, npm e PostgreSQL.
 
 Nesta máquina, o banco isolado de desenvolvimento fica em `.local/` e usa a porta 5433. Depois de reiniciar o Windows, execute `npm run db:local:start` antes de `npm run dev`. Para encerrá-lo manualmente, use `npm run db:local:stop`.
 
-Nunca use um banco de produção para testes. Os testes de integração limpam completamente o banco indicado em `.env.test`.
+Nunca use um banco de produção para testes. O `.env.test` só indica o servidor PostgreSQL de testes: `npm run test:integration` cria nele um banco descartável marcado (`colheita_descartavel_*`), roda os testes e o apaga no fim, sem tocar no banco citado no arquivo.
 
 ## Verificações
 

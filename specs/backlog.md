@@ -38,4 +38,4 @@ Itens candidatos não são autorização para implementação. Cada um precisa d
 
 - **SPEC-008 — Recebimentos, faltas e fechamento** — regras confirmadas com Seu Paulo; persistência depende do Lucas.
 - **SPEC-009 — Importação do pedido da prefeitura (Excel/PDF)**.
-- **Etapa 7 — Mapa de Montagem** (rotas, paradas, previsto/embarcado/aceito) — só depois da SPEC-008 integrada e validada. Referência: `controle_escolas_produtores_2026_MODELO_v20.xlsx` (anexo, não versionado).
+- **Etapa 7 — Mapa de Montagem** (rotas, paradas, previsto/embarcado/aceito) — só depois da SPEC-008 integrada e validada. Referência: `docs/referencia-planilha/controle_escolas_produtores_2026_MODELO_v22.xlsx` (aba MAPA DE MONTAGEM, igual à da v20).

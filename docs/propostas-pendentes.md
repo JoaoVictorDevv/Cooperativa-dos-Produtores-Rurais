@@ -8,7 +8,8 @@ Lucas (schema, migrações, API Java, infraestrutura) e o alinhamento de
 integração. Nada deste documento foi implementado no banco ou na API.
 
 Resumo em português simples do que o Lucas precisa fazer ou revisar: seção
-[Para o Lucas](#para-o-lucas--resumo).
+[Para o Lucas](#para-o-lucas--resumo). Guia de entrada, com o que já foi feito e
+o que falta: [`docs/para-o-lucas.md`](./para-o-lucas.md).
 
 ---
 
@@ -545,6 +546,53 @@ criado `vitest.config.ts`, que só acrescenta o atalho `@/` do tsconfig.)
 
 ---
 
+## 12. Planilha MODELO v22 × app (27/09/2026)
+
+A MODELO v22 substitui a v20 como referência operacional. Está em
+`docs/referencia-planilha/`, vazia, e a comparação completa está em
+`docs/referencia-planilha/atualizacao_v20_para_v22.md`. **Nenhum código foi
+alterado.** A lógica financeira da planilha não mudou. Os pontos que ficam
+registrados:
+
+- **Bate com o app:**
+  - aceito no galpão = entrega − devolução;
+  - valor a pagar = aceito × (preço − 3,67);
+  - complemento em outra viagem com comprovante próprio;
+  - falta "encerrada sem atendimento" sem passar para a semana seguinte.
+- **Centavos — Documentado, já decidido:**
+  - a planilha não arredonda cada linha do produtor; o app arredonda cada
+    linha e soma as linhas (RN-15, decisão de 26/09/2026);
+  - o total de um produtor pode diferir em centavos quando kg × preço tem
+    mais de 2 casas. Vale a regra do app.
+- **Desconto de logística — Documentado:**
+  - a planilha tem 3,67 fixo na fórmula; o app guarda uma cópia congelada em
+    cada lançamento (RN-02);
+  - só diverge se o desconto mudar: a planilha recalcularia semanas antigas,
+    o app não.
+- **Ficha impressa do produtor — Proposta (tela, pequena, sem banco):**
+  - acrescentar as colunas "Aceito" e "Preço líquido" e o campo "Horário" em
+    `/produtores/[código]`, como na v22;
+  - hoje a ficha mostra Pedido, Entrega, Devolução e Valor; o PDF
+    "Recebimento e Devoluções no Galpão" já tem "Aceito no galpão";
+  - não foi feito nesta rodada, por instrução.
+- **Complemento na mesma viagem — Decisão da operação:**
+  - a v22 manda somar tudo no romaneio inicial da escola (170 + 30 = 200) e
+    registrar o 2º produtor só no recebimento do galpão;
+  - o núcleo novo (spec 008) registra entrega inicial e complemento como
+    eventos separados, cada um com sua origem; o complemento sai em romaneio
+    próprio;
+  - a cobrança dá 200 nos dois casos. Muda só o papel: um romaneio ou dois;
+  - se a operação quiser um romaneio só, a entrega inicial precisaria aceitar
+    mais de uma origem, o que mexe no contrato da API (Lucas);
+  - até lá, fica como está na spec 008.
+- **Onde se digita:**
+  - na planilha, a entrega é digitada na Entrada de Dados e a devolução na
+    ficha do produtor;
+  - no app, as duas ficam na mesma linha de "Divisão / Pedido / Entrega";
+  - é o mesmo dado, sem efeito no cálculo.
+
+---
+
 ## Para o Lucas — resumo
 
 1. **Banco/API para entrega real por escola/produto, complementos e decisão de
@@ -574,3 +622,6 @@ criado `vitest.config.ts`, que só acrescenta o atalho `@/` do tsconfig.)
    pedido/entrega (§11.6).
 9. **Pacote de aceitação** `docs/aceitacao/` (§11.7): a API precisa passar nos
    15 cenários e 5 cálculos, com o contrato de comandos em JSON Schema.
+10. **Planilha MODELO v22** (§12): nada a fazer no banco. Só entra na sua
+    parte se a operação quiser um romaneio único para complemento na mesma
+    viagem (entrega inicial com mais de uma origem no contrato da API).

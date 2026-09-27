@@ -24,7 +24,7 @@ não é validável.
 |---|---|
 | Ciclo fechado **fictício** em banco descartável (4 lançamentos no galpão com decimais, rejeições, entrega zero, 2 descontos diferentes, 2 custos, devolução escolar) | **Tudo confere**: a pagar 2.451,39 nos dois lados, linha a linha; custos 470,40; diferença por produto igual. Script de ponta a ponta: conexão somente leitura, relatório "OK", nada gravado. |
 | Comparação com divergência proposital (teste unitário) | Detecta pagamento, custo, pedido e diferença divergentes e lançamento que existe só de um lado. |
-| **Ciclo real fechado** | **Não executado nesta sessão.** Não há ciclo real acessível: a leitura do banco configurado no ambiente foi bloqueada pela política de permissões da sessão e as planilhas de referência (v20, v27, v35) são modelos sem dados. |
+| **Ciclo real fechado** | **Não executado nesta sessão.** Não há ciclo real acessível: a leitura do banco configurado no ambiente foi bloqueada pela política de permissões da sessão e as planilhas de referência (MODELO v20 e v22, v27, v35) são modelos sem dados. |
 
 **Para validar um ciclo real pelo próprio app (27/09/2026):** na página de uma
 semana **fechada**, um ADMIN vê o link **"Validar este ciclo fechado"**
