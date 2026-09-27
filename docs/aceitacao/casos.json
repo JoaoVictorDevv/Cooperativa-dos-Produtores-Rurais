@@ -1,0 +1,1437 @@
+{
+  "versao": 1,
+  "descricao": "Casos de aceitação da spec 008 (complementos, faltas, fechamento), do galpão e do arredondamento. Cada caso: estado inicial (CycleLedger), passos (comandos com o resultado esperado) e expectativas finais. Ids de evento são gerados em ordem: ev-1, ev-2, ... Perfil padrão: OPERADOR. Ver docs/aceitacao/README.md.",
+  "casos": [
+    {
+      "id": "exemplo-200-180-170",
+      "titulo": "Exemplo obrigatório: pedido 200, galpão 200 − 20, escola 180 − 10",
+      "origem": "prompt v2 §4 e §17; spec 008 CA-008.1",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 200,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 20,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-inicial",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        }
+      ],
+      "linhas": [
+        {
+          "schoolId": "E1",
+          "productId": "alface",
+          "expect": {
+            "acceptedQty": 170,
+            "rejectedAtSchoolQty": 10,
+            "shortageQty": 30,
+            "shortageStatus": "SEM_DECISAO",
+            "readyToClose": false
+          }
+        }
+      ],
+      "fechamento": {
+        "state": "AGUARDANDO_DECISOES",
+        "canClose": false,
+        "receivableTotal": 2485.4,
+        "payableTotal": 1971,
+        "blockersContain": [
+          "1 falta(s) sem decisão."
+        ]
+      },
+      "totaisPorUnidade": {
+        "kg": {
+          "acceptedAtWarehouseQty": 180,
+          "rejectedAtWarehouseQty": 20,
+          "acceptedAtSchoolQty": 170,
+          "rejectedAtSchoolQty": 10,
+          "shortageQty": 30
+        }
+      }
+    },
+    {
+      "id": "encerrar-sem-reposicao",
+      "titulo": "Sem reposição: encerrar em 170 com falta final 30 e motivo; fechamento liberado; não é cobrada",
+      "origem": "prompt v2 §8 e §17; spec 008 CA-008.3",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 200,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 20,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-inicial",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        },
+        {
+          "command": {
+            "type": "ENCERRAR_FALTA_SEM_ATENDIMENTO",
+            "schoolId": "E1",
+            "productId": "alface",
+            "reason": "Sem produto no mercado",
+            "expectedShortageQty": 30,
+            "expectedVersion": null
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        }
+      ],
+      "linhas": [
+        {
+          "schoolId": "E1",
+          "productId": "alface",
+          "expect": {
+            "acceptedQty": 170,
+            "shortageQty": 30,
+            "shortageStatus": "ENCERRADA_SEM_ATENDIMENTO",
+            "readyToClose": true
+          }
+        }
+      ],
+      "fechamento": {
+        "state": "PRONTO_PARA_FECHAR",
+        "canClose": true,
+        "receivableTotal": 2485.4,
+        "payableTotal": 1971,
+        "calculatedResult": 514.4,
+        "closedShortages": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "qty": 30
+          }
+        ]
+      }
+    },
+    {
+      "id": "complemento-outro-produtor",
+      "titulo": "Complemento de 30 aceitos de outro produtor: escola 200; produtor original 180; novo 30; perda de 10 mantida; cobra 200 uma vez",
+      "origem": "prompt v2 §7 e §17; spec 008 CA-008.2",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 200,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 20,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          },
+          {
+            "producerId": "B",
+            "productId": "alface",
+            "grossQty": 30,
+            "rejectedQty": 0,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-inicial",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_COMPLEMENTO",
+            "idempotencyKey": "k-comp",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 30,
+            "rejectedQty": 0,
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "B"
+            }
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        }
+      ],
+      "linhas": [
+        {
+          "schoolId": "E1",
+          "productId": "alface",
+          "expect": {
+            "acceptedQty": 200,
+            "rejectedAtSchoolQty": 10,
+            "shortageQty": 0,
+            "attendance": "OK",
+            "readyToClose": true
+          }
+        }
+      ],
+      "fechamento": {
+        "canClose": true,
+        "receivableTotal": 2924,
+        "payableLines": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "acceptedQty": 180,
+            "value": 1971
+          },
+          {
+            "producerId": "B",
+            "productId": "alface",
+            "acceptedQty": 30,
+            "value": 328.5
+          }
+        ]
+      }
+    },
+    {
+      "id": "complemento-sem-recebimento-galpao",
+      "titulo": "Complemento de produtor sem recebimento conferido no galpão: aviso ao registrar e bloqueio no fechamento",
+      "origem": "prompt v2 §7 (fornecimento de origem no controle do galpão); spec 008 CA-008.20",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 200,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 20,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-inicial",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_COMPLEMENTO",
+            "idempotencyKey": "k-comp",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 30,
+            "rejectedQty": 0,
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "C"
+            }
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO",
+            "warningsContain": [
+              "recebimento conferido no galpão"
+            ]
+          }
+        }
+      ],
+      "fechamento": {
+        "canClose": false,
+        "blockersContain": [
+          "1 complemento(s) sem recebimento conferido no galpão do produtor de origem."
+        ]
+      }
+    },
+    {
+      "id": "complemento-inicial-vazio",
+      "titulo": "Pedido 30, complemento de 20 aceito e inicial vazio: pendente; confirmando zero inicial, falta 10",
+      "origem": "prompt v2 §8 e §17; spec 008 CA-008.4",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E2",
+            "productId": "couve",
+            "orderedQty": 30,
+            "unit": "kg",
+            "price": 14.6
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "C",
+            "productId": "couve",
+            "grossQty": 20,
+            "rejectedQty": 0,
+            "unit": "kg",
+            "price": 14.6,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_COMPLEMENTO",
+            "idempotencyKey": "k-c",
+            "schoolId": "E2",
+            "productId": "couve",
+            "presentedQty": 20,
+            "rejectedQty": 0,
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "C"
+            }
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO",
+            "warningsContain": [
+              "registre zero confirmado"
+            ]
+          }
+        },
+        {
+          "command": {
+            "type": "ENCERRAR_FALTA_SEM_ATENDIMENTO",
+            "schoolId": "E2",
+            "productId": "couve",
+            "reason": "Sem produto no mercado",
+            "expectedShortageQty": 10,
+            "expectedVersion": null
+          },
+          "expect": {
+            "ok": false,
+            "code": "INVALIDO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-zero",
+            "schoolId": "E2",
+            "productId": "couve",
+            "presentedQty": 0,
+            "rejectedQty": 0
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        }
+      ],
+      "linhas": [
+        {
+          "schoolId": "E2",
+          "productId": "couve",
+          "expect": {
+            "receiptStatus": "CONFERIDO",
+            "acceptedQty": 20,
+            "shortageQty": 10,
+            "shortageStatus": "SEM_DECISAO"
+          }
+        }
+      ]
+    },
+    {
+      "id": "vazio-zero-pedido-zero",
+      "titulo": "Vazio fica pendente; zero confirmado é conferência (falta integral); pedido zero sem movimento não bloqueia",
+      "origem": "prompt v2 §6, §8 e §17; spec 008 CA-008.4",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 50,
+            "unit": "kg",
+            "price": 14.62
+          },
+          {
+            "schoolId": "E2",
+            "productId": "alface",
+            "orderedQty": 40,
+            "unit": "kg",
+            "price": 14.62
+          },
+          {
+            "schoolId": "E3",
+            "productId": "alface",
+            "orderedQty": 0,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 20,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-z",
+            "schoolId": "E2",
+            "productId": "alface",
+            "presentedQty": 0,
+            "rejectedQty": 0
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        }
+      ],
+      "linhas": [
+        {
+          "schoolId": "E1",
+          "productId": "alface",
+          "expect": {
+            "receiptStatus": "PENDENTE_CONFERENCIA",
+            "acceptedQty": 0
+          }
+        },
+        {
+          "schoolId": "E2",
+          "productId": "alface",
+          "expect": {
+            "receiptStatus": "CONFERIDO",
+            "acceptedQty": 0,
+            "shortageQty": 40,
+            "shortageStatus": "SEM_DECISAO"
+          }
+        },
+        {
+          "schoolId": "E3",
+          "productId": "alface",
+          "expect": {
+            "receiptStatus": "SEM_PEDIDO",
+            "readyToClose": true
+          }
+        }
+      ],
+      "fechamento": {
+        "state": "EM_CONFERENCIA",
+        "canClose": false
+      },
+      "totaisPorUnidade": {
+        "kg": {
+          "shortageQty": 40,
+          "pendingLines": 1
+        }
+      }
+    },
+    {
+      "id": "ciclo-vazio",
+      "titulo": "Ciclo sem pedido e sem movimento: aguardando pedido, nunca 'tudo conferido'",
+      "origem": "prompt v2 §8; spec 008 CA-008.5",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [],
+        "warehouseReceipts": [],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [],
+      "fechamento": {
+        "state": "AGUARDANDO_PEDIDO",
+        "canClose": false,
+        "blockersContain": [
+          "Ciclo sem pedido e sem movimentação."
+        ]
+      }
+    },
+    {
+      "id": "correcao-rejeicao-e-limites",
+      "titulo": "Rejeição corrigida para zero funciona; reduzir a entrega abaixo da rejeição é recusado; versão antiga é recusada",
+      "origem": "prompt v2 §9 e §16; spec 008 CA-008.6, CA-008.17",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 200,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 20,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-inicial",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        },
+        {
+          "command": {
+            "type": "CORRIGIR_EVENTO",
+            "eventId": "ev-1",
+            "expectedVersion": 1,
+            "changes": {
+              "presentedQty": 5
+            },
+            "reason": "teste"
+          },
+          "expect": {
+            "ok": false,
+            "code": "INVALIDO"
+          }
+        },
+        {
+          "command": {
+            "type": "CORRIGIR_EVENTO",
+            "eventId": "ev-1",
+            "expectedVersion": 1,
+            "changes": {
+              "rejectedQty": 0
+            },
+            "reason": "Rejeição lançada por engano"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        },
+        {
+          "command": {
+            "type": "CORRIGIR_EVENTO",
+            "eventId": "ev-1",
+            "expectedVersion": 1,
+            "changes": {
+              "presentedQty": 170
+            },
+            "reason": "versão antiga"
+          },
+          "expect": {
+            "ok": false,
+            "code": "CONFLITO"
+          }
+        }
+      ],
+      "linhas": [
+        {
+          "schoolId": "E1",
+          "productId": "alface",
+          "expect": {
+            "acceptedQty": 180,
+            "rejectedAtSchoolQty": 0,
+            "shortageQty": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": "decisao-incoerente",
+      "titulo": "Correção posterior muda a falta: a decisão de encerramento fica incoerente e bloqueia até ser revista",
+      "origem": "prompt v2 §8; spec 008 RN-11, CA-008.19",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 200,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 20,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-inicial",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        },
+        {
+          "command": {
+            "type": "ENCERRAR_FALTA_SEM_ATENDIMENTO",
+            "schoolId": "E1",
+            "productId": "alface",
+            "reason": "Sem produto no mercado",
+            "expectedShortageQty": 30,
+            "expectedVersion": null
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        },
+        {
+          "command": {
+            "type": "CORRIGIR_EVENTO",
+            "eventId": "ev-1",
+            "expectedVersion": 1,
+            "changes": {
+              "rejectedQty": 20
+            },
+            "reason": "Recontagem"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO",
+            "warningsContain": [
+              "ficou incoerente"
+            ]
+          }
+        }
+      ],
+      "linhas": [
+        {
+          "schoolId": "E1",
+          "productId": "alface",
+          "expect": {
+            "shortageQty": 40,
+            "shortageStatus": "DECISAO_INCOERENTE",
+            "readyToClose": false
+          }
+        }
+      ],
+      "fechamento": {
+        "state": "AGUARDANDO_DECISOES",
+        "canClose": false
+      }
+    },
+    {
+      "id": "reenvio-e-segunda-inicial",
+      "titulo": "Reenvio (mesma chave, mesmos dados) não duplica; mesma chave com outros dados é conflito; segunda entrega inicial é recusada",
+      "origem": "prompt v2 §7 (sem duplicação); spec 008 CA-008.16, CA-008.17",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 200,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 20,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-inicial",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-inicial",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "JA_REGISTRADO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-inicial",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 170,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "expect": {
+            "ok": false,
+            "code": "CONFLITO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "outra",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "expect": {
+            "ok": false,
+            "code": "CONFLITO"
+          }
+        }
+      ],
+      "linhas": [
+        {
+          "schoolId": "E1",
+          "productId": "alface",
+          "expect": {
+            "presentedQty": 180,
+            "acceptedQty": 170
+          }
+        }
+      ]
+    },
+    {
+      "id": "perda-antes-da-escola",
+      "titulo": "Perda de transporte separada da rejeição escolar; não reduz o produtor; exige motivo",
+      "origem": "prompt v2 §6 e §17; spec 008 RN-07, CA-008.7",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 200,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 20,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-inicial",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira",
+            "lossBeforeSchoolQty": 5
+          },
+          "expect": {
+            "ok": false,
+            "code": "INVALIDO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k2",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira",
+            "lossBeforeSchoolQty": 5,
+            "lossReason": "Caixa caiu no transporte"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        }
+      ],
+      "linhas": [
+        {
+          "schoolId": "E1",
+          "productId": "alface",
+          "expect": {
+            "rejectedAtSchoolQty": 10,
+            "lossBeforeSchoolQty": 5,
+            "acceptedQty": 170
+          }
+        }
+      ],
+      "fechamento": {
+        "payableTotal": 1971
+      }
+    },
+    {
+      "id": "excesso-nao-compensa-falta",
+      "titulo": "Excedente numa escola não compensa falta de outra; atendimento limita cada linha ao próprio pedido",
+      "origem": "prompt v2 §7 e §10; spec 008 CA-008.8",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 100,
+            "unit": "kg",
+            "price": 14.62
+          },
+          {
+            "schoolId": "E2",
+            "productId": "alface",
+            "orderedQty": 100,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 20,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "a",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 120,
+            "rejectedQty": 0
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "b",
+            "schoolId": "E2",
+            "productId": "alface",
+            "presentedQty": 80,
+            "rejectedQty": 0
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        }
+      ],
+      "linhas": [
+        {
+          "schoolId": "E1",
+          "productId": "alface",
+          "expect": {
+            "excessQty": 20,
+            "shortageQty": 0,
+            "attendance": "EXCEDENTE"
+          }
+        },
+        {
+          "schoolId": "E2",
+          "productId": "alface",
+          "expect": {
+            "excessQty": 0,
+            "shortageQty": 20,
+            "attendance": "FALTA"
+          }
+        }
+      ],
+      "totaisPorUnidade": {
+        "kg": {
+          "excessQty": 20,
+          "shortageQty": 20
+        }
+      },
+      "atendimentoPorUnidade": {
+        "kg": 90
+      }
+    },
+    {
+      "id": "unidades-separadas",
+      "titulo": "kg e dz nunca se somam; atendimento por unidade",
+      "origem": "prompt v2 §10; spec 008 RN-14, CA-008.12",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 10,
+            "unit": "kg",
+            "price": 14.62
+          },
+          {
+            "schoolId": "E1",
+            "productId": "ovos",
+            "orderedQty": 12,
+            "unit": "dz",
+            "price": 15.45
+          }
+        ],
+        "warehouseReceipts": [],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "a",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 10,
+            "rejectedQty": 0
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "b",
+            "schoolId": "E1",
+            "productId": "ovos",
+            "presentedQty": 10,
+            "rejectedQty": 0
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        }
+      ],
+      "totaisPorUnidade": {
+        "kg": {
+          "orderedQty": 10,
+          "acceptedAtSchoolQty": 10
+        },
+        "dz": {
+          "orderedQty": 12,
+          "acceptedAtSchoolQty": 10,
+          "shortageQty": 2
+        }
+      },
+      "atendimentoPorUnidade": {
+        "kg": 100,
+        "dz": 83.33
+      }
+    },
+    {
+      "id": "perfil-consulta",
+      "titulo": "Perfil de consulta não altera nada",
+      "origem": "prompt v2 §16; spec 008 RN-19",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 200,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 20,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-inicial",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "actor": {
+            "id": "u-consulta",
+            "role": "CONSULTA"
+          },
+          "expect": {
+            "ok": false,
+            "code": "SEM_PERMISSAO"
+          }
+        }
+      ],
+      "linhas": [
+        {
+          "schoolId": "E1",
+          "productId": "alface",
+          "expect": {
+            "receiptStatus": "PENDENTE_CONFERENCIA"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ciclo-fechado",
+      "titulo": "Ciclo fechado não aceita comando (vale antes da checagem de perfil)",
+      "origem": "prompt v2 §8 e §16",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "FECHADO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 200,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 20,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-inicial",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "expect": {
+            "ok": false,
+            "code": "CICLO_FECHADO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-inicial",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 180,
+            "rejectedQty": 10,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "actor": {
+            "id": "u-consulta",
+            "role": "CONSULTA"
+          },
+          "expect": {
+            "ok": false,
+            "code": "CICLO_FECHADO"
+          }
+        }
+      ]
+    }
+  ],
+  "calculos": [
+    {
+      "id": "pagar-180",
+      "titulo": "A pagar = aceito no galpão × (preço − desconto)",
+      "funcao": "producerPayable",
+      "entrada": {
+        "acceptedQty": 180,
+        "price": 14.62,
+        "logisticsDeductionSnapshot": 3.67
+      },
+      "esperado": 1971
+    },
+    {
+      "id": "pagar-decimal",
+      "titulo": "Aceito com decimais",
+      "funcao": "producerPayable",
+      "entrada": {
+        "acceptedQty": 33,
+        "price": 14.6,
+        "logisticsDeductionSnapshot": 3.67
+      },
+      "esperado": 360.69
+    },
+    {
+      "id": "cobrar-170",
+      "titulo": "A cobrar = aceito na escola × preço congelado",
+      "funcao": "schoolReceivable",
+      "entrada": {
+        "acceptedQty": 170,
+        "price": 14.62
+      },
+      "esperado": 2485.4
+    },
+    {
+      "id": "arredondamento-por-linha",
+      "titulo": "Ciclos novos (desde 27/09/2026): total = soma das linhas já arredondadas",
+      "funcao": "treasuryTotalPerLine",
+      "entrada": {
+        "lines": [
+          {
+            "orderedQty": 0.33,
+            "returnedQty": 0,
+            "price": 10.05
+          },
+          {
+            "orderedQty": 0.33,
+            "returnedQty": 0,
+            "price": 10.05
+          },
+          {
+            "orderedQty": 0.33,
+            "returnedQty": 0,
+            "price": 10.05
+          }
+        ]
+      },
+      "esperado": 9.96
+    },
+    {
+      "id": "arredondamento-legado",
+      "titulo": "Ciclos anteriores: total arredondado só no fim (não recalcular o passado)",
+      "funcao": "treasuryTotal",
+      "entrada": {
+        "lines": [
+          {
+            "orderedQty": 0.33,
+            "returnedQty": 0,
+            "price": 10.05
+          },
+          {
+            "orderedQty": 0.33,
+            "returnedQty": 0,
+            "price": 10.05
+          },
+          {
+            "orderedQty": 0.33,
+            "returnedQty": 0,
+            "price": 10.05
+          }
+        ]
+      },
+      "esperado": 9.95
+    }
+  ]
+}

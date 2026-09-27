@@ -1,0 +1,1014 @@
+{
+  "$comment": "Gerado de src/lib/cycleCore/commandSchema.ts e ledgerSchema.ts (zod). Não editar à mão.",
+  "comando": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "oneOf": [
+      {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "REGISTRAR_ENTREGA_INICIAL"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "schoolId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "productId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "presentedQty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 99999999.99
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Quantidade apresentada à escola. null = não informado (pendente); 0 = zero confirmado."
+          },
+          "rejectedQty": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999.99,
+            "description": "Rejeitado pela escola (perda da cooperativa)."
+          },
+          "rejectionReason": {
+            "description": "Obrigatório quando rejectedQty > 0.",
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lossBeforeSchoolQty": {
+            "description": "Perda antes de chegar à escola (transporte/manuseio). Não é rejeição.",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999.99
+          },
+          "lossReason": {
+            "description": "Obrigatório quando lossBeforeSchoolQty > 0.",
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deliveredAt": {
+            "description": "Data e hora REAIS da entrega (romaneio), não a do lançamento.",
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "receivedBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "PRODUTOR"
+                      },
+                      "producerId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "producerId"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "SALDO_GALPAO"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "idempotencyKey",
+          "schoolId",
+          "productId",
+          "presentedQty",
+          "rejectedQty"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "REGISTRAR_COMPLEMENTO"
+          },
+          "idempotencyKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "schoolId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "productId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "presentedQty": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 99999999.99
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Quantidade apresentada à escola. null = não informado (pendente); 0 = zero confirmado."
+          },
+          "rejectedQty": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999.99,
+            "description": "Rejeitado pela escola (perda da cooperativa)."
+          },
+          "rejectionReason": {
+            "description": "Obrigatório quando rejectedQty > 0.",
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lossBeforeSchoolQty": {
+            "description": "Perda antes de chegar à escola (transporte/manuseio). Não é rejeição.",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999.99
+          },
+          "lossReason": {
+            "description": "Obrigatório quando lossBeforeSchoolQty > 0.",
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deliveredAt": {
+            "description": "Data e hora REAIS da entrega (romaneio), não a do lançamento.",
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "receivedBy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "PRODUTOR"
+                  },
+                  "producerId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  }
+                },
+                "required": [
+                  "type",
+                  "producerId"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "SALDO_GALPAO"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "additionalProperties": false
+              }
+            ],
+            "description": "Obrigatório: de onde veio o produto."
+          }
+        },
+        "required": [
+          "type",
+          "idempotencyKey",
+          "schoolId",
+          "productId",
+          "presentedQty",
+          "rejectedQty",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "CORRIGIR_EVENTO"
+          },
+          "eventId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991,
+            "description": "Versão vista na tela; diferente da atual → CONFLITO."
+          },
+          "changes": {
+            "type": "object",
+            "properties": {
+              "presentedQty": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 99999999.99
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Quantidade apresentada à escola. null = não informado (pendente); 0 = zero confirmado."
+              },
+              "rejectedQty": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 99999999.99,
+                "description": "Rejeitado pela escola (perda da cooperativa)."
+              },
+              "rejectionReason": {
+                "description": "Obrigatório quando rejectedQty > 0.",
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lossBeforeSchoolQty": {
+                "description": "Perda antes de chegar à escola (transporte/manuseio). Não é rejeição.",
+                "type": "number",
+                "minimum": 0,
+                "maximum": 99999999.99
+              },
+              "lossReason": {
+                "description": "Obrigatório quando lossBeforeSchoolQty > 0.",
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "deliveredAt": {
+                "description": "Data e hora REAIS da entrega (romaneio), não a do lançamento.",
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "receivedBy": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "source": {
+                "anyOf": [
+                  {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "PRODUTOR"
+                          },
+                          "producerId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 64
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "producerId"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "SALDO_GALPAO"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "type",
+          "eventId",
+          "expectedVersion",
+          "changes",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "MARCAR_FALTA_EM_RESOLUCAO"
+          },
+          "schoolId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "productId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "expectedVersion": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "schoolId",
+          "productId",
+          "expectedVersion"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "ENCERRAR_FALTA_SEM_ATENDIMENTO"
+          },
+          "schoolId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "productId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200
+          },
+          "expectedShortageQty": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999.99,
+            "description": "Falta mostrada na tela; diferente da atual → CONFLITO."
+          },
+          "expectedVersion": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "schoolId",
+          "productId",
+          "reason",
+          "expectedShortageQty",
+          "expectedVersion"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "REVOGAR_DECISAO_FALTA"
+          },
+          "schoolId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "productId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "type",
+          "schoolId",
+          "productId",
+          "reason",
+          "expectedVersion"
+        ],
+        "additionalProperties": false
+      }
+    ]
+  },
+  "resultado": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "anyOf": [
+      {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "effect": {
+            "type": "string",
+            "enum": [
+              "APLICADO",
+              "JA_REGISTRADO"
+            ],
+            "description": "JA_REGISTRADO = reenvio com a mesma idempotencyKey e os mesmos dados; nada muda."
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "ok",
+          "effect",
+          "warnings"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": false
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "CICLO_FECHADO",
+              "SEM_PERMISSAO",
+              "INVALIDO",
+              "CONFLITO",
+              "NAO_ENCONTRADO"
+            ]
+          },
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ok",
+          "code",
+          "error"
+        ],
+        "additionalProperties": false
+      }
+    ]
+  },
+  "estadoDoCiclo": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "cycleId": {
+        "type": "string",
+        "pattern": "^[\\w.:-]{1,64}$"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "ABERTO",
+          "FECHADO"
+        ]
+      },
+      "orders": {
+        "maxItems": 5000,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "schoolId": {
+              "type": "string",
+              "pattern": "^[\\w.:-]{1,64}$"
+            },
+            "productId": {
+              "type": "string",
+              "pattern": "^[\\w.:-]{1,64}$"
+            },
+            "orderedQty": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10000000
+            },
+            "unit": {
+              "type": "string",
+              "enum": [
+                "kg",
+                "dz"
+              ]
+            },
+            "price": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "schoolId",
+            "productId",
+            "orderedQty",
+            "unit",
+            "price"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "warehouseReceipts": {
+        "maxItems": 5000,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "producerId": {
+              "type": "string",
+              "pattern": "^[\\w.:-]{1,64}$"
+            },
+            "productId": {
+              "type": "string",
+              "pattern": "^[\\w.:-]{1,64}$"
+            },
+            "grossQty": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "rejectedQty": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10000000
+            },
+            "unit": {
+              "type": "string",
+              "enum": [
+                "kg",
+                "dz"
+              ]
+            },
+            "price": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10000000
+            },
+            "logisticsDeductionSnapshot": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10000000
+            }
+          },
+          "required": [
+            "producerId",
+            "productId",
+            "grossQty",
+            "rejectedQty"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "events": {
+        "maxItems": 20000,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[\\w.:-]{1,64}$"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "INICIAL",
+                "COMPLEMENTO"
+              ]
+            },
+            "schoolId": {
+              "type": "string",
+              "pattern": "^[\\w.:-]{1,64}$"
+            },
+            "productId": {
+              "type": "string",
+              "pattern": "^[\\w.:-]{1,64}$"
+            },
+            "presentedQty": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "rejectedQty": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10000000
+            },
+            "rejectionReason": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "lossBeforeSchoolQty": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10000000
+            },
+            "lossReason": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "source": {
+              "anyOf": [
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "const": "PRODUTOR"
+                        },
+                        "producerId": {
+                          "type": "string",
+                          "pattern": "^[\\w.:-]{1,64}$"
+                        }
+                      },
+                      "required": [
+                        "type",
+                        "producerId"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "const": "SALDO_GALPAO"
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "deliveredAt": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 40
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "receivedBy": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "idempotencyKey": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "createdBy": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "createdAt": {
+              "type": "string",
+              "maxLength": 40
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "schoolId",
+            "productId",
+            "presentedQty",
+            "rejectedQty",
+            "rejectionReason",
+            "lossBeforeSchoolQty",
+            "lossReason",
+            "source",
+            "deliveredAt",
+            "receivedBy",
+            "idempotencyKey",
+            "version",
+            "createdBy",
+            "createdAt"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "decisions": {
+        "maxItems": 5000,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "schoolId": {
+              "type": "string",
+              "pattern": "^[\\w.:-]{1,64}$"
+            },
+            "productId": {
+              "type": "string",
+              "pattern": "^[\\w.:-]{1,64}$"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "EM_RESOLUCAO",
+                "ENCERRADA_SEM_ATENDIMENTO"
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "shortageQtyAtDecision": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10000000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "decidedBy": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "decidedAt": {
+              "type": "string",
+              "maxLength": 40
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "schoolId",
+            "productId",
+            "kind",
+            "reason",
+            "shortageQtyAtDecision",
+            "decidedBy",
+            "decidedAt",
+            "version"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "cycleId",
+      "status",
+      "orders",
+      "warehouseReceipts",
+      "events",
+      "decisions"
+    ],
+    "additionalProperties": false
+  }
+}

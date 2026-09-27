@@ -12,7 +12,7 @@ const qty = z.number().finite().min(0).max(10_000_000);
 const unit = z.enum(["kg", "dz"]);
 const source = z.union([z.object({ type: z.literal("PRODUTOR"), producerId: id }), z.object({ type: z.literal("SALDO_GALPAO") })]);
 
-const ledgerSchema = z.object({
+export const ledgerSchema = z.object({
   cycleId: id,
   status: z.enum(["ABERTO", "FECHADO"]),
   orders: z.array(z.object({ schoolId: id, productId: id, orderedQty: qty, unit, price: qty.nullable() })).max(5000),

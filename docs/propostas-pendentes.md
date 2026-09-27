@@ -482,6 +482,15 @@ Varredura de 205 testes (sem `expect`, retorno antecipado, `expect` dentro de
   `GZ_XLSX_PATH`; volume de PDFs com `PDF_VOLUME=1`); o único mock é o de
   `console.error` no teste do `publicError`.
 
+### 11.7 Pacote de aceitação para o Lucas (27/09/2026)
+
+`docs/aceitacao/`: 15 cenários (spec 008, galpão, fechamento, permissões,
+reenvio, correções, unidades) e 5 cálculos em JSON, mais o **contrato dos
+comandos em JSON Schema**, gerados do código testado — o teste falha se o JSON
+ficar desatualizado, e cada caso roda contra a implementação de referência. A
+API Java deve passar nos mesmos casos antes de qualquer tela usá-la. Instruções
+em `docs/aceitacao/README.md`.
+
 ### 11.6 Carga leve e condições de corrida
 
 Teste novo `src/lib/concurrency.integration.test.ts`: roda as **ações de
@@ -550,3 +559,5 @@ criado `vitest.config.ts`, que só acrescenta o atalho `@/` do tsconfig.)
    seed; decidir a migração para o Prisma 7 (alerta alto em `deepmerge-ts`);
    na API Java, a mesma trava (ou checagem no banco) para devolução ≤
    pedido/entrega (§11.6).
+9. **Pacote de aceitação** `docs/aceitacao/` (§11.7): a API precisa passar nos
+   15 cenários e 5 cálculos, com o contrato de comandos em JSON Schema.
