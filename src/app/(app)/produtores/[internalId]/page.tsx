@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
-import { producerPayment } from "@/lib/calc";
+import { netPrice, producerNetQty, producerPayment } from "@/lib/calc";
 import { formatQty, formatQtyNumber } from "@/lib/format";
 import { PrintButton } from "@/components/PrintButton";
 import { verifySession } from "@/lib/dal";
@@ -35,6 +35,10 @@ export default async function ProducerDetailPage({
     orderedQty: number;
     deliveredQty: number | null;
     returnedQty: number;
+    // Aceito = entrega − devolução (coluna "Aceito" da ficha na planilha v22).
+    acceptedQty: number | null;
+    // Preço − desconto de logística, ambos congelados no lançamento da entrega.
+    netPrice: number | null;
     payment: number;
   }[] = [];
 
@@ -66,6 +70,8 @@ export default async function ProducerDetailPage({
         orderedQty: order ? Number(order.orderedQty) : 0,
         deliveredQty: delivery ? Number(delivery.deliveredQty) : null,
         returnedQty,
+        acceptedQty: delivery ? producerNetQty(Number(delivery.deliveredQty), returnedQty) : null,
+        netPrice: delivery ? netPrice(Number(delivery.price.price), Number(delivery.logisticsDeductionSnapshot)) : null,
         payment,
       };
     }).sort((a, b) => a.productName.localeCompare(b.productName));
@@ -76,9 +82,10 @@ export default async function ProducerDetailPage({
       ordered: acc.ordered + l.orderedQty,
       delivered: acc.delivered + (l.deliveredQty ?? 0),
       returned: acc.returned + l.returnedQty,
+      accepted: acc.accepted + (l.acceptedQty ?? 0),
       payment: acc.payment + l.payment,
     }),
-    { ordered: 0, delivered: 0, returned: 0, payment: 0 },
+    { ordered: 0, delivered: 0, returned: 0, accepted: 0, payment: 0 },
   );
 
   return (
@@ -112,52 +119,67 @@ export default async function ProducerDetailPage({
         </div>
 
         <div className="rm-table-title">Produtos</div>
-        <table>
-          <thead>
-            <tr>
-              <th>Produto</th>
-              <th style={{ width: 90 }}>Pedido</th>
-              <th style={{ width: 90 }}>Entrega</th>
-              <th style={{ width: 90 }}>Devolução</th>
-              <th style={{ width: 100 }}>Valor (R$)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {lines.map((l) => (
-              <tr key={l.productName}>
-                <td>{l.productName}</td>
-                <td>{formatQty(l.orderedQty, l.productSlug)}</td>
-                <td className={l.deliveredQty === null ? "mono" : undefined} style={l.deliveredQty === null ? { color: "#8B3A2E" } : undefined}>
-                  {l.deliveredQty === null ? "—" : formatQty(l.deliveredQty, l.productSlug)}
-                </td>
-                <td>{formatQty(l.returnedQty, l.productSlug)}</td>
-                <td>{fmtMoney(l.payment)}</td>
-              </tr>
-            ))}
-            {lines.length === 0 && (
+        {/* Rola dentro da ficha no celular; na impressão sai inteira. */}
+        <div className="table-scroll">
+          <table>
+            <thead>
               <tr>
-                <td colSpan={5} className="table-foot-note">
-                  Nenhum lançamento nesta semana.
-                </td>
+                <th>Produto</th>
+                <th style={{ width: 90 }}>Pedido</th>
+                <th style={{ width: 90 }}>Entrega</th>
+                <th style={{ width: 90 }}>Devolução</th>
+                <th style={{ width: 90 }}>Aceito</th>
+                <th style={{ width: 100 }}>Preço líquido</th>
+                <th style={{ width: 100 }}>Valor (R$)</th>
               </tr>
+            </thead>
+            <tbody>
+              {lines.map((l) => (
+                <tr key={l.productName}>
+                  <td>{l.productName}</td>
+                  <td>{formatQty(l.orderedQty, l.productSlug)}</td>
+                  <td className={l.deliveredQty === null ? "mono" : undefined} style={l.deliveredQty === null ? { color: "#8B3A2E" } : undefined}>
+                    {l.deliveredQty === null ? "—" : formatQty(l.deliveredQty, l.productSlug)}
+                  </td>
+                  <td>{formatQty(l.returnedQty, l.productSlug)}</td>
+                  <td>{l.acceptedQty === null ? "—" : formatQty(l.acceptedQty, l.productSlug)}</td>
+                  <td>{l.netPrice === null ? "—" : fmtMoney(l.netPrice)}</td>
+                  <td>{fmtMoney(l.payment)}</td>
+                </tr>
+              ))}
+              {lines.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="table-foot-note">
+                    Nenhum lançamento nesta semana.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+            {lines.length > 0 && (
+              <tfoot>
+                <tr style={{ borderTop: "2px solid var(--ink)", fontWeight: 600 }}>
+                  <td>Total</td>
+                  <td>{formatQtyNumber(totals.ordered)}</td>
+                  <td>{formatQtyNumber(totals.delivered)}</td>
+                  <td>{formatQtyNumber(totals.returned)}</td>
+                  <td>{formatQtyNumber(totals.accepted)}</td>
+                  <td />
+                  <td>{fmtMoney(totals.payment)}</td>
+                </tr>
+              </tfoot>
             )}
-          </tbody>
-          {lines.length > 0 && (
-            <tfoot>
-              <tr style={{ borderTop: "2px solid var(--ink)", fontWeight: 600 }}>
-                <td>Total</td>
-                <td>{formatQtyNumber(totals.ordered)}</td>
-                <td>{formatQtyNumber(totals.delivered)}</td>
-                <td>{formatQtyNumber(totals.returned)}</td>
-                <td>{fmtMoney(totals.payment)}</td>
-              </tr>
-            </tfoot>
-          )}
-        </table>
+          </table>
+        </div>
 
-        <div className="rm-sign">
-          <div className="line">Assinatura do produtor</div>
-          <div className="line">Data</div>
+        <p className="table-foot-note" style={{ textAlign: "left" }}>
+          Aceito = Entrega − Devolução. Valor = Aceito × Preço líquido (preço − desconto de logística, os dois congelados no lançamento da
+          entrega). O total soma os valores já arredondados de cada linha.
+        </p>
+
+        <div className="rm-sign" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+          <div className="line">Assinatura do produtor ou responsável pela entrega</div>
+          <div className="line">Data do recebimento: ____/____/______</div>
+          <div className="line">Horário: ____:____</div>
         </div>
       </div>
     </>

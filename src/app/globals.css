@@ -949,6 +949,9 @@ footer.build-note {
     padding: 0;
     max-width: none;
   }
+  .romaneio-sheet .table-scroll {
+    overflow: visible;
+  }
 }
 
 /* ========================================================================== */
