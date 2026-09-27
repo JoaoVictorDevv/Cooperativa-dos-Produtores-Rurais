@@ -26,7 +26,18 @@ não é validável.
 | Comparação com divergência proposital (teste unitário) | Detecta pagamento, custo, pedido e diferença divergentes e lançamento que existe só de um lado. |
 | **Ciclo real fechado** | **Não executado nesta sessão.** Não há ciclo real acessível: a leitura do banco configurado no ambiente foi bloqueada pela política de permissões da sessão e as planilhas de referência (v20, v27, v35) são modelos sem dados. |
 
-**Para validar um ciclo real** (quem tem acesso; nada é gravado):
+**Para validar um ciclo real pelo próprio app (27/09/2026):** na página de uma
+semana **fechada**, um ADMIN vê o link **"Validar este ciclo fechado"**
+(`/semanas/<id>/validacao`). A tela roda a mesma comparação, só lê (nenhuma
+ação, nada gravado — conferido: 0 registros de auditoria ao abrir) e mostra:
+resultado geral, total a pagar, custos, galpão linha a linha, diferença por
+produto, anomalias e o que não é validável. CONSULTA e OPERADOR recebem
+"restrita a administradores"; ciclo aberto recebe "só em ciclos fechados".
+Testada pelo navegador num ciclo fechado fictício (banco descartável): 24 de 24
+conferem; 390 px sem rolagem lateral. **Em produção, basta um ADMIN abrir a
+tela num ciclo fechado real** — sem acesso ao banco e sem rodar script.
+
+**Alternativa por linha de comando** (quem tem acesso; nada é gravado):
 
 ```bash
 VALIDATION_DATABASE_URL="postgresql://…" npx tsx scripts/validate-closed-cycle.ts --semana <número> --saida validacao.md

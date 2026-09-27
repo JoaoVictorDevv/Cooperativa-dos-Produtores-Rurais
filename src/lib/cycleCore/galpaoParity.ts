@@ -37,6 +37,11 @@ export interface ParityReport {
 }
 
 const same = (a: number, b: number) => Math.abs(round2(a) - round2(b)) < 0.005;
+const money = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(round2(v));
+const ROUNDING_TEXT: Record<string, string> = {
+  POR_LINHA: "soma das linhas já arredondadas",
+  TOTAL_LEGADO: "total arredondado só no fim, regra dos ciclos anteriores a 27/09/2026",
+};
 
 export function compareGalpao(
   legacy: LegacyGalpao,
@@ -98,7 +103,7 @@ export function compareGalpao(
     anomalies,
     notValidated: [
       `Cobrança da prefeitura pelo aceito na escola: sem base em nenhum ciclo — não há registro de entrega por escola/produto (bloqueio de persistência do Lucas). ` +
-        `O valor oficial deste ciclo continua o do modelo atual (pedido − devolução): ${round2(legacy.treasuryTotal).toFixed(2)}, arredondamento ${legacy.treasuryRounding}. Não recalculado.`,
+        `O valor oficial deste ciclo continua o do modelo atual (pedido − devolução): ${money(legacy.treasuryTotal)} (${ROUNDING_TEXT[legacy.treasuryRounding] ?? legacy.treasuryRounding}). Não recalculado.`,
       "Falta, excedente, rejeição e perda por escola, complementos e decisões de falta: mesmos motivos.",
     ],
   };

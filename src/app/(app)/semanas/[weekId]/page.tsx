@@ -113,6 +113,14 @@ export default async function WeekDetailPage({ params }: { params: Promise<{ wee
           <div className="qb-label">Balanço Financeiro</div>
         </Link>
       </div>
+      {week.status === "FECHADA" && user.role === "ADMIN" && (
+        <p className="table-foot-note" style={{ textAlign: "left" }}>
+          <Link className="link-action" href={`/semanas/${week.id}/validacao`}>
+            Validar este ciclo fechado
+          </Link>{" "}
+          — confere galpão, custos e diferença entre o modelo atual e a lógica corrigida (só leitura, só administradores).
+        </p>
+      )}
       <p className="table-foot-note" style={{ textAlign: "left" }}>
         Complementos e encerramento de faltas por escola ainda dependem do banco novo.{" "}
         <Link className="link-action" href="/complementos-faltas">
