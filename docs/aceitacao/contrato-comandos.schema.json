@@ -36,7 +36,7 @@
                 "type": "null"
               }
             ],
-            "description": "Quantidade apresentada à escola. null = não informado (pendente); 0 = zero confirmado."
+            "description": "Total entregue à escola nesta visita (linha do romaneio), inclusive o que veio de complemento na mesma viagem. null = não informado (pendente); 0 = zero confirmado."
           },
           "rejectedQty": {
             "type": "number",
@@ -281,6 +281,14 @@
               }
             ],
             "description": "Obrigatório: de onde veio o produto."
+          },
+          "trip": {
+            "type": "string",
+            "enum": [
+              "MESMA_VIAGEM",
+              "OUTRA_VIAGEM"
+            ],
+            "description": "Obrigatório, sem padrão. RN-22. MESMA_VIAGEM: foi na mesma carga da entrega inicial → um romaneio só; a entrega inicial registra o TOTAL do romaneio e este registro guarda só a origem (sem rejeição, perda, deliveredAt ou receivedBy próprios; não soma de novo no entregue à escola). OUTRA_VIAGEM: nova entrega física, com romaneio próprio."
           }
         },
         "required": [
@@ -290,7 +298,8 @@
           "productId",
           "presentedQty",
           "rejectedQty",
-          "source"
+          "source",
+          "trip"
         ],
         "additionalProperties": false
       },
@@ -424,6 +433,22 @@
                         "additionalProperties": false
                       }
                     ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "trip": {
+                "description": "Só em complemento. RN-22. MESMA_VIAGEM: foi na mesma carga da entrega inicial → um romaneio só; a entrega inicial registra o TOTAL do romaneio e este registro guarda só a origem (sem rejeição, perda, deliveredAt ou receivedBy próprios; não soma de novo no entregue à escola). OUTRA_VIAGEM: nova entrega física, com romaneio próprio.",
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "MESMA_VIAGEM",
+                      "OUTRA_VIAGEM"
+                    ],
+                    "description": "RN-22. MESMA_VIAGEM: foi na mesma carga da entrega inicial → um romaneio só; a entrega inicial registra o TOTAL do romaneio e este registro guarda só a origem (sem rejeição, perda, deliveredAt ou receivedBy próprios; não soma de novo no entregue à escola). OUTRA_VIAGEM: nova entrega física, com romaneio próprio."
                   },
                   {
                     "type": "null"
@@ -875,6 +900,20 @@
                 }
               ]
             },
+            "trip": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "MESMA_VIAGEM",
+                    "OUTRA_VIAGEM"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "deliveredAt": {
               "anyOf": [
                 {
@@ -926,6 +965,7 @@
             "lossBeforeSchoolQty",
             "lossReason",
             "source",
+            "trip",
             "deliveredAt",
             "receivedBy",
             "idempotencyKey",

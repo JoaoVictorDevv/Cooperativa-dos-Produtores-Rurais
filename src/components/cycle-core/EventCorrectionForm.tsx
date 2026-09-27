@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useMemo, useState } from "react";
-import { evaluateLedgerLine, executeCommand, type Actor, type CommandResult, type CycleCommand, type CycleLedger, type DeliveryEvent } from "@/lib/domain/cycleLedger";
+import { evaluateLedgerLine, executeCommand, type Actor, type CommandResult, type ComplementTrip, type CycleCommand, type CycleLedger, type DeliveryEvent } from "@/lib/domain/cycleLedger";
 import { fmtQty, parseQty } from "./labels";
 
 const field = { display: "grid", gap: 4, fontSize: 12.5 } as const;
@@ -26,7 +26,10 @@ export function EventCorrectionForm(props: {
   const [rejectionReason, setRejectionReason] = useState(e.rejectionReason ?? "");
   const [loss, setLoss] = useState(String(e.lossBeforeSchoolQty));
   const [lossReason, setLossReason] = useState(e.lossReason ?? "");
+  const [trip, setTrip] = useState<ComplementTrip | null>(e.trip);
   const [reason, setReason] = useState("");
+  // Complemento da mesma viagem (RN-22): só a quantidade desta origem.
+  const sameTrip = e.kind === "COMPLEMENTO" && trip === "MESMA_VIAGEM";
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,15 +39,27 @@ export function EventCorrectionForm(props: {
       eventId: e.id,
       expectedVersion: e.version,
       reason,
-      changes: {
-        presentedQty: parseQty(presented),
-        rejectedQty: parseQty(rejected) ?? 0,
-        rejectionReason: rejectionReason || null,
-        lossBeforeSchoolQty: parseQty(loss) ?? 0,
-        lossReason: lossReason || null,
-      },
+      changes: sameTrip
+        ? {
+            presentedQty: parseQty(presented),
+            rejectedQty: 0,
+            rejectionReason: null,
+            lossBeforeSchoolQty: 0,
+            lossReason: null,
+            trip,
+            deliveredAt: null,
+            receivedBy: null,
+          }
+        : {
+            presentedQty: parseQty(presented),
+            rejectedQty: parseQty(rejected) ?? 0,
+            rejectionReason: rejectionReason || null,
+            lossBeforeSchoolQty: parseQty(loss) ?? 0,
+            lossReason: lossReason || null,
+            ...(e.kind === "COMPLEMENTO" ? { trip } : {}),
+          },
     }),
-    [e.id, e.version, reason, presented, rejected, rejectionReason, loss, lossReason],
+    [e.id, e.version, e.kind, reason, presented, rejected, rejectionReason, loss, lossReason, trip, sameTrip],
   );
 
   const preview = useMemo(() => {
@@ -73,26 +88,39 @@ export function EventCorrectionForm(props: {
     <div className="card" style={{ padding: 14, display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 12, background: "var(--bg)" }}>
       <strong style={{ fontSize: 13.5 }}>Corrigir lançamento (versão {e.version})</strong>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
+        {e.kind === "COMPLEMENTO" && (
+          <label style={field} htmlFor={`${ids}-t`}>
+            Quando chegou à escola
+            <select id={`${ids}-t`} className="cell-input" style={{ width: 230 }} value={trip ?? ""} onChange={(ev) => setTrip(ev.target.value as ComplementTrip)}>
+              <option value="MESMA_VIAGEM">Mesma viagem (romaneio único)</option>
+              <option value="OUTRA_VIAGEM">Outra viagem (romaneio próprio)</option>
+            </select>
+          </label>
+        )}
         <label style={field} htmlFor={`${ids}-p`}>
-          Entregue ({props.unit})
+          {sameTrip ? `Veio desta origem (${props.unit})` : `Entregue (${props.unit})`}
           <input id={`${ids}-p`} className="cell-input" style={{ width: 110 }} inputMode="decimal" value={presented} onChange={(ev) => setPresented(ev.target.value)} />
         </label>
-        <label style={field} htmlFor={`${ids}-r`}>
-          Rejeitado ({props.unit})
-          <input id={`${ids}-r`} className="cell-input" style={{ width: 110 }} inputMode="decimal" value={rejected} onChange={(ev) => setRejected(ev.target.value)} />
-        </label>
-        <label style={field} htmlFor={`${ids}-rr`}>
-          Motivo da rejeição
-          <input id={`${ids}-rr`} className="cell-input" style={{ width: 220 }} list={`${ids}-reasons`} value={rejectionReason} onChange={(ev) => setRejectionReason(ev.target.value)} />
-        </label>
-        <label style={field} htmlFor={`${ids}-l`}>
-          Perda antes da escola ({props.unit})
-          <input id={`${ids}-l`} className="cell-input" style={{ width: 110 }} inputMode="decimal" value={loss} onChange={(ev) => setLoss(ev.target.value)} />
-        </label>
-        <label style={field} htmlFor={`${ids}-lr`}>
-          Motivo da perda
-          <input id={`${ids}-lr`} className="cell-input" style={{ width: 220 }} list={`${ids}-reasons`} value={lossReason} onChange={(ev) => setLossReason(ev.target.value)} />
-        </label>
+        {!sameTrip && (
+          <>
+            <label style={field} htmlFor={`${ids}-r`}>
+              Rejeitado ({props.unit})
+              <input id={`${ids}-r`} className="cell-input" style={{ width: 110 }} inputMode="decimal" value={rejected} onChange={(ev) => setRejected(ev.target.value)} />
+            </label>
+            <label style={field} htmlFor={`${ids}-rr`}>
+              Motivo da rejeição
+              <input id={`${ids}-rr`} className="cell-input" style={{ width: 220 }} list={`${ids}-reasons`} value={rejectionReason} onChange={(ev) => setRejectionReason(ev.target.value)} />
+            </label>
+            <label style={field} htmlFor={`${ids}-l`}>
+              Perda antes da escola ({props.unit})
+              <input id={`${ids}-l`} className="cell-input" style={{ width: 110 }} inputMode="decimal" value={loss} onChange={(ev) => setLoss(ev.target.value)} />
+            </label>
+            <label style={field} htmlFor={`${ids}-lr`}>
+              Motivo da perda
+              <input id={`${ids}-lr`} className="cell-input" style={{ width: 220 }} list={`${ids}-reasons`} value={lossReason} onChange={(ev) => setLossReason(ev.target.value)} />
+            </label>
+          </>
+        )}
       </div>
       <datalist id={`${ids}-reasons`}>
         {props.reasonOptions.map((r) => (

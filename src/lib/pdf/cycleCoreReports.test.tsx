@@ -35,7 +35,7 @@ async function pdfText(ledger: CycleLedger, key: CycleCoreReportKey, options = {
 
 const withComplement = () =>
   apply(buildDemoLedger(), [
-    { type: "REGISTRAR_COMPLEMENTO", idempotencyKey: "c", schoolId: "EA", productId: "alface", presentedQty: 30, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "P2" }, deliveredAt: "2026-09-29T14:10" },
+    { type: "REGISTRAR_COMPLEMENTO", trip: "OUTRA_VIAGEM", idempotencyKey: "c", schoolId: "EA", productId: "alface", presentedQty: 30, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "P2" }, deliveredAt: "2026-09-29T14:10" },
   ]);
 
 describe("PDFs pela lógica corrigida", () => {
@@ -113,7 +113,7 @@ describe("PDFs pela lógica corrigida", () => {
     const commands: CycleCommand[] = schools.flatMap((s, si) =>
       products.map((p) => ({ type: "REGISTRAR_ENTREGA_INICIAL" as const, idempotencyKey: `${s}${p}`, schoolId: s, productId: p, presentedQty: si % 10 === 0 ? 8 : 10, rejectedQty: 0 })),
     );
-    commands.push(...schools.filter((_, si) => si % 10 === 0).map((s) => ({ type: "REGISTRAR_COMPLEMENTO" as const, idempotencyKey: `c${s}`, schoolId: s, productId: "prod0", presentedQty: 2, rejectedQty: 0, source: { type: "SALDO_GALPAO" as const } })));
+    commands.push(...schools.filter((_, si) => si % 10 === 0).map((s) => ({ type: "REGISTRAR_COMPLEMENTO" as const, trip: "OUTRA_VIAGEM" as const, idempotencyKey: `c${s}`, schoolId: s, productId: "prod0", presentedQty: 2, rejectedQty: 0, source: { type: "SALDO_GALPAO" as const } })));
     const ledger = apply(base, commands);
     const timings: string[] = [];
     for (const key of ["entregas-escolas", "romaneios-escolas", "balanco"] as const) {

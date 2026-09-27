@@ -473,3 +473,43 @@ describe("spec 008 — prévia de fechamento (a cobrar, a pagar, faltas encerrad
     ]);
   });
 });
+
+describe("spec 008 RN-22 — complemento na mesma viagem (romaneio único)", () => {
+  const line = (events: SchoolLineInput["events"]) => evaluateSchoolLine({ schoolId: "e", productId: ALFACE, orderedQty: 200, events });
+
+  it("a entrega inicial já é o total do romaneio: a origem da mesma viagem não soma de novo (200, não 230)", () => {
+    const r = line([
+      { kind: "INICIAL", presentedQty: 200, rejectedQty: 0, sourceProducerId: "A" },
+      { kind: "COMPLEMENTO", presentedQty: 30, rejectedQty: 0, sourceProducerId: "B", sameTrip: true },
+    ]);
+    expect(r).toMatchObject({ receiptStatus: "CONFERIDO", presentedQty: 200, acceptedQty: 200, shortageQty: 0, excessQty: 0 });
+  });
+
+  it("complemento de outra viagem soma normalmente", () => {
+    const r = line([
+      { kind: "INICIAL", presentedQty: 170, rejectedQty: 0 },
+      { kind: "COMPLEMENTO", presentedQty: 30, rejectedQty: 0, sameTrip: false },
+    ]);
+    expect(r).toMatchObject({ presentedQty: 200, acceptedQty: 200 });
+  });
+
+  it("origens da mesma viagem acima do total da entrega inicial, ou com rejeição própria, são erro", () => {
+    const acima = line([
+      { kind: "INICIAL", presentedQty: 20, rejectedQty: 0 },
+      { kind: "COMPLEMENTO", presentedQty: 30, rejectedQty: 0, sameTrip: true },
+    ]);
+    expect(acima.receiptStatus).toBe("ERRO");
+    expect(acima.errors.map((e) => e.message).join(" ")).toMatch(/total do romaneio/);
+    const comRejeicao = line([
+      { kind: "INICIAL", presentedQty: 200, rejectedQty: 0 },
+      { kind: "COMPLEMENTO", presentedQty: 30, rejectedQty: 5, sameTrip: true },
+    ]);
+    expect(comRejeicao.receiptStatus).toBe("ERRO");
+  });
+
+  it("sem entrega inicial conferida, a origem da mesma viagem não conta como entregue: linha pendente", () => {
+    const r = line([{ kind: "COMPLEMENTO", presentedQty: 30, rejectedQty: 0, sameTrip: true }]);
+    expect(r).toMatchObject({ receiptStatus: "PENDENTE_CONFERENCIA", presentedQty: 0, acceptedQty: 0 });
+    expect(r.blockers).toContain("ENTREGA_INICIAL_NAO_INFORMADA");
+  });
+});

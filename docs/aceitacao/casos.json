@@ -1,6 +1,6 @@
 {
-  "versao": 1,
-  "descricao": "Casos de aceitação da spec 008 (complementos, faltas, fechamento), do galpão e do arredondamento. Cada caso: estado inicial (CycleLedger), passos (comandos com o resultado esperado) e expectativas finais. Ids de evento são gerados em ordem: ev-1, ev-2, ... Perfil padrão: OPERADOR. Ver docs/aceitacao/README.md.",
+  "versao": 2,
+  "descricao": "Casos de aceitação da spec 008 (complementos, faltas, fechamento), do galpão e do arredondamento. Versão 2 (27/09/2026): complemento exige trip (MESMA_VIAGEM = romaneio único, OUTRA_VIAGEM = romaneio próprio; RN-22). Cada caso: estado inicial (CycleLedger), passos (comandos com o resultado esperado) e expectativas finais. Ids de evento são gerados em ordem: ev-1, ev-2, ... Perfil padrão: OPERADOR. Ver docs/aceitacao/README.md.",
   "casos": [
     {
       "id": "exemplo-200-180-170",
@@ -185,7 +185,7 @@
     },
     {
       "id": "complemento-outro-produtor",
-      "titulo": "Complemento de 30 aceitos de outro produtor: escola 200; produtor original 180; novo 30; perda de 10 mantida; cobra 200 uma vez",
+      "titulo": "Complemento de 30 aceitos de outro produtor em outra viagem: escola 200; produtor original 180; novo 30; perda de 10 mantida; cobra 200 uma vez",
       "origem": "prompt v2 §7 e §17; spec 008 CA-008.2",
       "inicial": {
         "cycleId": "ciclo-1",
@@ -248,6 +248,7 @@
         {
           "command": {
             "type": "REGISTRAR_COMPLEMENTO",
+            "trip": "OUTRA_VIAGEM",
             "idempotencyKey": "k-comp",
             "schoolId": "E1",
             "productId": "alface",
@@ -295,6 +296,315 @@
           }
         ]
       }
+    },
+    {
+      "id": "complemento-mesma-viagem",
+      "titulo": "Complemento na mesma viagem: um romaneio só com o total (170 + 30 = 200); origem registrada para pagar os dois produtores; cobra 200, não 230",
+      "origem": "planilha MODELO v22 (Índice, 'Complemento: primeira carga ou outra viagem'); spec 008 RN-22, CA-008.21",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 200,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 30,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          },
+          {
+            "producerId": "B",
+            "productId": "alface",
+            "grossQty": 30,
+            "rejectedQty": 0,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_COMPLEMENTO",
+            "trip": "MESMA_VIAGEM",
+            "idempotencyKey": "k-mv",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 30,
+            "rejectedQty": 0,
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "B"
+            }
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO",
+            "warningsContain": [
+              "TOTAL entregue"
+            ]
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-ini",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 200,
+            "rejectedQty": 0,
+            "rejectionReason": null,
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        }
+      ],
+      "linhas": [
+        {
+          "schoolId": "E1",
+          "productId": "alface",
+          "expect": {
+            "presentedQty": 200,
+            "acceptedQty": 200,
+            "shortageQty": 0,
+            "attendance": "OK",
+            "readyToClose": true
+          }
+        }
+      ],
+      "fechamento": {
+        "state": "PRONTO_PARA_FECHAR",
+        "canClose": true,
+        "receivableTotal": 2924,
+        "payableTotal": 2190,
+        "payableLines": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "acceptedQty": 170,
+            "value": 1861.5
+          },
+          {
+            "producerId": "B",
+            "productId": "alface",
+            "acceptedQty": 30,
+            "value": 328.5
+          }
+        ]
+      },
+      "totaisPorUnidade": {
+        "kg": {
+          "acceptedAtSchoolQty": 200,
+          "acceptedAtWarehouseQty": 200
+        }
+      }
+    },
+    {
+      "id": "mesma-viagem-limites",
+      "titulo": "Mesma viagem: sem rejeição, perda, data ou recebedor próprios; origens não passam do total da entrega inicial; trocar para outra viagem soma de novo",
+      "origem": "spec 008 RN-22, CA-008.22",
+      "inicial": {
+        "cycleId": "ciclo-1",
+        "status": "ABERTO",
+        "orders": [
+          {
+            "schoolId": "E1",
+            "productId": "alface",
+            "orderedQty": 200,
+            "unit": "kg",
+            "price": 14.62
+          }
+        ],
+        "warehouseReceipts": [
+          {
+            "producerId": "A",
+            "productId": "alface",
+            "grossQty": 200,
+            "rejectedQty": 30,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          },
+          {
+            "producerId": "B",
+            "productId": "alface",
+            "grossQty": 30,
+            "rejectedQty": 0,
+            "unit": "kg",
+            "price": 14.62,
+            "logisticsDeductionSnapshot": 3.67
+          }
+        ],
+        "events": [],
+        "decisions": [],
+        "audit": []
+      },
+      "passos": [
+        {
+          "command": {
+            "type": "REGISTRAR_ENTREGA_INICIAL",
+            "idempotencyKey": "k-ini",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 200,
+            "rejectedQty": 0,
+            "rejectionReason": null,
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "A"
+            },
+            "deliveredAt": "2026-09-28T09:40",
+            "receivedBy": "Merendeira"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_COMPLEMENTO",
+            "trip": "MESMA_VIAGEM",
+            "idempotencyKey": "k-rej",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 30,
+            "rejectedQty": 5,
+            "rejectionReason": "Folhas murchas",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "B"
+            }
+          },
+          "expect": {
+            "ok": false,
+            "code": "INVALIDO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_COMPLEMENTO",
+            "trip": "MESMA_VIAGEM",
+            "idempotencyKey": "k-data",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 30,
+            "rejectedQty": 0,
+            "deliveredAt": "2026-09-28T11:00",
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "B"
+            }
+          },
+          "expect": {
+            "ok": false,
+            "code": "INVALIDO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_COMPLEMENTO",
+            "trip": "MESMA_VIAGEM",
+            "idempotencyKey": "k-mais",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 250,
+            "rejectedQty": 0,
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "B"
+            }
+          },
+          "expect": {
+            "ok": false,
+            "code": "INVALIDO"
+          }
+        },
+        {
+          "command": {
+            "type": "REGISTRAR_COMPLEMENTO",
+            "trip": "MESMA_VIAGEM",
+            "idempotencyKey": "k-mv",
+            "schoolId": "E1",
+            "productId": "alface",
+            "presentedQty": 30,
+            "rejectedQty": 0,
+            "source": {
+              "type": "PRODUTOR",
+              "producerId": "B"
+            }
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        },
+        {
+          "command": {
+            "type": "CORRIGIR_EVENTO",
+            "eventId": "ev-1",
+            "expectedVersion": 1,
+            "changes": {
+              "presentedQty": 20
+            },
+            "reason": "Digitação"
+          },
+          "expect": {
+            "ok": false,
+            "code": "INVALIDO"
+          }
+        },
+        {
+          "command": {
+            "type": "CORRIGIR_EVENTO",
+            "eventId": "ev-2",
+            "expectedVersion": 1,
+            "changes": {
+              "trip": "OUTRA_VIAGEM"
+            },
+            "reason": "Chegou numa segunda viagem"
+          },
+          "expect": {
+            "ok": true,
+            "effect": "APLICADO"
+          }
+        }
+      ],
+      "linhas": [
+        {
+          "schoolId": "E1",
+          "productId": "alface",
+          "expect": {
+            "presentedQty": 230,
+            "acceptedQty": 230,
+            "excessQty": 30,
+            "attendance": "EXCEDENTE"
+          }
+        }
+      ]
     },
     {
       "id": "complemento-sem-recebimento-galpao",
@@ -352,6 +662,7 @@
         {
           "command": {
             "type": "REGISTRAR_COMPLEMENTO",
+            "trip": "OUTRA_VIAGEM",
             "idempotencyKey": "k-comp",
             "schoolId": "E1",
             "productId": "alface",
@@ -413,6 +724,7 @@
         {
           "command": {
             "type": "REGISTRAR_COMPLEMENTO",
+            "trip": "OUTRA_VIAGEM",
             "idempotencyKey": "k-c",
             "schoolId": "E2",
             "productId": "couve",

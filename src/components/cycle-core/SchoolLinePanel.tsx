@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { SchoolLineResult } from "@/lib/domain/cycle";
-import type { Actor, CommandResult, CycleCommand, CycleLedger } from "@/lib/domain/cycleLedger";
+import { isSameTrip, type Actor, type CommandResult, type CycleCommand, type CycleLedger } from "@/lib/domain/cycleLedger";
 import { EventCorrectionForm } from "./EventCorrectionForm";
 import { EventForm } from "./EventForm";
 import { ShortageDecisionForm } from "./ShortageDecisionForm";
@@ -107,10 +107,12 @@ export function SchoolLinePanel(props: {
             {events.map((e) => (
               <tr key={e.id}>
                 <td>
-                  {e.kind === "INICIAL" ? "Entrega inicial" : `Complemento ${complementNumber.get(e.id)}`}
+                  {e.kind === "INICIAL" ? "Entrega inicial (total do romaneio)" : `Complemento ${complementNumber.get(e.id)}`}
+                  {isSameTrip(e) && <div className="stat-sub">mesma viagem — incluído na entrega inicial</div>}
+                  {e.kind === "COMPLEMENTO" && e.trip === "OUTRA_VIAGEM" && <div className="stat-sub">outra viagem — romaneio próprio</div>}
                   {e.version > 1 && <span className="stat-sub"> · corrigido (v{e.version})</span>}
                 </td>
-                <td className="mono">{e.presentedQty === null ? "não informado" : fmtQty(e.presentedQty)}</td>
+                <td className="mono">{e.presentedQty === null ? "não informado" : isSameTrip(e) ? `(${fmtQty(e.presentedQty)})` : fmtQty(e.presentedQty)}</td>
                 <td className="mono">
                   {fmtQty(e.rejectedQty)}
                   {e.rejectionReason && <div className="stat-sub">{e.rejectionReason}</div>}
@@ -120,8 +122,8 @@ export function SchoolLinePanel(props: {
                   {e.lossReason && <div className="stat-sub">{e.lossReason}</div>}
                 </td>
                 <td>{sourceLabel(e.source, names)}</td>
-                <td>{fmtDateTime(e.deliveredAt)}</td>
-                <td>{e.receivedBy ?? "—"}</td>
+                <td>{isSameTrip(e) ? "a do romaneio inicial" : fmtDateTime(e.deliveredAt)}</td>
+                <td>{isSameTrip(e) ? "—" : (e.receivedBy ?? "—")}</td>
                 <td>
                   {!props.readOnly && (
                     <button type="button" className="btn-tiny" onClick={() => setOpen({ form: "CORRIGIR", eventId: e.id })}>

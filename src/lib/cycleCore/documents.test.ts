@@ -78,8 +78,8 @@ describe("romaneios por evento", () => {
 
   it("depois de registrada, a entrega inicial sai conforme registro; complementos posteriores mostram o aceito antes", () => {
     const l = apply(buildDemoLedger(), [
-      { type: "REGISTRAR_COMPLEMENTO", idempotencyKey: "c1", schoolId: "EA", productId: "alface", presentedQty: 20, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "P2" }, deliveredAt: "2026-09-29T14:00" },
-      { type: "REGISTRAR_COMPLEMENTO", idempotencyKey: "c2", schoolId: "EA", productId: "alface", presentedQty: 10, rejectedQty: 0, source: { type: "SALDO_GALPAO" }, deliveredAt: "2026-09-30T08:00" },
+      { type: "REGISTRAR_COMPLEMENTO", trip: "OUTRA_VIAGEM", idempotencyKey: "c1", schoolId: "EA", productId: "alface", presentedQty: 20, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "P2" }, deliveredAt: "2026-09-29T14:00" },
+      { type: "REGISTRAR_COMPLEMENTO", trip: "OUTRA_VIAGEM", idempotencyKey: "c2", schoolId: "EA", productId: "alface", presentedQty: 10, rejectedQty: 0, source: { type: "SALDO_GALPAO" }, deliveredAt: "2026-09-30T08:00" },
     ]);
     const ea = eventRomaneios(l, names, "S1", "EA");
     expect(ea.map((d) => d.docNumber)).toEqual(["S1-EA", "S1-EA-C1", "S1-EA-C2"]);
@@ -93,13 +93,36 @@ describe("romaneios por evento", () => {
   it("complementos da mesma escola com a mesma data/hora saem no mesmo romaneio", () => {
     const l = apply(buildDemoLedger(), [
       { type: "REGISTRAR_ENTREGA_INICIAL", idempotencyKey: "i", schoolId: "ED", productId: "alface", presentedQty: 30, rejectedQty: 0 },
-      { type: "REGISTRAR_COMPLEMENTO", idempotencyKey: "a", schoolId: "EA", productId: "alface", presentedQty: 5, rejectedQty: 0, source: { type: "SALDO_GALPAO" }, deliveredAt: "2026-09-29T14:00" },
+      { type: "REGISTRAR_COMPLEMENTO", trip: "OUTRA_VIAGEM", idempotencyKey: "a", schoolId: "EA", productId: "alface", presentedQty: 5, rejectedQty: 0, source: { type: "SALDO_GALPAO" }, deliveredAt: "2026-09-29T14:00" },
     ]);
     const multi: CycleLedger = { ...l, orders: [...l.orders, { schoolId: "EA", productId: "couve", orderedQty: 10, unit: "kg", price: 8.1 }] };
-    const l2 = apply(multi, [{ type: "REGISTRAR_COMPLEMENTO", idempotencyKey: "b", schoolId: "EA", productId: "couve", presentedQty: 10, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "P3" }, deliveredAt: "2026-09-29T14:00" }]);
+    const l2 = apply(multi, [{ type: "REGISTRAR_COMPLEMENTO", trip: "OUTRA_VIAGEM", idempotencyKey: "b", schoolId: "EA", productId: "couve", presentedQty: 10, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "P3" }, deliveredAt: "2026-09-29T14:00" }]);
     const c = eventRomaneios(l2, names, "S1", "EA").filter((d) => d.kind === "COMPLEMENTO");
     expect(c).toHaveLength(1);
     expect(c[0].lines.map((x) => x.productId)).toEqual(["alface", "couve"]);
+  });
+});
+
+describe("romaneio por escola e visita (RN-22)", () => {
+  it("complemento na mesma viagem não gera romaneio: o da entrega inicial traz o total; diferença conta 40, não 55", () => {
+    const l = apply(buildDemoLedger(), [
+      { type: "REGISTRAR_ENTREGA_INICIAL", idempotencyKey: "i", schoolId: "ED", productId: "alface", presentedQty: 40, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "P1" }, deliveredAt: "2026-09-28T10:30" },
+      { type: "REGISTRAR_COMPLEMENTO", trip: "MESMA_VIAGEM", idempotencyKey: "mv", schoolId: "ED", productId: "alface", presentedQty: 15, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "P2" } },
+    ]);
+    const ed = eventRomaneios(l, names, "S1", "ED");
+    expect(ed.map((d) => [d.docNumber, d.kind, d.mode])).toEqual([["S1-ED", "INICIAL", "REGISTRADO"]]);
+    expect(ed[0].lines[0]).toMatchObject({ presentedQty: 40, acceptedQty: 40 });
+    // EA 180 + ED 40 entregues às escolas.
+    expect(differenceReport(l, names).find((r) => r.productId === "alface")).toMatchObject({ presentedToSchools: 220 });
+    expect(attendanceReport(l, names).rows.find((r) => r.schoolId === "ED")).toMatchObject({ presentedQty: 40, acceptedQty: 40, complementCount: 1 });
+  });
+
+  it("complemento em outra viagem continua com romaneio próprio", () => {
+    const l = apply(buildDemoLedger(), [
+      { type: "REGISTRAR_ENTREGA_INICIAL", idempotencyKey: "i", schoolId: "ED", productId: "alface", presentedQty: 25, rejectedQty: 0, deliveredAt: "2026-09-28T10:30" },
+      { type: "REGISTRAR_COMPLEMENTO", trip: "OUTRA_VIAGEM", idempotencyKey: "ov", schoolId: "ED", productId: "alface", presentedQty: 15, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "P2" }, deliveredAt: "2026-09-29T09:00" },
+    ]);
+    expect(eventRomaneios(l, names, "S1", "ED").map((d) => d.docNumber)).toEqual(["S1-ED", "S1-ED-C1"]);
   });
 });
 

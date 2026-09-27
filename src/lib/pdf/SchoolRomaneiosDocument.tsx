@@ -147,7 +147,7 @@ function Romaneio({ school, via, props }: { school: SchoolRomaneio; via: string 
       )}
 
       <Text style={pdfStyles.footNote}>
-        Complementos/reposições no mesmo ciclo usam romaneio próprio, sem alterar este documento. {CADASTRO_DISCLAIMER}
+        Complemento que chega na mesma viagem entra neste romaneio, no total entregue; complemento em outra viagem usa romaneio próprio, sem alterar este documento. {CADASTRO_DISCLAIMER}
       </Text>
       <Text fixed style={{ position: "absolute", bottom: 14, right: 28, fontSize: 7.5, color: "#555" }}>
         {docNumber}

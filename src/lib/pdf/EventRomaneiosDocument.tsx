@@ -4,11 +4,12 @@ import { fmt, type DocumentNames, type EventRomaneio, type RomaneioLine } from "
 import { ROMANEIO_VIAS } from "./SchoolRomaneiosDocument";
 import { CADASTRO_DISCLAIMER, COOP_NAME, pdfStyles } from "./styles";
 
-// Romaneios pela lógica corrigida (spec 004 RD-05, spec 008 RN-06): um
-// documento para a entrega inicial de cada escola e um documento próprio para
-// cada complemento. O inicial "previsto" sai com a conferência em branco; o
-// "registrado" é cópia conforme o sistema. Um complemento nunca altera o
-// documento da entrega inicial.
+// Romaneios pela lógica corrigida (spec 004 RD-05, spec 008 RN-06 e RN-22): um
+// documento por escola e visita. O da entrega inicial já inclui o complemento
+// que foi na mesma viagem (sem documento separado); complemento de outra
+// viagem tem documento próprio, que nunca altera o da entrega inicial. O
+// inicial "previsto" sai com a conferência em branco; o "registrado" é cópia
+// conforme o sistema.
 
 export interface EventRomaneiosProps {
   cycleLabel: string;
@@ -121,10 +122,14 @@ function RomaneioPage({ r, via, props }: { r: EventRomaneio; via: string | null;
 
       {r.kind === "COMPLEMENTO" && (
         <Text style={pdfStyles.methodNotice}>
-          Complemento no mesmo ciclo: nova entrega física, somada às anteriores. Não substitui nem altera o romaneio da entrega inicial ({r.docNumber.replace(/-C\d+$/, "")}).
+          Complemento em outra viagem, no mesmo ciclo: nova entrega física, somada às anteriores. Não substitui nem altera o romaneio da entrega
+          inicial ({r.docNumber.replace(/-C\d+$/, "")}).
         </Text>
       )}
-      <Text style={{ fontSize: 8, marginBottom: 4 }}>Conferência na entrega: Entregue (bruto) - Rejeitado = Aceito. Pedido = solicitado pela prefeitura.</Text>
+      <Text style={{ fontSize: 8, marginBottom: 4 }}>
+        Conferência na entrega: Entregue (bruto) - Rejeitado = Aceito. Pedido = solicitado pela prefeitura.
+        {r.kind === "INICIAL" ? " Entregue (bruto) = tudo o que chegou nesta visita, inclusive complemento que veio na mesma carga." : ""}
+      </Text>
 
       <View style={pdfStyles.headerRow} fixed>
         {cols.map((c) => (

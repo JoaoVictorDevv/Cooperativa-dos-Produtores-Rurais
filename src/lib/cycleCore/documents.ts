@@ -6,7 +6,7 @@
 
 import { round2 } from "../calc";
 import { attendanceRate, evaluateSchoolLine, summarizeCycle, type SchoolLineResult, type Unit } from "../domain/cycle";
-import { cycleInput, ledgerClosingPreview, schoolLineInputs, type CycleLedger, type DeliveryEvent, type LedgerClosingPreview, type SupplySource } from "../domain/cycleLedger";
+import { cycleInput, isSameTrip, ledgerClosingPreview, schoolLineInputs, type CycleLedger, type DeliveryEvent, type LedgerClosingPreview, type SupplySource } from "../domain/cycleLedger";
 
 export interface DocumentNames {
   schools: Record<string, string>;
@@ -224,10 +224,12 @@ function reasonOf(e: DeliveryEvent): string | null {
   return parts.length ? parts.join("; ") : null;
 }
 
-// Um romaneio da entrega inicial por escola (todas as linhas com pedido) e um
-// romaneio próprio para cada complemento — agrupando os complementos da mesma
-// escola com a mesma data/hora real de entrega. O romaneio inicial nunca
-// absorve o complemento: cada documento mostra só a própria entrega.
+// Um romaneio por escola e visita (RN-22). O da entrega inicial traz todas as
+// linhas com pedido; o complemento que foi na MESMA viagem já está no total
+// da entrega inicial e não gera documento (a origem fica só no registro, para
+// o pagamento no galpão). Complemento de OUTRA viagem tem romaneio próprio,
+// agrupando os da mesma escola com a mesma data/hora real de entrega; esse
+// romaneio nunca altera o da entrega inicial.
 export function eventRomaneios(ledger: CycleLedger, names: DocumentNames, cycleCode: string, schoolId?: string): EventRomaneio[] {
   const schools = [...new Set(ledger.orders.filter((o) => o.orderedQty > 0).map((o) => o.schoolId))]
     .filter((s) => !schoolId || s === schoolId)
@@ -262,7 +264,7 @@ export function eventRomaneios(ledger: CycleLedger, names: DocumentNames, cycleC
       }),
     });
 
-    const complements = ledger.events.filter((e) => e.schoolId === s && e.kind === "COMPLEMENTO");
+    const complements = ledger.events.filter((e) => e.schoolId === s && e.kind === "COMPLEMENTO" && !isSameTrip(e));
     const groups: DeliveryEvent[][] = [];
     for (const e of complements) {
       const group = e.deliveredAt ? groups.find((g) => g[0].deliveredAt === e.deliveredAt) : undefined;
@@ -279,7 +281,7 @@ export function eventRomaneios(ledger: CycleLedger, names: DocumentNames, cycleC
         receivedBy: group.find((e) => e.receivedBy)?.receivedBy ?? null,
         lines: group.map((e) => {
           const order = ledger.orders.find((o) => o.schoolId === s && o.productId === e.productId);
-          const earlier = ledger.events.filter((x) => x.schoolId === s && x.productId === e.productId && ledger.events.indexOf(x) < ledger.events.indexOf(e));
+          const earlier = ledger.events.filter((x) => x.schoolId === s && x.productId === e.productId && !isSameTrip(x) && ledger.events.indexOf(x) < ledger.events.indexOf(e));
           return {
             productId: e.productId,
             unit: order?.unit ?? "kg",

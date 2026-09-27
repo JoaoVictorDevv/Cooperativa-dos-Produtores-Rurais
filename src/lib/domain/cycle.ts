@@ -72,6 +72,11 @@ export interface SchoolDeliveryEventInput {
   lossBeforeSchoolQty?: number;
   // Produtor de origem do fornecimento, quando conhecido (complementos).
   sourceProducerId?: string | null;
+  // Complemento que chegou na MESMA viagem da entrega inicial (RN-22): sai no
+  // mesmo romaneio, e a quantidade já está no total da entrega inicial. Só
+  // registra a origem (quem forneceu, para o pagamento no galpão): não soma
+  // de novo no entregue e não tem rejeição nem perda próprias.
+  sameTrip?: boolean;
 }
 
 export type ShortageDecision =
@@ -139,6 +144,18 @@ export function excessOf(orderedQty: number, acceptedQty: number): number {
   return round2(Math.max(acceptedQty - orderedQty, 0));
 }
 
+// Na mesma viagem, a entrega inicial registra o TOTAL do romaneio (ex.: 170 do
+// produtor original + 30 do complemento = 200). As origens da mesma viagem não
+// podem somar mais do que esse total. Enquanto a entrega inicial não foi
+// conferida, não há o que comparar.
+export function sameTripExcess(events: SchoolDeliveryEventInput[]): string | null {
+  const initial = events.find((e) => e.kind === "INICIAL");
+  if (!initial || initial.presentedQty === null) return null;
+  const sameTrip = round2(events.filter((e) => e.kind === "COMPLEMENTO" && e.sameTrip).reduce((sum, e) => sum + Math.max(e.presentedQty ?? 0, 0), 0));
+  if (sameTrip <= round2(initial.presentedQty)) return null;
+  return `A entrega inicial (${round2(initial.presentedQty)}) é o total do romaneio e não pode ser menor que o que veio de complemento na mesma viagem (${sameTrip}). Corrija a entrega inicial para o total entregue ou a quantidade do complemento.`;
+}
+
 export function evaluateSchoolLine(input: SchoolLineInput): SchoolLineResult {
   const errors: ValidationError[] = [];
   if (isNegative(input.orderedQty)) errors.push({ field: "orderedQty", message: "Pedido não pode ser negativo." });
@@ -154,6 +171,16 @@ export function evaluateSchoolLine(input: SchoolLineInput): SchoolLineResult {
     if (isNegative(event.presentedQty)) errors.push({ field: `events.${i}.presentedQty`, message: `${label}: quantidade negativa.` });
     if (isNegative(event.rejectedQty)) errors.push({ field: `events.${i}.rejectedQty`, message: `${label}: rejeição negativa.` });
     if (isNegative(event.lossBeforeSchoolQty)) errors.push({ field: `events.${i}.lossBeforeSchoolQty`, message: `${label}: perda negativa.` });
+    if (event.kind === "COMPLEMENTO" && event.sameTrip) {
+      // Já contado na entrega inicial (romaneio único): só a origem.
+      if (event.presentedQty === null || event.presentedQty <= 0) {
+        errors.push({ field: `events.${i}.presentedQty`, message: `${label} (mesma viagem): informe a quantidade que veio desta origem.` });
+      }
+      if (event.rejectedQty > 0 || (event.lossBeforeSchoolQty ?? 0) > 0) {
+        errors.push({ field: `events.${i}.rejectedQty`, message: `${label} (mesma viagem): rejeição e perda ficam na linha do romaneio, na entrega inicial.` });
+      }
+      return;
+    }
     if (event.presentedQty === null) {
       if (event.rejectedQty > 0) errors.push({ field: `events.${i}.rejectedQty`, message: `${label}: rejeição sem entrega conferida.` });
       pending = true;
@@ -174,6 +201,8 @@ export function evaluateSchoolLine(input: SchoolLineInput): SchoolLineResult {
   if (initialEvents.length > 1) {
     errors.push({ field: "events", message: "Mais de uma entrega inicial para a mesma escola/produto no ciclo." });
   }
+  const sameTripError = sameTripExcess(input.events);
+  if (sameTripError) errors.push({ field: "events", message: sameTripError });
 
   accepted = round2(accepted);
   const orderedQty = round2(input.orderedQty);

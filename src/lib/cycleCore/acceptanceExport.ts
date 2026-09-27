@@ -6,9 +6,10 @@ import { ledgerSchema } from "./ledgerSchema";
 // Conteúdo exato dos arquivos de docs/aceitacao (determinístico).
 export function acceptanceFiles(): Record<string, string> {
   const casos = {
-    versao: 1,
+    versao: 2,
     descricao:
       "Casos de aceitação da spec 008 (complementos, faltas, fechamento), do galpão e do arredondamento. " +
+      "Versão 2 (27/09/2026): complemento exige trip (MESMA_VIAGEM = romaneio único, OUTRA_VIAGEM = romaneio próprio; RN-22). " +
       "Cada caso: estado inicial (CycleLedger), passos (comandos com o resultado esperado) e expectativas finais. " +
       "Ids de evento são gerados em ordem: ev-1, ev-2, ... Perfil padrão: OPERADOR. Ver docs/aceitacao/README.md.",
     casos: ACCEPTANCE_CASES,

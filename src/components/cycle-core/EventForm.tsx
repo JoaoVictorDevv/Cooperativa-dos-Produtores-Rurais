@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useMemo, useState } from "react";
-import { evaluateLedgerLine, executeCommand, type Actor, type CommandResult, type CycleCommand, type CycleLedger, type SupplySource } from "@/lib/domain/cycleLedger";
+import { evaluateLedgerLine, executeCommand, type Actor, type CommandResult, type ComplementTrip, type CycleCommand, type CycleLedger, type SupplySource } from "@/lib/domain/cycleLedger";
 import { fmtQty, newSubmissionKey, parseQty, type CycleCoreNames } from "./labels";
 
 const field = { display: "grid", gap: 4, fontSize: 12.5 } as const;
@@ -34,17 +34,20 @@ export function EventForm(props: {
   const [loss, setLoss] = useState("");
   const [lossReason, setLossReason] = useState("");
   const [sourceValue, setSourceValue] = useState("");
+  const [trip, setTrip] = useState<ComplementTrip | "">("");
   const [deliveredAt, setDeliveredAt] = useState("");
   const [receivedBy, setReceivedBy] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isComplement = props.kind === "COMPLEMENTO";
+  // Mesma viagem (RN-22): romaneio único; aqui só a origem e a quantidade.
+  const sameTrip = isComplement && trip === "MESMA_VIAGEM";
   const source = useMemo<SupplySource | null>(
     () => (!sourceValue ? null : sourceValue === "SALDO_GALPAO" ? { type: "SALDO_GALPAO" } : { type: "PRODUTOR", producerId: sourceValue }),
     [sourceValue],
   );
-  const rejectedQty = parseQty(rejected) ?? 0;
+  const rejectedQty = sameTrip ? 0 : (parseQty(rejected) ?? 0);
 
   const command = useMemo(() => {
     const common = {
@@ -54,15 +57,16 @@ export function EventForm(props: {
       presentedQty: parseQty(presented),
       rejectedQty,
       rejectionReason: rejectedQty > 0 ? rejectionReason : null,
-      lossBeforeSchoolQty: hasLoss ? (parseQty(loss) ?? 0) : 0,
-      lossReason: hasLoss ? lossReason : null,
-      deliveredAt: deliveredAt || null,
-      receivedBy: receivedBy || null,
+      lossBeforeSchoolQty: hasLoss && !sameTrip ? (parseQty(loss) ?? 0) : 0,
+      lossReason: hasLoss && !sameTrip ? lossReason : null,
+      deliveredAt: sameTrip ? null : deliveredAt || null,
+      receivedBy: sameTrip ? null : receivedBy || null,
     };
+    // Sem viagem escolhida, o domínio recusa com a mensagem certa.
     return isComplement
-      ? ({ type: "REGISTRAR_COMPLEMENTO", ...common, source: source as SupplySource } satisfies CycleCommand)
+      ? ({ type: "REGISTRAR_COMPLEMENTO", ...common, source: source as SupplySource, trip: trip as ComplementTrip } satisfies CycleCommand)
       : ({ type: "REGISTRAR_ENTREGA_INICIAL", ...common, source } satisfies CycleCommand);
-  }, [key, props.schoolId, props.productId, presented, rejectedQty, rejectionReason, hasLoss, loss, lossReason, deliveredAt, receivedBy, isComplement, source]);
+  }, [key, props.schoolId, props.productId, presented, rejectedQty, rejectionReason, hasLoss, loss, lossReason, deliveredAt, receivedBy, isComplement, source, trip, sameTrip]);
 
   // Prévia local com a mesma regra do servidor. Quem decide é o servidor.
   const preview = useMemo(() => {
@@ -91,19 +95,39 @@ export function EventForm(props: {
       <strong style={{ fontSize: 13.5 }}>{isComplement ? "Registrar complemento" : "Registrar entrega inicial"}</strong>
       {isComplement && (
         <p className="stat-sub" style={{ margin: 0 }}>
-          Complemento é uma <strong>nova entrega física</strong> no mesmo ciclo. Não apaga a entrega inicial, suas rejeições nem horários. Para
-          corrigir um número digitado errado, use &quot;Corrigir&quot; no lançamento.
+          Complemento é produto de outra origem para cobrir a falta, no mesmo ciclo. Não apaga a entrega inicial, suas rejeições nem horários.
+          Para corrigir um número digitado errado, use &quot;Corrigir&quot; no lançamento.
         </p>
+      )}
+      {!isComplement && (
+        <p className="stat-sub" style={{ margin: 0 }}>
+          Informe o <strong>total do romaneio</strong> desta visita, inclusive o que veio de complemento na mesma viagem.
+        </p>
+      )}
+      {isComplement && (
+        <fieldset style={{ border: 0, padding: 0, margin: 0, display: "grid", gap: 4, fontSize: 12.5 }}>
+          <legend style={{ padding: 0, marginBottom: 4 }}>Quando chegou à escola? (obrigatório)</legend>
+          <label>
+            <input type="radio" name={`${ids}-trip`} checked={trip === "MESMA_VIAGEM"} onChange={() => setTrip("MESMA_VIAGEM")} /> Na mesma viagem da entrega
+            inicial — um romaneio só; a entrega inicial já registra o total
+          </label>
+          <label>
+            <input type="radio" name={`${ids}-trip`} checked={trip === "OUTRA_VIAGEM"} onChange={() => setTrip("OUTRA_VIAGEM")} /> Em outra viagem — nova
+            entrega, com romaneio próprio
+          </label>
+        </fieldset>
       )}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
         <label style={field} htmlFor={`${ids}-p`}>
-          Quantidade entregue ({props.unit})
+          {sameTrip ? `Quantidade que veio desta origem (${props.unit})` : `Quantidade entregue (${props.unit})`}
           <input id={`${ids}-p`} className="cell-input" style={input} inputMode="decimal" value={presented} onChange={(e) => setPresented(e.target.value)} placeholder={isComplement ? "" : "0 = nada entregue"} />
         </label>
-        <label style={field} htmlFor={`${ids}-r`}>
-          Rejeitado pela escola ({props.unit})
-          <input id={`${ids}-r`} className="cell-input" style={input} inputMode="decimal" value={rejected} onChange={(e) => setRejected(e.target.value)} placeholder="0" />
-        </label>
+        {!sameTrip && (
+          <label style={field} htmlFor={`${ids}-r`}>
+            Rejeitado pela escola ({props.unit})
+            <input id={`${ids}-r`} className="cell-input" style={input} inputMode="decimal" value={rejected} onChange={(e) => setRejected(e.target.value)} placeholder="0" />
+          </label>
+        )}
         {rejectedQty > 0 && (
           <label style={field} htmlFor={`${ids}-rr`}>
             Motivo da rejeição
@@ -122,19 +146,31 @@ export function EventForm(props: {
             <option value="SALDO_GALPAO">Saldo já recebido no galpão</option>
           </select>
         </label>
-        <label style={field} htmlFor={`${ids}-d`}>
-          Data e horário reais da entrega
-          <input id={`${ids}-d`} type="datetime-local" className="cell-input" style={{ ...input, maxWidth: 210 }} value={deliveredAt} onChange={(e) => setDeliveredAt(e.target.value)} />
-        </label>
-        <label style={field} htmlFor={`${ids}-rb`}>
-          Recebido por (romaneio)
-          <input id={`${ids}-rb`} className="cell-input" style={{ ...input, maxWidth: 220 }} value={receivedBy} onChange={(e) => setReceivedBy(e.target.value)} />
-        </label>
+        {!sameTrip && (
+          <>
+            <label style={field} htmlFor={`${ids}-d`}>
+              Data e horário reais da entrega
+              <input id={`${ids}-d`} type="datetime-local" className="cell-input" style={{ ...input, maxWidth: 210 }} value={deliveredAt} onChange={(e) => setDeliveredAt(e.target.value)} />
+            </label>
+            <label style={field} htmlFor={`${ids}-rb`}>
+              Recebido por (romaneio)
+              <input id={`${ids}-rb`} className="cell-input" style={{ ...input, maxWidth: 220 }} value={receivedBy} onChange={(e) => setReceivedBy(e.target.value)} />
+            </label>
+          </>
+        )}
       </div>
-      <label style={{ fontSize: 12.5 }}>
-        <input type="checkbox" checked={hasLoss} onChange={(e) => setHasLoss(e.target.checked)} /> Houve perda antes de chegar à escola (transporte/manuseio)
-      </label>
-      {hasLoss && (
+      {sameTrip && (
+        <p className="stat-sub" style={{ margin: 0 }}>
+          Rejeição, perda, data/horário e quem recebeu ficam na entrega inicial, que é a linha do romaneio. Este registro guarda a origem para o
+          pagamento no galpão e não gera documento próprio.
+        </p>
+      )}
+      {!sameTrip && (
+        <label style={{ fontSize: 12.5 }}>
+          <input type="checkbox" checked={hasLoss} onChange={(e) => setHasLoss(e.target.checked)} /> Houve perda antes de chegar à escola (transporte/manuseio)
+        </label>
+      )}
+      {hasLoss && !sameTrip && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
           <label style={field} htmlFor={`${ids}-l`}>
             Perda antes da escola ({props.unit})

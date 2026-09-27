@@ -55,7 +55,7 @@ export function buildDemoLedger(): CycleLedger {
       receivedBy: "Merendeira (exemplo)",
     },
     // Pedido 30, complemento de 20 e entrega inicial não registrada → pendente.
-    { type: "REGISTRAR_COMPLEMENTO", idempotencyKey: "demo-eb", schoolId: "EB", productId: "couve", presentedQty: 20, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "P3" }, deliveredAt: "2026-09-29T10:15" },
+    { type: "REGISTRAR_COMPLEMENTO", trip: "OUTRA_VIAGEM", idempotencyKey: "demo-eb", schoolId: "EB", productId: "couve", presentedQty: 20, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "P3" }, deliveredAt: "2026-09-29T10:15" },
     // Excedente visível, sem cortar.
     { type: "REGISTRAR_ENTREGA_INICIAL", idempotencyKey: "demo-ec", schoolId: "EC", productId: "cenoura", presentedQty: 55, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "P4" }, deliveredAt: "2026-09-28T11:05" },
   ];

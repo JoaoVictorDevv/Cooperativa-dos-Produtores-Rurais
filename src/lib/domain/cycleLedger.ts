@@ -1,5 +1,5 @@
 // Complementos e encerramento de faltas (specs/008-recebimentos-faltas-fechamento,
-// RN-06, RN-09, RN-11; prompt v2 §7 e §8).
+// RN-06, RN-09, RN-11, RN-22; prompt v2 §7 e §8).
 //
 // Registro de eventos do ciclo por escola/produto e comandos que o alteram.
 // Tudo aqui é puro: recebe o estado, devolve o novo estado, a auditoria e os
@@ -11,6 +11,7 @@ import { round2 } from "../calc";
 import {
   closingPreview,
   evaluateSchoolLine,
+  sameTripExcess,
   warehouseToSchoolBalance,
   type ClosingPreview,
   type ConferredQty,
@@ -29,6 +30,13 @@ import {
 // presume que o produtor original fez a reposição.
 export type SupplySource = { type: "PRODUTOR"; producerId: string } | { type: "SALDO_GALPAO" };
 
+// Quando o complemento chegou à escola (RN-22). Sempre explícito, sem padrão:
+// - MESMA_VIAGEM: foi na mesma carga da entrega inicial → um romaneio só por
+//   escola e visita. A entrega inicial registra o TOTAL do romaneio; este
+//   registro guarda só a origem (produtor/pagamento), sem documento próprio.
+// - OUTRA_VIAGEM: nova entrega física → romaneio próprio.
+export type ComplementTrip = "MESMA_VIAGEM" | "OUTRA_VIAGEM";
+
 export interface DeliveryEvent {
   id: string;
   kind: SchoolEventKind;
@@ -41,7 +49,10 @@ export interface DeliveryEvent {
   lossBeforeSchoolQty: number;
   lossReason: string | null;
   source: SupplySource | null;
+  // Só em COMPLEMENTO; null na entrega inicial.
+  trip: ComplementTrip | null;
   // Data e horário reais da entrega (romaneio), separados do horário de lançamento.
+  // No complemento da mesma viagem fica null: vale o do romaneio da entrega inicial.
   deliveredAt: string | null;
   receivedBy: string | null;
   idempotencyKey: string;
@@ -108,13 +119,14 @@ export interface EventFields {
   lossBeforeSchoolQty?: number;
   lossReason?: string | null;
   source?: SupplySource | null;
+  trip?: ComplementTrip | null;
   deliveredAt?: string | null;
   receivedBy?: string | null;
 }
 
 export type CycleCommand =
   | ({ type: "REGISTRAR_ENTREGA_INICIAL"; idempotencyKey: string; schoolId: string; productId: string } & EventFields)
-  | ({ type: "REGISTRAR_COMPLEMENTO"; idempotencyKey: string; schoolId: string; productId: string } & EventFields & { source: SupplySource })
+  | ({ type: "REGISTRAR_COMPLEMENTO"; idempotencyKey: string; schoolId: string; productId: string } & EventFields & { source: SupplySource; trip: ComplementTrip })
   | { type: "CORRIGIR_EVENTO"; eventId: string; expectedVersion: number; changes: Partial<EventFields>; reason: string }
   | { type: "MARCAR_FALTA_EM_RESOLUCAO"; schoolId: string; productId: string; reason?: string; expectedVersion: number | null }
   | { type: "ENCERRAR_FALTA_SEM_ATENDIMENTO"; schoolId: string; productId: string; reason: string; expectedShortageQty: number; expectedVersion: number | null }
@@ -135,6 +147,9 @@ export interface CommandContext {
 
 const lineKey = (schoolId: string, productId: string) => `${schoolId}:${productId}`;
 
+// Complemento da mesma viagem: já está no total da entrega inicial.
+export const isSameTrip = (e: Pick<DeliveryEvent, "kind" | "trip">) => e.kind === "COMPLEMENTO" && e.trip === "MESMA_VIAGEM";
+
 function toDecision(record: ShortageDecisionRecord | undefined): ShortageDecision | null {
   if (!record) return null;
   if (record.kind === "EM_RESOLUCAO") return { kind: "EM_RESOLUCAO", reason: record.reason };
@@ -154,6 +169,7 @@ function lineInput(schoolId: string, productId: string, order: SchoolOrderLine |
       rejectedQty: e.rejectedQty,
       lossBeforeSchoolQty: e.lossBeforeSchoolQty,
       sourceProducerId: e.source?.type === "PRODUTOR" ? e.source.producerId : null,
+      sameTrip: isSameTrip(e),
     })),
     shortageDecision: toDecision(decision),
   };
@@ -230,7 +246,8 @@ export function supplyIssues(ledger: CycleLedger): SupplyIssue[] {
   }
   const products = [...new Set(ledger.events.map((e) => e.productId))];
   for (const productId of products) {
-    const events = ledger.events.filter((e) => e.productId === productId);
+    // Complemento da mesma viagem já está no total da entrega inicial.
+    const events = ledger.events.filter((e) => e.productId === productId && !isSameTrip(e));
     const presented = round2(events.reduce((s, e) => s + (e.presentedQty ?? 0), 0));
     const loss = round2(events.reduce((s, e) => s + e.lossBeforeSchoolQty, 0));
     const balance = warehouseToSchoolBalance(acceptedAtWarehouse(ledger, productId), presented, loss);
@@ -299,6 +316,18 @@ function validateEvent(e: Omit<DeliveryEvent, "id" | "version" | "createdBy" | "
     if (!e.source) errors.push("Informe de onde veio o complemento (produtor ou saldo do galpão).");
     else if (e.source.type === "PRODUTOR" && blank(e.source.producerId)) errors.push("Informe o produtor do complemento.");
     if (e.presentedQty === null || e.presentedQty <= 0) errors.push("Complemento precisa de quantidade entregue maior que zero.");
+    if (e.trip !== "MESMA_VIAGEM" && e.trip !== "OUTRA_VIAGEM") {
+      errors.push("Informe se o complemento foi na mesma viagem da entrega inicial (romaneio único) ou em outra viagem (romaneio próprio).");
+    } else if (e.trip === "MESMA_VIAGEM") {
+      if (e.rejectedQty > 0 || e.lossBeforeSchoolQty > 0) {
+        errors.push("Complemento na mesma viagem: a rejeição e a perda são registradas na linha do romaneio, na entrega inicial (que já inclui este complemento no total).");
+      }
+      if (e.deliveredAt || e.receivedBy) {
+        errors.push("Complemento na mesma viagem usa a data/horário e o recebedor do romaneio da entrega inicial: não informe outros.");
+      }
+    }
+  } else if (e.trip !== null) {
+    errors.push("A entrega inicial não tem viagem de complemento.");
   }
   return errors;
 }
@@ -311,9 +340,19 @@ function eventSnapshot(e: DeliveryEvent): Record<string, unknown> {
     lossBeforeSchoolQty: e.lossBeforeSchoolQty,
     lossReason: e.lossReason,
     source: e.source,
+    trip: e.trip,
     deliveredAt: e.deliveredAt,
     receivedBy: e.receivedBy,
   };
+}
+
+// Mesma viagem: as origens não podem somar mais que o total da entrega inicial.
+function lineSameTripError(events: Pick<DeliveryEvent, "schoolId" | "productId" | "kind" | "trip" | "presentedQty" | "rejectedQty">[], schoolId: string, productId: string): string | null {
+  return sameTripExcess(
+    events
+      .filter((e) => e.schoolId === schoolId && e.productId === productId)
+      .map((e) => ({ kind: e.kind, presentedQty: e.presentedQty, rejectedQty: e.rejectedQty, sameTrip: isSameTrip(e) })),
+  );
 }
 
 function sameFields(a: DeliveryEvent, b: Omit<DeliveryEvent, "id" | "version" | "createdBy" | "createdAt">): boolean {
@@ -375,6 +414,7 @@ function registerEvent(
     lossBeforeSchoolQty: command.lossBeforeSchoolQty ?? 0,
     lossReason: command.lossReason?.trim() || null,
     source: command.source ?? null,
+    trip: kind === "COMPLEMENTO" ? (command.trip ?? null) : null,
     deliveredAt: command.deliveredAt ?? null,
     receivedBy: command.receivedBy?.trim() || null,
     idempotencyKey: command.idempotencyKey,
@@ -396,6 +436,8 @@ function registerEvent(
   }
   const errors = validateEvent(draft);
   if (errors.length) return fail("INVALIDO", errors.join(" "));
+  const sameTripError = lineSameTripError([...existing, draft], command.schoolId, command.productId);
+  if (sameTripError) return fail("INVALIDO", sameTripError);
 
   const before = evaluateLedgerLine(ledger, command.schoolId, command.productId);
   const event: DeliveryEvent = { ...draft, id: ctx.newId(), version: 1, createdBy: actor.id, createdAt: ctx.now };
@@ -414,7 +456,15 @@ function registerEvent(
   const after = evaluateLedgerLine(next, command.schoolId, command.productId);
 
   const warnings: string[] = [];
-  if (kind === "COMPLEMENTO") {
+  if (isSameTrip(event)) {
+    const initial = existing.find((e) => e.kind === "INICIAL");
+    if (!initial || initial.presentedQty === null) {
+      warnings.push("Mesma viagem, um romaneio só: ao registrar a entrega inicial, informe o TOTAL entregue à escola, já com este complemento.");
+    }
+    if (event.source?.type === "PRODUTOR" && !hasConferredReceipt(next, event.productId, event.source.producerId)) {
+      warnings.push("O produtor do complemento não tem recebimento conferido no galpão para este produto: registre para que ele seja pago.");
+    }
+  } else if (kind === "COMPLEMENTO") {
     if (before.receiptStatus === "CONFERIDO" && before.shortageQty === 0) warnings.push("Não havia falta nesta linha: o complemento gera excedente.");
     else if (after.excessQty > 0) warnings.push(`O complemento deixa excedente de ${after.excessQty} ${after.unit} (não é cortado).`);
     if (after.receiptStatus === "PENDENTE_CONFERENCIA") {
@@ -445,6 +495,7 @@ function correctEvent(ledger: CycleLedger, command: Extract<CycleCommand, { type
     lossBeforeSchoolQty: c.lossBeforeSchoolQty ?? current.lossBeforeSchoolQty,
     lossReason: c.lossReason !== undefined ? c.lossReason?.trim() || null : current.lossReason,
     source: c.source !== undefined ? c.source : current.source,
+    trip: c.trip !== undefined ? c.trip : current.trip,
     deliveredAt: c.deliveredAt !== undefined ? c.deliveredAt : current.deliveredAt,
     receivedBy: c.receivedBy !== undefined ? c.receivedBy?.trim() || null : current.receivedBy,
     version: current.version + 1,
@@ -454,6 +505,12 @@ function correctEvent(ledger: CycleLedger, command: Extract<CycleCommand, { type
   }
   const errors = validateEvent(merged, current);
   if (errors.length) return fail("INVALIDO", errors.join(" "));
+  const sameTripError = lineSameTripError(
+    ledger.events.map((e) => (e.id === current.id ? merged : e)),
+    current.schoolId,
+    current.productId,
+  );
+  if (sameTripError) return fail("INVALIDO", sameTripError);
 
   const before = evaluateLedgerLine(ledger, current.schoolId, current.productId);
   const beforeSnap = eventSnapshot(current);

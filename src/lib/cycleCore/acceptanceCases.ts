@@ -114,7 +114,7 @@ export const ACCEPTANCE_CASES: AcceptanceCase[] = [
   },
   {
     id: "complemento-outro-produtor",
-    titulo: "Complemento de 30 aceitos de outro produtor: escola 200; produtor original 180; novo 30; perda de 10 mantida; cobra 200 uma vez",
+    titulo: "Complemento de 30 aceitos de outro produtor em outra viagem: escola 200; produtor original 180; novo 30; perda de 10 mantida; cobra 200 uma vez",
     origem: "prompt v2 §7 e §17; spec 008 CA-008.2",
     inicial: base({
       warehouseReceipts: [
@@ -124,7 +124,7 @@ export const ACCEPTANCE_CASES: AcceptanceCase[] = [
     }),
     passos: [
       { command: inicial180, expect: ok },
-      { command: { type: "REGISTRAR_COMPLEMENTO", idempotencyKey: "k-comp", schoolId: "E1", productId: "alface", presentedQty: 30, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "B" } }, expect: ok },
+      { command: { type: "REGISTRAR_COMPLEMENTO", trip: "OUTRA_VIAGEM", idempotencyKey: "k-comp", schoolId: "E1", productId: "alface", presentedQty: 30, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "B" } }, expect: ok },
     ],
     linhas: [{ schoolId: "E1", productId: "alface", expect: { acceptedQty: 200, rejectedAtSchoolQty: 10, shortageQty: 0, attendance: "OK", readyToClose: true } }],
     fechamento: {
@@ -137,6 +137,72 @@ export const ACCEPTANCE_CASES: AcceptanceCase[] = [
     },
   },
   {
+    id: "complemento-mesma-viagem",
+    titulo: "Complemento na mesma viagem: um romaneio só com o total (170 + 30 = 200); origem registrada para pagar os dois produtores; cobra 200, não 230",
+    origem: "planilha MODELO v22 (Índice, 'Complemento: primeira carga ou outra viagem'); spec 008 RN-22, CA-008.21",
+    inicial: base({
+      warehouseReceipts: [
+        { producerId: "A", productId: "alface", grossQty: 200, rejectedQty: 30, unit: "kg", price: PRICE, logisticsDeductionSnapshot: DED },
+        { producerId: "B", productId: "alface", grossQty: 30, rejectedQty: 0, unit: "kg", price: PRICE, logisticsDeductionSnapshot: DED },
+      ],
+    }),
+    passos: [
+      {
+        command: { type: "REGISTRAR_COMPLEMENTO", trip: "MESMA_VIAGEM", idempotencyKey: "k-mv", schoolId: "E1", productId: "alface", presentedQty: 30, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "B" } },
+        expect: { ok: true, effect: "APLICADO", warningsContain: ["TOTAL entregue"] },
+      },
+      {
+        command: { ...inicial180, idempotencyKey: "k-ini", presentedQty: 200, rejectedQty: 0, rejectionReason: null } as CycleCommand,
+        expect: ok,
+      },
+    ],
+    linhas: [{ schoolId: "E1", productId: "alface", expect: { presentedQty: 200, acceptedQty: 200, shortageQty: 0, attendance: "OK", readyToClose: true } }],
+    fechamento: {
+      state: "PRONTO_PARA_FECHAR",
+      canClose: true,
+      receivableTotal: 2924,
+      payableTotal: 2190,
+      payableLines: [
+        { producerId: "A", productId: "alface", acceptedQty: 170, value: 1861.5 },
+        { producerId: "B", productId: "alface", acceptedQty: 30, value: 328.5 },
+      ],
+    },
+    totaisPorUnidade: { kg: { acceptedAtSchoolQty: 200, acceptedAtWarehouseQty: 200 } },
+  },
+  {
+    id: "mesma-viagem-limites",
+    titulo: "Mesma viagem: sem rejeição, perda, data ou recebedor próprios; origens não passam do total da entrega inicial; trocar para outra viagem soma de novo",
+    origem: "spec 008 RN-22, CA-008.22",
+    inicial: base({
+      warehouseReceipts: [
+        { producerId: "A", productId: "alface", grossQty: 200, rejectedQty: 30, unit: "kg", price: PRICE, logisticsDeductionSnapshot: DED },
+        { producerId: "B", productId: "alface", grossQty: 30, rejectedQty: 0, unit: "kg", price: PRICE, logisticsDeductionSnapshot: DED },
+      ],
+    }),
+    passos: [
+      { command: { ...inicial180, idempotencyKey: "k-ini", presentedQty: 200, rejectedQty: 0, rejectionReason: null } as CycleCommand, expect: ok },
+      {
+        command: { type: "REGISTRAR_COMPLEMENTO", trip: "MESMA_VIAGEM", idempotencyKey: "k-rej", schoolId: "E1", productId: "alface", presentedQty: 30, rejectedQty: 5, rejectionReason: "Folhas murchas", source: { type: "PRODUTOR", producerId: "B" } },
+        expect: { ok: false, code: "INVALIDO" },
+      },
+      {
+        command: { type: "REGISTRAR_COMPLEMENTO", trip: "MESMA_VIAGEM", idempotencyKey: "k-data", schoolId: "E1", productId: "alface", presentedQty: 30, rejectedQty: 0, deliveredAt: "2026-09-28T11:00", source: { type: "PRODUTOR", producerId: "B" } },
+        expect: { ok: false, code: "INVALIDO" },
+      },
+      {
+        command: { type: "REGISTRAR_COMPLEMENTO", trip: "MESMA_VIAGEM", idempotencyKey: "k-mais", schoolId: "E1", productId: "alface", presentedQty: 250, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "B" } },
+        expect: { ok: false, code: "INVALIDO" },
+      },
+      {
+        command: { type: "REGISTRAR_COMPLEMENTO", trip: "MESMA_VIAGEM", idempotencyKey: "k-mv", schoolId: "E1", productId: "alface", presentedQty: 30, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "B" } },
+        expect: ok,
+      },
+      { command: { type: "CORRIGIR_EVENTO", eventId: "ev-1", expectedVersion: 1, changes: { presentedQty: 20 }, reason: "Digitação" }, expect: { ok: false, code: "INVALIDO" } },
+      { command: { type: "CORRIGIR_EVENTO", eventId: "ev-2", expectedVersion: 1, changes: { trip: "OUTRA_VIAGEM" }, reason: "Chegou numa segunda viagem" }, expect: ok },
+    ],
+    linhas: [{ schoolId: "E1", productId: "alface", expect: { presentedQty: 230, acceptedQty: 230, excessQty: 30, attendance: "EXCEDENTE" } }],
+  },
+  {
     id: "complemento-sem-recebimento-galpao",
     titulo: "Complemento de produtor sem recebimento conferido no galpão: aviso ao registrar e bloqueio no fechamento",
     origem: "prompt v2 §7 (fornecimento de origem no controle do galpão); spec 008 CA-008.20",
@@ -144,7 +210,7 @@ export const ACCEPTANCE_CASES: AcceptanceCase[] = [
     passos: [
       { command: inicial180, expect: ok },
       {
-        command: { type: "REGISTRAR_COMPLEMENTO", idempotencyKey: "k-comp", schoolId: "E1", productId: "alface", presentedQty: 30, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "C" } },
+        command: { type: "REGISTRAR_COMPLEMENTO", trip: "OUTRA_VIAGEM", idempotencyKey: "k-comp", schoolId: "E1", productId: "alface", presentedQty: 30, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "C" } },
         expect: { ok: true, effect: "APLICADO", warningsContain: ["recebimento conferido no galpão"] },
       },
     ],
@@ -160,7 +226,7 @@ export const ACCEPTANCE_CASES: AcceptanceCase[] = [
     }),
     passos: [
       {
-        command: { type: "REGISTRAR_COMPLEMENTO", idempotencyKey: "k-c", schoolId: "E2", productId: "couve", presentedQty: 20, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "C" } },
+        command: { type: "REGISTRAR_COMPLEMENTO", trip: "OUTRA_VIAGEM", idempotencyKey: "k-c", schoolId: "E2", productId: "couve", presentedQty: 20, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "C" } },
         expect: { ok: true, effect: "APLICADO", warningsContain: ["registre zero confirmado"] },
       },
       { command: encerrar(10, "E2", "couve"), expect: { ok: false, code: "INVALIDO" } },

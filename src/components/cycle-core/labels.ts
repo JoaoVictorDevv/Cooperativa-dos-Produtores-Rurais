@@ -89,6 +89,7 @@ const FIELD_LABEL: Record<string, string> = {
   lossBeforeSchoolQty: "perda antes da escola",
   lossReason: "motivo da perda",
   source: "origem",
+  trip: "viagem",
   deliveredAt: "entrega real",
   receivedBy: "recebido por",
   kind: "decisão",
@@ -97,6 +98,7 @@ const FIELD_LABEL: Record<string, string> = {
 };
 
 const DECISION_LABEL: Record<string, string> = { EM_RESOLUCAO: "em resolução", ENCERRADA_SEM_ATENDIMENTO: "encerrada sem atendimento" };
+const TRIP_LABEL: Record<string, string> = { MESMA_VIAGEM: "mesma viagem (romaneio único)", OUTRA_VIAGEM: "outra viagem (romaneio próprio)" };
 
 // Auditoria em texto legível ("entregue: 180; rejeitado: 10") em vez de JSON.
 export function describeAuditValues(values: Record<string, unknown> | null, names: CycleCoreNames): string {
@@ -108,6 +110,7 @@ export function describeAuditValues(values: Record<string, unknown> | null, name
       if (k === "source") return `${label}: ${sourceLabel(v as SupplySource, names)}`;
       if (k === "deliveredAt") return `${label}: ${fmtDateTime(String(v))}`;
       if (k === "kind") return `${label}: ${DECISION_LABEL[String(v)] ?? String(v)}`;
+      if (k === "trip") return `${label}: ${TRIP_LABEL[String(v)] ?? String(v)}`;
       if (typeof v === "number") return `${label}: ${fmtQty(v)}`;
       return `${label}: ${String(v)}`;
     });

@@ -15,8 +15,20 @@ todos os casos contra a implementação de referência.
 
 | Arquivo | Conteúdo |
 |---|---|
-| `casos.json` | 15 cenários (estado inicial → comandos com resultado esperado → expectativas finais) e 5 cálculos isolados |
+| `casos.json` | Versão 2: 17 cenários (estado inicial → comandos com resultado esperado → expectativas finais) e 5 cálculos isolados |
 | `contrato-comandos.schema.json` | JSON Schema do comando, do resultado e do estado do ciclo |
+
+**Versão 2 (27/09/2026):** o complemento passou a exigir `trip` (spec 008
+RN-22):
+- `MESMA_VIAGEM`: um romaneio só por escola e visita. A entrega inicial
+  registra o total, e o complemento guarda só a origem e a quantidade. Ele
+  não soma no entregue e não tem rejeição, perda, data ou recebedor
+  próprios. As origens da mesma viagem não passam do total da entrega
+  inicial.
+- `OUTRA_VIAGEM`: romaneio próprio.
+
+Os comandos de complemento da versão 1 correspondem a `OUTRA_VIAGEM`. Casos
+novos: `complemento-mesma-viagem` e `mesma-viagem-limites`.
 
 ## Como executar um cenário
 
@@ -47,7 +59,8 @@ das linhas. Quantidades: até 2 casas.
 ## Cobertura (prompt v2 §17)
 
 200/180/170 · encerrar sem reposição · complemento de outro produtor ·
-complemento sem recebimento no galpão · pedido 30 + complemento 20 com inicial
+complemento sem recebimento no galpão · complemento na mesma viagem (romaneio
+único, cobra 200 e não 230) e seus limites · pedido 30 + complemento 20 com inicial
 vazio · vazio × zero × pedido zero · ciclo vazio · rejeição corrigida para zero
 e redução abaixo da rejeição · decisão incoerente após correção · reenvio e
 segunda entrega inicial · perda antes da escola · excesso não compensa falta ·

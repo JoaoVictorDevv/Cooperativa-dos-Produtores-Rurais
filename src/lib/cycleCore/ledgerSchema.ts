@@ -42,6 +42,7 @@ export const ledgerSchema = z.object({
         lossBeforeSchoolQty: qty,
         lossReason: text.nullable(),
         source: source.nullable(),
+        trip: z.enum(["MESMA_VIAGEM", "OUTRA_VIAGEM"]).nullable(),
         deliveredAt: z.string().max(40).nullable(),
         receivedBy: text.nullable(),
         idempotencyKey: z.string().max(100),

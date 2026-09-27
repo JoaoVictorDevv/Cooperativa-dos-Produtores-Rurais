@@ -65,6 +65,7 @@ const inicial180: CycleCommand = {
 };
 const complementoB30: CycleCommand = {
   type: "REGISTRAR_COMPLEMENTO",
+  trip: "OUTRA_VIAGEM",
   idempotencyKey: "k-comp-b",
   schoolId: "E1",
   productId: ALFACE,
@@ -216,7 +217,7 @@ describe("etapa 4 — complementos", () => {
 
   it("pedido 30 + complemento 20 com inicial vazio: pendente; confirmando zero inicial, falta 10 e pode encerrar", () => {
     const start = ledger({ warehouseReceipts: [{ producerId: "C", productId: COUVE, grossQty: 20, rejectedQty: 0 }] });
-    const comp: CycleCommand = { type: "REGISTRAR_COMPLEMENTO", idempotencyKey: "k-c", schoolId: "E2", productId: COUVE, presentedQty: 20, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "C" } };
+    const comp: CycleCommand = { type: "REGISTRAR_COMPLEMENTO", trip: "OUTRA_VIAGEM", idempotencyKey: "k-c", schoolId: "E2", productId: COUVE, presentedQty: 20, rejectedQty: 0, source: { type: "PRODUTOR", producerId: "C" } };
     const { state, results, ctx: c } = run(start, [comp]);
     expect(evaluateLedgerLine(state, "E2", COUVE).receiptStatus).toBe("PENDENTE_CONFERENCIA");
     expect(results[0].ok && results[0].warnings.join(" ")).toMatch(/registre zero confirmado/);
@@ -313,5 +314,87 @@ describe("etapa 4 — limites", () => {
     expect(issues).toEqual([expect.objectContaining({ severity: "AVISO", productId: ALFACE })]);
     expect(issues[0].message).toMatch(/30 a mais/);
     expect(ledgerClosingPreview(state).warnings).toHaveLength(1);
+  });
+});
+
+describe("RN-22 — complemento na mesma viagem: um romaneio só por escola e visita", () => {
+  const comB = (receipts = true) =>
+    ledger({
+      warehouseReceipts: [
+        { producerId: "A", productId: ALFACE, grossQty: 200, rejectedQty: 30, price: PRICE, logisticsDeductionSnapshot: DED },
+        ...(receipts ? [{ producerId: "B", productId: ALFACE, grossQty: 30, rejectedQty: 0, price: PRICE, logisticsDeductionSnapshot: DED }] : []),
+      ],
+    });
+  const mesmaViagem30: CycleCommand = {
+    type: "REGISTRAR_COMPLEMENTO",
+    trip: "MESMA_VIAGEM",
+    idempotencyKey: "k-mv",
+    schoolId: "E1",
+    productId: ALFACE,
+    presentedQty: 30,
+    rejectedQty: 0,
+    source: { type: "PRODUTOR", producerId: "B" },
+  };
+  const inicialTotal200: CycleCommand = { ...inicial180, idempotencyKey: "k-200", presentedQty: 200, rejectedQty: 0, rejectionReason: null };
+
+  it("170 do produtor A + 30 do B na mesma carga: escola 200 (não 230), cada produtor pago pelo seu aceito", () => {
+    const { state, results } = run(comB(), [mesmaViagem30, inicialTotal200]);
+    expect(results[0].ok && results[0].warnings.join(" ")).toMatch(/TOTAL entregue/);
+    expect(evaluateLedgerLine(state, "E1", ALFACE)).toMatchObject({ presentedQty: 200, acceptedQty: 200, shortageQty: 0, readyToClose: true });
+    const preview = ledgerClosingPreview(state);
+    expect(preview.receivableTotal).toBe(2924);
+    expect(preview.payableLines.map((p) => [p.producerId, p.acceptedQty, p.value])).toEqual([
+      ["A", 170, 1861.5],
+      ["B", 30, 328.5],
+    ]);
+    // O saldo do galpão compara com 200 entregues, não 230.
+    expect(supplyIssues(state)).toEqual([]);
+    // A origem fica registrada e auditada.
+    expect(state.events.find((e) => e.kind === "COMPLEMENTO")).toMatchObject({ trip: "MESMA_VIAGEM", source: { type: "PRODUTOR", producerId: "B" }, deliveredAt: null });
+    expect(state.audit[0].after).toMatchObject({ trip: "MESMA_VIAGEM" });
+  });
+
+  it("produtor da mesma viagem sem recebimento no galpão: aviso e bloqueio no fechamento (ele não seria pago)", () => {
+    const { state, results } = run(comB(false), [inicialTotal200, mesmaViagem30]);
+    expect(results[1].ok && results[1].warnings.join(" ")).toMatch(/recebimento conferido no galpão/);
+    expect(ledgerClosingPreview(state).canClose).toBe(false);
+  });
+
+  it("viagem é obrigatória no complemento; na mesma viagem, rejeição, perda, data e recebedor ficam na entrega inicial", () => {
+    const { state } = run(comB(), [inicialTotal200]);
+    const c = ctx();
+    const semViagem = { ...mesmaViagem30, trip: undefined } as unknown as CycleCommand;
+    expect(executeCommand(state, semViagem, operador, c)).toMatchObject({ ok: false, code: "INVALIDO", error: expect.stringMatching(/mesma viagem/) });
+    expect(executeCommand(state, { ...mesmaViagem30, rejectedQty: 5, rejectionReason: "Murcha" }, operador, c)).toMatchObject({ ok: false, code: "INVALIDO" });
+    expect(executeCommand(state, { ...mesmaViagem30, lossBeforeSchoolQty: 2, lossReason: "Caiu" }, operador, c)).toMatchObject({ ok: false, code: "INVALIDO" });
+    expect(executeCommand(state, { ...mesmaViagem30, deliveredAt: "2026-09-28T11:00" }, operador, c)).toMatchObject({ ok: false, code: "INVALIDO" });
+    expect(executeCommand(state, { ...mesmaViagem30, receivedBy: "Outra pessoa" }, operador, c)).toMatchObject({ ok: false, code: "INVALIDO" });
+  });
+
+  it("as origens da mesma viagem não passam do total da entrega inicial — ao registrar e ao corrigir", () => {
+    const { state } = run(comB(), [inicialTotal200, mesmaViagem30]);
+    const c = ctx();
+    expect(executeCommand(state, { ...mesmaViagem30, idempotencyKey: "k-mais", presentedQty: 171 }, operador, c)).toMatchObject({ ok: false, code: "INVALIDO" });
+    const initial = state.events.find((e) => e.kind === "INICIAL")!;
+    const reduce = executeCommand(state, { type: "CORRIGIR_EVENTO", eventId: initial.id, expectedVersion: 1, changes: { presentedQty: 20 }, reason: "Digitação" }, operador, c);
+    expect(reduce).toMatchObject({ ok: false, code: "INVALIDO", error: expect.stringMatching(/total do romaneio/) });
+    // Recusado sem consumir identificador nem alterar o estado.
+    expect(state.events).toHaveLength(2);
+  });
+
+  it("corrigir a viagem: para outra viagem soma de novo (romaneio próprio); a entrega inicial não tem viagem", () => {
+    const { state } = run(comB(), [inicialTotal200, mesmaViagem30]);
+    const c = ctx();
+    const comp = state.events.find((e) => e.kind === "COMPLEMENTO")!;
+    const r = executeCommand(state, { type: "CORRIGIR_EVENTO", eventId: comp.id, expectedVersion: 1, changes: { trip: "OUTRA_VIAGEM" }, reason: "Foi numa segunda viagem" }, operador, c);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(evaluateLedgerLine(r.ledger, "E1", ALFACE)).toMatchObject({ presentedQty: 230, excessQty: 30 });
+      expect(r.audit[0]).toMatchObject({ before: { trip: "MESMA_VIAGEM" }, after: { trip: "OUTRA_VIAGEM" } });
+    }
+    const initial = state.events.find((e) => e.kind === "INICIAL")!;
+    expect(
+      executeCommand(state, { type: "CORRIGIR_EVENTO", eventId: initial.id, expectedVersion: 1, changes: { trip: "MESMA_VIAGEM" }, reason: "x" }, operador, c),
+    ).toMatchObject({ ok: false, code: "INVALIDO" });
   });
 });

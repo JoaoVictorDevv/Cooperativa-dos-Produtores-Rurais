@@ -28,7 +28,7 @@ export default async function ComplementosFaltasPage() {
           <ol style={{ margin: "8px 0 0", paddingLeft: 20, display: "grid", gap: 4 }}>
             <li>
               <strong>Escola Exemplo A</strong> pediu 200 kg de alface; chegaram 180 e a escola rejeitou 10. Aceito 170, falta 30. Registre um{" "}
-              <em>complemento</em> de 30 do Produtor Exemplo 2 (a falta some) — ou <em>encerre a falta</em> com um motivo.
+              <em>complemento</em> de 30 do Produtor Exemplo 2 em <em>outra viagem</em> (a falta some) — ou <em>encerre a falta</em> com um motivo.
             </li>
             <li>
               <strong>Escola Exemplo B</strong> recebeu um complemento de 20, mas a entrega inicial nunca foi conferida: fica pendente. Registre a
@@ -38,11 +38,12 @@ export default async function ComplementosFaltasPage() {
               <strong>Escola Exemplo C</strong> recebeu 5 kg a mais: o excedente aparece e não é cortado nem compensa a falta de outra escola.
             </li>
             <li>
-              <strong>Escola Exemplo D</strong> ainda não tem nada registrado: vazio não é zero. Registre a entrega de 40.
+              <strong>Escola Exemplo D</strong> ainda não tem nada registrado: vazio não é zero. Registre a entrega de 40. Se 15 dela vieram do Produtor
+              Exemplo 2 na mesma carga, registre também um complemento de 15 <em>na mesma viagem</em>: o romaneio continua um só, com 40.
             </li>
             <li>
-              Acompanhe no topo a <em>situação do ciclo</em> até &quot;Pronto para fechar&quot;, e baixe os documentos (romaneio de complemento
-              separado, entregas e atendimento, balanço pelo aceito na escola).
+              Acompanhe no topo a <em>situação do ciclo</em> até &quot;Pronto para fechar&quot;, e baixe os documentos (um romaneio por escola e visita,
+              com romaneio próprio só para complemento de outra viagem; entregas e atendimento; balanço pelo aceito na escola).
             </li>
           </ol>
         </details>
