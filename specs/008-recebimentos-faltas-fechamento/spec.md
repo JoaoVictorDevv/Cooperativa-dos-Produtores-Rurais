@@ -123,6 +123,26 @@ pertencem ao **mesmo ciclo**, mesmo atravessando a semana do calendário.
 - **RN-21 Motivo obrigatório**: rejeição e perda antes da escola exigem motivo,
   com a opção "Motivo não identificado" (sem inventar culpados). **Confirmado
   em 27/09/2026.**
+- **RN-22 Um romaneio por escola e visita**: todo complemento informa se foi
+  na **mesma viagem** da entrega inicial ou em **outra viagem**. Não há valor
+  padrão. **Decidido em 27/09/2026**, como na planilha MODELO v22.
+  - **Mesma viagem:** o complemento sai no mesmo romaneio da entrega inicial,
+    sem documento separado. A entrega inicial registra o **total** da linha
+    do romaneio: 170 do produtor original + 30 do complementar = 200.
+  - A origem do complemento continua registrada internamente: o produtor ou o
+    saldo do galpão e a quantidade. Isso serve para o pagamento no galpão e
+    para a auditoria. Esse registro não soma de novo no entregue à escola: a
+    cobrança é 200, não 230.
+  - A rejeição, a perda, a data/horário e quem recebeu ficam na entrega
+    inicial. O complemento da mesma viagem não tem esses campos próprios.
+  - As origens da mesma viagem não podem somar mais que o total da entrega
+    inicial.
+  - **Outra viagem:** nova entrega física, com romaneio próprio (RN-06,
+    spec 004 RD-12).
+  - A viagem pode ser corrigida. Passar de "mesma viagem" para "outra
+    viagem" volta a somar a quantidade.
+  - O produtor do complemento continua precisando de recebimento conferido
+    no galpão para ser pago (RN-17, CA-008.20).
 
 ## Exemplo obrigatório (testado)
 
@@ -141,9 +161,21 @@ A fórmula antiga daria 190 (`schoolNetQty(200, 10)`); a regra confirmada exige
 170. Os 30 kg de falta **não** são perda; as rejeições não são subtraídas duas
 vezes; o pagamento do produtor não cai para 170.
 
-Com complemento de 30 kg aceitos de outro produtor: a escola totaliza 200, o
-produtor original continua com 180, o novo tem seu próprio recebimento de 30,
-a perda de 10 continua registrada, cobrança de 200 uma única vez.
+Com complemento de 30 kg aceitos de outro produtor, em outra viagem:
+- a escola totaliza 200;
+- o produtor original continua com 180 e o novo tem seu próprio recebimento
+  de 30;
+- a perda de 10 continua registrada;
+- a cobrança de 200 é feita uma única vez.
+
+Complemento na **mesma viagem** (RN-22; planilha MODELO v22, Índice
+"Complemento: primeira carga ou outra viagem"):
+- o galpão aceitou 170 do produtor A e 30 do produtor B, e os 200 foram
+  juntos na mesma carga;
+- sai um romaneio só, e a entrega inicial registra 200;
+- o complemento registra só "30 do produtor B, mesma viagem";
+- a escola é cobrada por 200, e não por 230;
+- A recebe por 170 e B por 30.
 
 ## Critérios de aceite
 
@@ -190,6 +222,18 @@ a perda de 10 continua registrada, cobrança de 200 uma única vez.
 - **CA-008.20** Complemento de produtor sem recebimento conferido no galpão
   bloqueia o fechamento; escolas com mais do que o galpão aceitou é aviso de
   saldo a conferir.
+- **CA-008.21** Complemento na mesma viagem (RN-22):
+  - um romaneio só por escola e visita, com o total na entrega inicial;
+  - nenhum documento de complemento;
+  - a origem fica registrada e auditada;
+  - a escola é cobrada 200, e não 230;
+  - cada produtor é pago pelo seu aceito no galpão.
+- **CA-008.22** Complemento sem viagem informada é recusado. Na mesma viagem,
+  também são recusados:
+  - rejeição, perda, data/horário ou recebedor próprios;
+  - origens que somem mais que o total da entrega inicial, ao registrar ou ao
+    corrigir a entrega inicial.
+  - Trocar a viagem para "outra viagem" volta a somar.
 - **CA-008.9** Correção de quantidade não altera preço/desconto histórico;
   tela, PDF e balanço mostram os mesmos valores. *(depende da persistência)*
 - **CA-008.10** Tentativa de reduzir recebimento abaixo da rejeição já

@@ -132,8 +132,17 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído e validado ·
   operacional versionada (vazia) em `docs/referencia-planilha/`; mudanças e
   diferenças com o app documentadas, sem mudança de código
   (`docs/referencia-planilha/atualizacao_v20_para_v22.md`,
-  `docs/propostas-pendentes.md` §12). Guia de entrada para o Lucas:
-  `docs/para-o-lucas.md`.
+  `docs/propostas-pendentes.md` §12).
+- [x] **R2-17 Ajustes da v22 e reorganização** (27/09/2026):
+  - ficha do produtor com Aceito, Preço líquido, data e horário (spec 004
+    RD-15);
+  - complemento na mesma viagem com um romaneio só por escola e visita (spec
+    008 RN-22, contrato e pacote de aceitação versão 2);
+  - v35 retirada; a v22 é a referência oficial;
+  - pendências de todas as specs com responsável em cada `tasks.md` e
+    agrupadas em `docs/propostas-pendentes.md` ("Pendências por
+    responsável");
+  - estado geral em `specs/README.md`.
 - [B] **R2-9 Mapa de Montagem** (Etapa 7 do prompt) — só depois do núcleo
   validado com persistência real. Não iniciar nesta rodada enquanto R2-2
   estiver bloqueado.

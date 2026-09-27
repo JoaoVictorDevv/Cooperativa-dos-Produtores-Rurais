@@ -3,10 +3,10 @@
 **Data:** 27/09/2026. **Arquivo:** `controle_escolas_produtores_2026_MODELO_v22.xlsx`
 (nesta pasta).
 
-A **MODELO v22** passa a ser a referência operacional da planilha e substitui a
-MODELO v20. A v20 nunca foi versionada: era um anexo do prompt v2. A
-`controle_escolas_produtores_2026_v35.xlsx` continua nesta pasta como histórico
-da Rodada 1 (outra linha de versões).
+A **MODELO v22** é a **referência oficial** da planilha e substitui a MODELO
+v20. A v20 nunca foi versionada: era um anexo do prompt v2. A
+`controle_escolas_produtores_2026_v35.xlsx`, da Rodada 1 (outra linha de
+versões), foi retirada desta pasta em 27/09/2026. Só a v22 vale.
 
 **É um modelo vazio.** Conferido célula por célula:
 
@@ -97,8 +97,9 @@ fórmula mudou.
 
 ## 2. v22 × o que o app já faz
 
-Nenhum código foi alterado nesta rodada. Os pontos abaixo ficam registrados
-para decisão e também estão em `docs/propostas-pendentes.md` §12.
+Situação em 27/09/2026, também registrada em `docs/propostas-pendentes.md` §12.
+Na primeira comparação, nenhum código foi alterado. Depois, os itens 5 e 8
+foram decididos e feitos.
 
 | # | Ponto | Planilha v22 | App hoje | Muda o valor? |
 |---|---|---|---|---|
@@ -106,14 +107,14 @@ para decisão e também estão em `docs/propostas-pendentes.md` §12.
 | 2 | Valor a pagar | `Aceito × (preço − 3,67)` | Mesma fórmula (`producerPayment`) | Não, bate |
 | 3 | Desconto de logística | 3,67 **fixo na fórmula** | Configuração com **cópia congelada em cada lançamento** (`logisticsDeductionSnapshot`) | Só se o desconto mudar: a planilha recalcula tudo, o app mantém o valor da época (regra da spec 008, RN-02) |
 | 4 | Arredondamento | Linha sem arredondar; total = soma crua (a tela mostra 2 casas) | Cada linha arredondada a centavos; total = soma das linhas arredondadas (RN-15) | **Pode diferir em centavos** no total de um produtor, quando kg × preço tem mais de 2 casas (ex.: 12,5 kg × 11,90 = 148,75, que não arredonda; 3,3 kg × 12,27 = 40,491, que vira 40,49). Decisão já tomada (26/09/2026): vale a do app. |
-| 5 | Ficha/romaneio do produtor na tela (`/produtores/[código]`) | Colunas Pedido, Entrega, Devolução, **Aceito**, **Preço líquido**, Valor; linha de Data **e Horário** | Colunas Pedido, Entrega, Devolução, Valor; linhas de assinatura e Data (**sem Aceito, sem Preço líquido, sem Horário**) | Não. Só apresentação. O PDF "Recebimento e Devoluções no Galpão" já traz "Aceito no galpão". Proposta: acrescentar Aceito e Preço líquido na ficha impressa (tarefa pequena de tela, em aberto) |
+| 5 | Ficha/romaneio do produtor na tela (`/produtores/[código]`) | Colunas Pedido, Entrega, Devolução, **Aceito**, **Preço líquido**, Valor; linha de Data **e Horário** | **Feito (27/09/2026):** as mesmas colunas, mais data e horário do recebimento em branco (spec 004 RD-15). Antes: só Pedido, Entrega, Devolução e Valor | Não. Só apresentação |
 | 6 | Onde se digita a entrega | Entrega no bloco ENTREGA PRODUTORES; na ficha, só a Devolução | Entrega, data, devolução e motivo na mesma linha, em "Divisão / Pedido / Entrega" | Não. É o mesmo dado em outro lugar |
 | 7 | Motivo da devolução no galpão | Colunas de código e motivo existem, mas ficam **ocultas** na ficha impressa | Motivo pedido na tela e obrigatório no núcleo novo (RN-21, com "Motivo não identificado") | Não |
-| 8 | Complemento que chega **na mesma viagem** (primeira carga) | Soma tudo na ficha da escola (ex.: 170 + 30 = 200 em "Recebido Bruto"). Em COMPLEMENTOS, só o bloco B (paga o 2º produtor), **não** o bloco C, senão a cobrança duplica | Núcleo novo (spec 008): entrega inicial e complemento são **eventos separados**, cada um com sua origem. Não há risco de cobrar em dobro, e o complemento sai em romaneio próprio | Não. A cobrança é 200 nos dois. **Diferença de documento:** a planilha usa um romaneio só; o app usaria dois (inicial + complemento). Para decidir com a operação: aceitar dois papéis ou permitir entrega inicial com duas origens (isso mexeria no contrato da API) |
+| 8 | Complemento que chega **na mesma viagem** (primeira carga) | Soma tudo na ficha da escola (ex.: 170 + 30 = 200 em "Recebido Bruto"). Em COMPLEMENTOS, só o bloco B (paga o 2º produtor), **não** o bloco C, senão a cobrança duplica | **Decidido e feito (27/09/2026), como na planilha** (spec 008 RN-22): um romaneio só por escola e visita. A entrega inicial registra o total (200); o complemento da mesma viagem guarda só a origem e a quantidade (pagamento e auditoria), sem documento próprio e sem somar de novo. Antes, o núcleo novo gerava um romaneio próprio para todo complemento | Não. A cobrança é 200 |
 | 9 | Complemento em **outra viagem** | Blocos B e C, com comprovante próprio | Evento de complemento com romaneio próprio | Não, bate |
 | 10 | Falta sem complemento | "Encerrada sem atendimento" na ficha da escola, sem passar para a semana seguinte | `ENCERRAR_FALTA_SEM_ATENDIMENTO` com motivo e responsável (RN-09) | Não, bate |
 
 **Resumo:** a v22 não muda nenhuma regra que o app calcula. A única diferença
 possível de valor é de **centavos**, pelo arredondamento por linha, já
-decidido a favor do app. As outras diferenças são de apresentação (5, 7) ou de
-forma de registro (6, 8).
+decidido a favor do app. Os itens 5 e 8 foram alinhados à planilha. Continuam
+diferentes só a forma de registro (6) e o motivo oculto na impressão (7).

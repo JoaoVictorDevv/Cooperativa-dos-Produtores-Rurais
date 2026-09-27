@@ -1,6 +1,28 @@
 # Plano técnico — Especificação 008
 
-## Estado atual (conferido em 26/09/2026)
+## Situação em uma leitura (27/09/2026)
+
+1. **O app em uso continua no modelo antigo.** A cobrança é
+   `(pedido − devolução) × preço`, sobre as tabelas atuais do Prisma. Funciona
+   e está testado.
+2. **O modelo desta spec está pronto só em memória.** Isso inclui:
+   - entrega real por escola;
+   - complementos (mesma viagem ou outra viagem);
+   - faltas;
+   - cobrança pelo aceito na escola.
+
+   Regras, telas, PDFs e o pacote de aceitação existem, mas nada disso é
+   gravado. **O que falta é banco e API** (Lucas): tarefas T05, T06, T09,
+   T12 e T14 em `tasks.md`.
+3. **As pastas `api/` e `database/` não foram tocadas.** O mesmo vale para
+   schema, migrações, seed, conexão, credenciais e infraestrutura do banco.
+   Nenhum banco real foi consultado ou alterado.
+
+Cada tarefa pendente, com o responsável, está em `tasks.md`. As mesmas
+pendências, agrupadas por responsável e com os detalhes técnicos, estão em
+`docs/propostas-pendentes.md` ("Pendências por responsável").
+
+## Estado do banco (conferido em 26/09/2026)
 
 | Necessidade | Prisma (telas atuais) | SQL novo (`database/`, API Java) |
 |---|---|---|
@@ -45,6 +67,19 @@ substituto em Prisma nem armazenamento paralelo.
     o `execute`.
   - `/complementos-faltas` — demonstração com cenário fictício
     (`src/lib/cycleCore/demoScenario.ts`), link discreto na página da semana.
+- RN-22 (27/09/2026) — complemento na mesma viagem:
+  - `DeliveryEvent.trip` (`MESMA_VIAGEM` | `OUTRA_VIAGEM`, obrigatório no
+    complemento, `null` na entrega inicial);
+  - em `cycle.ts`, `sameTrip` e `sameTripExcess`: o complemento da mesma
+    viagem não soma no entregue e as origens não passam do total da entrega
+    inicial;
+  - validação dos comandos e da correção da viagem;
+  - romaneio único por escola e visita (`eventRomaneios`);
+  - formulários com a escolha da viagem;
+  - contrato (`commandSchema.ts`) e pacote de aceitação versão 2.
+  - Testes: `cycle.test.ts` (4), `cycleLedger.test.ts` (5),
+    `documents.test.ts` (2), casos `complemento-mesma-viagem` e
+    `mesma-viagem-limites` em `docs/aceitacao/`.
 
 ## Backend alvo e contrato necessário (para o Lucas)
 
@@ -61,6 +96,15 @@ oferecer para esta spec:
    recebeu/conferiu (texto do romaneio), horário de lançamento separado,
    referência ao evento corrigido (auditoria). No máximo um `INICIAL` por
    ciclo/escola/produto; vários `COMPLEMENTO`.
+   - **Viagem do complemento (RN-22):** coluna `trip`
+     (`MESMA_VIAGEM` | `OUTRA_VIAGEM`), obrigatória no `COMPLEMENTO` e nula
+     no `INICIAL`.
+   - No `MESMA_VIAGEM`, rejeição e perda são zero e `delivered_at` /
+     `received_by` são nulos (valem os da entrega inicial).
+   - Esse evento **não** entra na soma do entregue à escola.
+   - A soma dos `MESMA_VIAGEM` de uma escola/produto não pode passar do
+     `presented_qty` do `INICIAL` já conferido (checar ao gravar e ao
+     corrigir, com a mesma trava da linha).
 2. **Recebimento no galpão com eventos**: hoje é 1 linha por
    produtor/produto/ciclo. Um complemento de **outro** produtor já cabe (outra
    linha). Um segundo recebimento do **mesmo** produtor no mesmo ciclo não
@@ -125,4 +169,19 @@ por soma sem arredondar por linha; o banco novo deve seguir a mesma regra
   comprovado (CA-008.9, CA-008.10), incluindo duas transações concorrentes; e
   o fluxo ponta a ponta (CA-008.11) pela interface.
 - A API Java deve reproduzir os mesmos casos (mesmos números) nos seus
-  testes antes de as telas passarem a consumi-la.
+  testes antes de as telas passarem a consumi-la: `docs/aceitacao/`
+  (versão 2, 17 cenários e 5 cálculos, contrato dos comandos em JSON Schema).
+
+## Como conferir localmente
+
+```bash
+service postgresql start   # só no container de desenvolvimento
+npx tsc --noEmit && npx eslint
+npx vitest run --exclude "**/*.integration.test.ts"   # sem banco
+npm run test:integration   # banco descartável criado, testado e apagado
+npm run build
+```
+
+O `.env.test` só indica o servidor Postgres. O executor cria nele um banco
+`colheita_descartavel_*` com uma marca própria, roda os testes nele e o apaga
+no fim. Só se apaga banco que tenha essa marca; um nome com "test" não basta.

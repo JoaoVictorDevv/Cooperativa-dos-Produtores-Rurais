@@ -7,9 +7,10 @@ O que continua pendente aqui é a **implementação técnica** que depende do
 Lucas (schema, migrações, API Java, infraestrutura) e o alinhamento de
 integração. Nada deste documento foi implementado no banco ou na API.
 
-Resumo em português simples do que o Lucas precisa fazer ou revisar: seção
-[Para o Lucas](#para-o-lucas--resumo). Guia de entrada, com o que já foi feito e
-o que falta: [`docs/para-o-lucas.md`](./para-o-lucas.md).
+Tudo o que falta, agrupado por responsável (Lucas, Operação, Claude) e com a
+tarefa correspondente de cada spec: seção
+[Pendências por responsável](#pendências-por-responsável). O que já está
+pronto, spec por spec: [`specs/README.md`](../specs/README.md), "Estado geral".
 
 ---
 
@@ -253,6 +254,13 @@ não muda.
    `source_producer_id`), `delivered_at` (data/hora real, com fuso),
    `received_by` (texto do romaneio), `idempotency_key`, `version`,
    `created_by`, `created_at`.
+   - **Viagem do complemento** (`trip`, RN-22, 27/09/2026):
+     - `MESMA_VIAGEM` | `OUTRA_VIAGEM`, obrigatória no `COMPLEMENTO` e nula
+       no `INICIAL`;
+     - no `MESMA_VIAGEM`, rejeição e perda são zero e `delivered_at` e
+       `received_by` são nulos;
+     - esse evento não soma no entregue à escola, porque a entrega inicial já
+       traz o total do romaneio.
    - Único: no máximo um `INICIAL` por ciclo/escola/produto; `COMPLEMENTO`
      sem limite. Único também em (ciclo, `idempotency_key`).
 2. **Decisão de falta** por ciclo/escola/produto (uma vigente): `kind`
@@ -276,6 +284,11 @@ não muda.
 - Segunda entrega inicial é recusada: correção não é nova entrega.
 - Rejeição ≤ entregue no mesmo evento; reduzir entregue abaixo da rejeição já
   registrada é recusado; rejeição e perda exigem motivo; até 2 casas decimais.
+- Complemento sem viagem é recusado. No `MESMA_VIAGEM`, rejeição, perda,
+  data/horário e recebedor próprios são recusados. As origens da mesma viagem
+  não podem somar mais que o `presented_qty` da entrega inicial conferida:
+  vale ao gravar o complemento, ao corrigir a entrega inicial e ao corrigir a
+  viagem (RN-22).
 - Correção exige motivo e a `version` aberta na tela (senão `CONFLITO`).
 - Reenvio com a mesma `idempotency_key` e mesmos dados = `JA_REGISTRADO`;
   com dados diferentes = `CONFLITO`.
@@ -299,6 +312,11 @@ não muda.
   é modelada; excesso das escolas sobre o galpão é aviso, não bloqueio.
 - **Motivo obrigatório** em rejeição e perda, com a opção "Motivo não
   identificado". Definitivo (RN-21).
+- **Um romaneio por escola e visita** (27/09/2026, RN-22), como na planilha
+  MODELO v22:
+  - complemento na mesma viagem vai no romaneio da entrega inicial, com a
+    origem registrada só internamente;
+  - dois romaneios só quando for outra viagem.
 
 Continua em aberto (depende do Lucas): **segundo recebimento do mesmo
 produtor no mesmo ciclo** (ex.: volta à tarde) — hoje 1 linha por
@@ -499,7 +517,8 @@ Varredura de 205 testes (sem `expect`, retorno antecipado, `expect` dentro de
 ### 11.7 Pacote de aceitação para o Lucas (27/09/2026)
 
 `docs/aceitacao/`: 15 cenários (spec 008, galpão, fechamento, permissões,
-reenvio, correções, unidades) e 5 cálculos em JSON, mais o **contrato dos
+reenvio, correções, unidades) e 5 cálculos em JSON (versão 2, de
+27/09/2026: 17 cenários, com o complemento na mesma viagem), mais o **contrato dos
 comandos em JSON Schema**, gerados do código testado — o teste falha se o JSON
 ficar desatualizado, e cada caso roda contra a implementação de referência. A
 API Java deve passar nos mesmos casos antes de qualquer tela usá-la. Instruções
@@ -548,11 +567,11 @@ criado `vitest.config.ts`, que só acrescenta o atalho `@/` do tsconfig.)
 
 ## 12. Planilha MODELO v22 × app (27/09/2026)
 
-A MODELO v22 substitui a v20 como referência operacional. Está em
-`docs/referencia-planilha/`, vazia, e a comparação completa está em
-`docs/referencia-planilha/atualizacao_v20_para_v22.md`. **Nenhum código foi
-alterado.** A lógica financeira da planilha não mudou. Os pontos que ficam
-registrados:
+A MODELO v22 é a **referência oficial** da planilha. Substitui a v20, e a
+v35 foi retirada do repositório. Está em `docs/referencia-planilha/`, vazia,
+e a comparação completa está em
+`docs/referencia-planilha/atualizacao_v20_para_v22.md`. A lógica financeira
+da planilha não mudou. Situação de cada ponto:
 
 - **Bate com o app:**
   - aceito no galpão = entrega − devolução;
@@ -569,22 +588,24 @@ registrados:
     cada lançamento (RN-02);
   - só diverge se o desconto mudar: a planilha recalcularia semanas antigas,
     o app não.
-- **Ficha impressa do produtor — Proposta (tela, pequena, sem banco):**
-  - acrescentar as colunas "Aceito" e "Preço líquido" e o campo "Horário" em
-    `/produtores/[código]`, como na v22;
-  - hoje a ficha mostra Pedido, Entrega, Devolução e Valor; o PDF
-    "Recebimento e Devoluções no Galpão" já tem "Aceito no galpão";
-  - não foi feito nesta rodada, por instrução.
-- **Complemento na mesma viagem — Decisão da operação:**
-  - a v22 manda somar tudo no romaneio inicial da escola (170 + 30 = 200) e
-    registrar o 2º produtor só no recebimento do galpão;
-  - o núcleo novo (spec 008) registra entrega inicial e complemento como
-    eventos separados, cada um com sua origem; o complemento sai em romaneio
+- **Ficha impressa do produtor — Corrigido (27/09/2026):**
+  - `/produtores/[código]` passou a mostrar as colunas "Aceito" e "Preço
+    líquido" e os campos em branco de data e horário do recebimento, como na
+    v22 (spec 004 RD-15, T12);
+  - antes a ficha mostrava só Pedido, Entrega, Devolução e Valor;
+  - a tabela rola dentro da ficha no celular.
+- **Complemento na mesma viagem — Decidido e implementado (27/09/2026):**
+  - sai um romaneio só por escola e visita, como na planilha (spec 008
+    RN-22, CA-008.21 e CA-008.22; spec 004 RD-12);
+  - a entrega inicial registra o total do romaneio (170 + 30 = 200);
+  - o complemento da mesma viagem guarda só a origem (produtor ou saldo do
+    galpão) e a quantidade, para o pagamento e a auditoria, sem documento
     próprio;
-  - a cobrança dá 200 nos dois casos. Muda só o papel: um romaneio ou dois;
-  - se a operação quiser um romaneio só, a entrega inicial precisaria aceitar
-    mais de uma origem, o que mexe no contrato da API (Lucas);
-  - até lá, fica como está na spec 008.
+  - dois romaneios só quando for outra viagem;
+  - antes, o núcleo novo sempre gerava um romaneio próprio para o
+    complemento;
+  - contrato e pacote de aceitação atualizados (`docs/aceitacao/`, versão 2);
+  - persistência: campo `trip` no evento de entrega (§9, Lucas).
 - **Onde se digita:**
   - na planilha, a entrega é digitada na Entrada de Dados e a devolução na
     ficha do produtor;
@@ -593,35 +614,85 @@ registrados:
 
 ---
 
-## Para o Lucas — resumo
+## Pendências por responsável
 
-1. **Banco/API para entrega real por escola/produto, complementos e decisão de
-   falta** (itens 1 e 9; `specs/008…/plan.md`). Tela e regras já prontas
-   esperando a persistência (`/complementos-faltas`, demonstração). Aceite:
+Cada item aponta a tarefa da spec onde está o critério de pronto. Tudo o que
+depende do Lucas é de banco, API ou infraestrutura: a área reservada a ele
+(pastas `api/` e `database/`, schema, migrações, seed, conexão, credenciais).
+
+### Lucas (banco, API, infraestrutura) — o que destrava o resto
+
+1. **Gravar a entrega real por escola/produto**: eventos inicial e
+   complemento, com origem, **viagem do complemento** (RN-22), rejeição,
+   perda antes da escola, data/hora real e quem recebeu (§9, item 1). Spec 008
+   T05.
+2. **Gravar a decisão de falta** (em resolução ou encerrada sem atendimento),
+   com versão (§9, item 2). Spec 008 T05.
+3. **Auditoria** na mesma transação de cada comando: antes/depois, motivo,
+   usuário (§9, item 3). Spec 008 T05.
+4. **Endpoint de comando e endpoint de leitura do ciclo** no formato de
+   `src/lib/domain/cycleLedger.ts`, com pedidos, recebimentos, eventos,
+   decisões, custos reais e nomes do cadastro (§9, item 4; §10, itens 3 e 4).
+   Contrato: `docs/aceitacao/contrato-comandos.schema.json`. Spec 008 T05.
+5. **Metodologia gravada por ciclo** (`LEGADO_PEDIDO_MENOS_DEVOLUCAO` ×
+   `ACEITE_ESCOLAR`). Os ciclos antigos ficam no legado para sempre (§10,
+   item 2). Spec 008 T09.
+6. **A API passar no pacote de aceitação** `docs/aceitacao/` (versão 2: 17
+   cenários, 5 cálculos) antes de qualquer tela consumi-la (§11.7). A
+   referência executável das mesmas regras está em
    `src/lib/domain/cycle.test.ts` e `src/lib/domain/cycleLedger.test.ts`.
-   Para os documentos e telas pela lógica corrigida: **metodologia gravada por
-   ciclo** e leitura do ciclo com custos e nomes (item 10).
-2. **Corrigir na API:** preço/desconto congelados em correções, validação de
-   devolução × entrega com concorrência, auditoria com antes/depois, fechamento
-   pelos estados da spec 008 (item 7.5).
-3. **Combinar o contrato de integração** (item 7) antes de qualquer tela
-   passar a consumir a API.
-4. **Desativar Ovos** no banco real (item 4).
-5. **Backup:** infraestrutura, agendamento, retenção e ensaio real de
-   restauração (item 5). Ferramenta de verificação só leitura e roteiro
-   prontos: `docs/backup-e-restauracao.md`.
-6. Avaliar a atualização do Prisma (alerta alto) (item 8). O menu lateral no
-   celular já foi corrigido.
-7. **Validar um ciclo real fechado** (só leitura): um ADMIN abre "Validar
-   este ciclo fechado" na página da semana, ou alguém com acesso roda
-   `scripts/validate-closed-cycle.ts` — ver `docs/validacao-ciclo-fechado.md`.
-8. **Revisão de segurança (§11):** limite de tentativas de login e revogação
-   de sessão (precisam de armazenamento); exigir `ADMIN_PASSWORD` sempre no
-   seed; decidir a migração para o Prisma 7 (alerta alto em `deepmerge-ts`);
-   na API Java, a mesma trava (ou checagem no banco) para devolução ≤
-   pedido/entrega (§11.6).
-9. **Pacote de aceitação** `docs/aceitacao/` (§11.7): a API precisa passar nos
-   15 cenários e 5 cálculos, com o contrato de comandos em JSON Schema.
-10. **Planilha MODELO v22** (§12): nada a fazer no banco. Só entra na sua
-    parte se a operação quiser um romaneio único para complemento na mesma
-    viagem (entrega inicial com mais de uma origem no contrato da API).
+   Spec 008 T12.
+7. **Correções na API atual:**
+   - preço e desconto congelados também nas correções;
+   - devolução ≤ entrega com trava contra corrida (a mesma de
+     `src/lib/locks.ts`, §11.6);
+   - auditoria com antes/depois;
+   - fechamento pelos estados da spec 008 (§7.5).
+
+   Spec 008 T06 e T07.
+8. **Combinar o contrato Next ↔ API** (autenticação, IDs, dados históricos)
+   antes de qualquer tela passar a consumir a API (§7). Spec 008 T08.
+9. **Arredondamento por linha** na view `v_week_financial_summary`, só para
+   ciclos novos (§8). Spec 008 T14.
+10. **Segurança** (§11), spec 001 T11–T14:
+    - limite de tentativas de login e revogação de sessão (precisam de
+      armazenamento);
+    - `ADMIN_PASSWORD` obrigatória sempre no seed;
+    - decidir a migração para o Prisma 7 (alerta alto em `deepmerge-ts`, só
+      na ferramenta de linha de comando).
+11. **Backup em produção**: infraestrutura, agendamento, retenção e ensaio
+    real de restauração. A verificação só leitura e o roteiro estão prontos:
+    `docs/backup-e-restauracao.md` (§5). Spec 001 T15.
+12. **Desativar Ovos** no banco real (§4). Spec 001 T16.
+13. Arquivamento imutável dos PDFs emitidos (spec 004 T10); associações
+    persistidas entre importações e OCR, se a operação precisar (spec 009 T11
+    e T12).
+
+### Operação (cooperativa, ADMIN com acesso ao sistema real) e prefeitura
+
+- **Pedido oficial da prefeitura** (Excel e/ou PDF), para validar a
+  importação com o arquivo de verdade. Spec 009 T10.
+- **Validar um ciclo real fechado**, só leitura: um ADMIN abre "Validar este
+  ciclo fechado" na página da semana (`docs/validacao-ciclo-fechado.md`).
+  Galpão, custos e diferença podem ser conferidos hoje. A cobrança por escola
+  não pode ser validada com nenhum ciclo antigo, porque não há entrega por
+  escola registrada. Spec 008 T13.
+- Confirmar a desativação de Ovos junto com o Lucas. Spec 001 T16.
+
+### Claude (Next), quando as dependências acima chegarem
+
+1. Adaptador da porta `CycleCoreRepository` para a API (as telas de
+   `src/components/cycle-core/` não mudam) e `/complementos-faltas` gravando
+   de verdade. Spec 008 T08.
+2. Trocar a fonte dos PDFs e das telas Resumo, Balanço, Diferença e página da
+   semana nos ciclos `ACEITE_ESCOLAR` (`DOCUMENT_SOURCES`,
+   `methodologyOfRealCycle()`). Spec 008 T09 e T10; spec 004 T09.
+3. Tela de fechamento pelos estados da spec 008. Spec 008 T07.
+4. Teste ponta a ponta e de volume com 191 escolas. Spec 008 T11.
+5. Importar o pedido oficial em banco descartável e ajustar ao layout. Spec
+   009 T10.
+6. Só depois do núcleo persistido e validado, a Etapa 7 (Mapa de Montagem),
+   em `specs/backlog.md`.
+
+Nada fica pendente só do lado do Claude: o que dava para fazer sem banco,
+API ou arquivo oficial está feito e testado.

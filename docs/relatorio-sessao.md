@@ -17,15 +17,23 @@ integrado por fast-forward na `develop` (as duas no mesmo commit — conferir
 com `git log --oneline origin/develop -3`). `main`/`staging` em `fcfc7f5`,
 nunca tocadas. Nenhum banco real consultado ou alterado.
 
-**Guia de entrada (o que foi feito, o que falta e de quem depende):**
-`docs/para-o-lucas.md`.
+**Onde está o estado:**
+- o que funciona e o que só existe em demonstração: `specs/README.md`,
+  "Estado geral";
+- o que falta, com o responsável: o `tasks.md` de cada spec e
+  `docs/propostas-pendentes.md` ("Pendências por responsável").
 
-**Planilha de referência (27/09/2026):** MODELO v22, vazia, em
-`docs/referencia-planilha/`. Substitui a v20 e não muda a lógica financeira.
-As diferenças com o app estão só documentadas, sem mudança de código:
-`docs/referencia-planilha/atualizacao_v20_para_v22.md` e
-`docs/propostas-pendentes.md` §12. Fica em aberto uma decisão da operação:
-complemento na mesma viagem vai em um romaneio ou em dois.
+**Planilha de referência (27/09/2026):** a **MODELO v22** é a oficial, vazia,
+em `docs/referencia-planilha/`. A v35 foi retirada. A v22 não muda a lógica
+financeira (`docs/referencia-planilha/atualizacao_v20_para_v22.md`,
+`docs/propostas-pendentes.md` §12).
+
+Decidido e feito em 27/09/2026:
+- ficha do produtor com Aceito, Preço líquido, data e horário (spec 004
+  RD-15);
+- complemento na mesma viagem com um romaneio só por escola e visita (spec
+  008 RN-22). A origem fica registrada só internamente. O contrato e o pacote
+  de aceitação estão na versão 2.
 
 **Decisões confirmadas pelo usuário (27/09/2026):** ADMIN e OPERADOR
 encerram falta (RN-19); complemento com produto já no galpão é aceito (RN-20);
@@ -41,12 +49,11 @@ galpão continua aceitando produtor inativo (entrega física não é impedida).
 | **Ciclo real fechado** | ADMIN abre "Validar este ciclo fechado" na página da semana (ou `scripts/validate-closed-cycle.ts`); anexar o resultado | `docs/validacao-ciclo-fechado.md` |
 | **Lucas**: decisões de segurança/infra | Limite de tentativas de login, revogação de sessão, `ADMIN_PASSWORD` obrigatória no seed, migração para Prisma 7, backup em produção | `docs/propostas-pendentes.md` §5, §11 |
 | Núcleo persistido e validado | Só então a Etapa 7 (Mapa de Montagem) | prompt v2 §17.1 |
-| Pedido para ajustar a ficha do produtor à v22 | Colunas Aceito e Preço líquido e campo Horário em `/produtores/[código]` (tela, sem banco) | `docs/propostas-pendentes.md` §12 |
 
 **Antes de mexer:** `service postgresql start` (o Postgres do container cai
 quando ele reinicia); depois rodar `npx tsc --noEmit && npx eslint && npx vitest
 run --exclude "**/*.integration.test.ts" && npm run test:integration && npm run
-build`. Estado validado em 27/09/2026: 220 testes unitários (+2 opcionais),
+build`. Estado validado em 27/09/2026: 233 testes unitários (+2 opcionais),
 21 de integração, build limpo.
 
 ## Rodada 2 (24–26/09/2026) — situação atual
@@ -173,7 +180,8 @@ lançamento. Semanas antigas não foram recalculadas.
   leitura, só ADMIN): em produção, um ADMIN valida um ciclo real sem acesso ao
   banco.
 - **Pacote de aceitação** `docs/aceitacao/` (15 cenários + 5 cálculos + JSON
-  Schema dos comandos) para a API Java.
+  Schema dos comandos) para a API Java. Versão 2 em 27/09/2026: 17 cenários,
+  com o complemento na mesma viagem.
 - **Arrumação:** teste antigo no auxiliar comum; textos da demonstração.
 
 ### Testes e ambiente

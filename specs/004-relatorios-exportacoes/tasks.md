@@ -1,6 +1,8 @@
 # Tarefas — Especificação 004
 
 Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído · `[B]` bloqueado.
+Toda tarefa pendente indica o **responsável** (Lucas = banco/API/infra;
+Claude = Next; Operação = cooperativa/ADMIN).
 
 - [x] T01 (Rodada 1) 7 documentos + ZIP por semana.
 - [x] T02 Identificação do ciclo e cabeçalho da tabela repetidos; "Página X de Y" (CA-004.2).
@@ -10,9 +12,11 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído · `[B]` bloqu
 - [x] T06 Nomes de arquivo com ciclo e data; datas em UTC e emissão no fuso de Petrópolis.
 - [x] T07 Volume de 191 escolas e desempenho (CA-004.4).
 - [x] T08 Ciclo fechado e Ovos desativado no histórico (CA-004.5).
-- [~] T09 Romaneio de complemento e aceite real por escola — **conteúdo e PDF prontos** (RD-12, RD-13; `src/lib/cycleCore/documents.ts`, `src/lib/pdf/EventRomaneiosDocument.tsx`), usados na demonstração; ligar às semanas reais depende da persistência da spec 008 (Lucas).
+- [~] T09 Romaneio por escola e visita e aceite real por escola — **conteúdo e PDF prontos** (RD-12 com a regra de viagem de 27/09/2026, RD-13; `src/lib/cycleCore/documents.ts`, `src/lib/pdf/EventRomaneiosDocument.tsx`), usados na demonstração. Ligar às semanas reais — **Responsável: Claude**, depois da persistência da spec 008 (T05, T09 — Lucas).
 - [x] T11 Etapa 5 (26/09/2026) — documentos pela lógica corrigida a partir do registro do ciclo (RD-11 a RD-14), ponto de troca por metodologia nas rotas reais (todas no modelo atual), PDFs/ZIP da demonstração. *Não troca nenhum documento real.*
-- [B] T10 Arquivamento imutável do PDF emitido — depende de storage (Lucas/infra).
+- [B] T10 Arquivamento imutável do PDF emitido — **Responsável: Lucas** (storage/infra).
+- [x] T12 Ficha do produtor pela planilha MODELO v22 (RD-15, CA-004.8) — colunas Aceito e Preço líquido, campos de data e horário do recebimento em branco, tabela com rolagem própria no celular. Evidência (27/09/2026, build de produção, banco descartável com dados fictícios): Abacate 48,5 − 3,3 = 45,2 × R$ 11,90 = R$ 537,88; Abobrinha 30 × R$ 4,03 = R$ 120,90; produto sem entrega com "—"; total R$ 658,78; 390 px sem rolagem lateral; impressão A4 com a tabela inteira.
+- [x] T13 Romaneio único para complemento na mesma viagem (RD-12, CA-004.7) — `documents.test.ts` ("romaneio por escola e visita"); rodapé do romaneio atual atualizado.
 
 ## Evidências (26/09/2026, build de produção, banco descartável `colheita_r2_descartavel_202609261644`, dados fictícios)
 

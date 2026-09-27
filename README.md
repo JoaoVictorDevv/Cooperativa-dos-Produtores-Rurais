@@ -19,9 +19,24 @@ O projeto está em preparação para o primeiro piloto. Ainda não deve ser publ
 - validar um ciclo semanal completo em paralelo com a planilha;
 - confirmar backup, responsáveis e credenciais de produção (roteiro e verificação: [`docs/backup-e-restauracao.md`](./docs/backup-e-restauracao.md)).
 
-**Para entender o estado atual (o que foi feito e o que falta, e de quem depende):** [`docs/para-o-lucas.md`](./docs/para-o-lucas.md).
-
 As decisões e os critérios de aceite ficam em [`specs/`](./specs/README.md). A especificação ativa é [`SPEC-001 — Integridade operacional`](./specs/001-integridade-operacional/spec.md).
+
+Onde está cada coisa:
+
+- **Estado geral** (o que funciona, o que só existe em demonstração): [`specs/README.md`](./specs/README.md), "Estado geral".
+- **O que falta e de quem depende** (Lucas, Operação, Claude): o `tasks.md` de cada spec e, agrupado por responsável, [`docs/propostas-pendentes.md`](./docs/propostas-pendentes.md#pendências-por-responsável).
+- **Histórico da sessão e ponto de retomada:** [`docs/relatorio-sessao.md`](./docs/relatorio-sessao.md).
+- **Plano e lista única de etapas:** [`docs/plano-de-implementacao.md`](./docs/plano-de-implementacao.md).
+
+## Planilha de referência
+
+A referência **oficial** da operação é a planilha **MODELO v22**, vazia:
+[`docs/referencia-planilha/controle_escolas_produtores_2026_MODELO_v22.xlsx`](./docs/referencia-planilha/controle_escolas_produtores_2026_MODELO_v22.xlsx).
+O que mudou em relação à v20 e as diferenças com o app estão em
+[`atualizacao_v20_para_v22.md`](./docs/referencia-planilha/atualizacao_v20_para_v22.md).
+As versões anteriores (v20, v27, v35) não são referência. A v35 foi retirada da
+pasta em 27/09/2026. A nota `atualizacao_v27_para_v35.md` fica só como
+histórico. Planilhas com pedido real ou simulação não são versionadas.
 
 ## Módulos existentes
 

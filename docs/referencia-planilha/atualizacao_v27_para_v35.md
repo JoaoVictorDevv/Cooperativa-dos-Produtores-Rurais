@@ -1,3 +1,8 @@
+> **Histórico.** A planilha v35 foi retirada do repositório em 27/09/2026. A
+> referência oficial é a MODELO v22 (`controle_escolas_produtores_2026_MODELO_v22.xlsx`
+> e `atualizacao_v20_para_v22.md`, nesta pasta). Esta nota fica só como
+> registro do que mudou da v27 para a v35.
+
 # Atualização da planilha: v27 → v35 (o que mudou desde o prompt original)
 
 O Claude Code recebeu contexto baseado na v27. Comparei célula por célula, aba por

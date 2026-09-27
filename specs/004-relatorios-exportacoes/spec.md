@@ -74,12 +74,20 @@ os recria: registra as regras e corrige o que o prompt v2 (§13, §14) exige.
   mudam; a fonte do conteúdo é escolhida pela metodologia do ciclo
   (`DOCUMENT_SOURCES`). Ciclos no modelo antigo continuam com os documentos
   atuais para sempre; "Pedidos aos Produtores" não muda de fonte.
-- **RD-12 Romaneio de complemento**: cada complemento (ou grupo de
-  complementos da mesma escola com a mesma data/hora real) tem documento
-  próprio `<ciclo>-<escola>-C<n>`, com pedido original, aceito antes,
-  entregue/rejeitado/aceito agora e origem. O romaneio da entrega inicial nunca
-  é alterado. Previsto = conferência em branco; registrado = "cópia conforme
-  registro", com data/horário real quando registrados.
+- **RD-12 Romaneio por escola e visita** (spec 008 RN-22, decidido em
+  27/09/2026, como na planilha MODELO v22):
+  - **Complemento na mesma viagem** da entrega inicial: sai no mesmo romaneio,
+    que traz o total entregue na visita, e **não** gera documento próprio. A
+    origem fica só no registro, para o pagamento no galpão.
+  - **Complemento em outra viagem:** cada complemento, ou grupo de
+    complementos da mesma escola com a mesma data/hora real, tem documento
+    próprio `<ciclo>-<escola>-C<n>`. Esse documento traz pedido original,
+    aceito antes, entregue/rejeitado/aceito agora e origem.
+  - O romaneio da entrega inicial nunca é alterado por um complemento de
+    outra viagem.
+  - Previsto = conferência em branco. Registrado = "cópia conforme registro",
+    com data/horário real quando registrados.
+  - O romaneio atual (modelo antigo) diz o mesmo no rodapé.
 - **RD-13 Entregas e atendimento**: por escola/produto — pedido, entregue,
   rejeição da escola, perda antes da escola, aceito, falta, excedente e
   situação em texto; pendente de conferência nunca vira zero; totais e
@@ -89,6 +97,16 @@ os recria: registra as regras e corrige o que o prompt v2 (§13, §14) exige.
   conferir" (não é estoque nem perda); balanço a cobrar pelo aceito na escola e
   a pagar pelo aceito no galpão, com os três indicadores, bloqueios e faltas
   encerradas.
+- **RD-15 Ficha do produtor** (tela `/produtores/<código>`, impressa como
+  controle de entrega; referência: planilha MODELO v22, abas "PROD - …"):
+  - colunas Produto, Pedido, Entrega, Devolução, **Aceito** (entrega −
+    devolução), **Preço líquido** (preço − desconto de logística, os dois
+    congelados no lançamento da entrega) e Valor (aceito × preço líquido,
+    arredondado por linha; o total soma as linhas);
+  - sem entrega registrada, Aceito e Preço líquido ficam "—";
+  - campos em branco para a assinatura do produtor ou de quem entregou, a
+    **data do recebimento** e o **horário** (preenchidos à mão);
+  - no celular, a tabela rola dentro da ficha; na impressão, sai inteira.
 
 ## Critérios de aceite
 
@@ -103,6 +121,12 @@ os recria: registra as regras e corrige o que o prompt v2 (§13, §14) exige.
   mesmo depois de desativado.
 - **CA-004.6** Balanço com nota de metodologia; Entregas às Escolas com aviso
   de modelo antigo.
+- **CA-004.7** Complemento na mesma viagem não gera romaneio próprio e o
+  romaneio da visita mostra o total; complemento em outra viagem gera
+  (RD-12).
+- **CA-004.8** A ficha do produtor mostra Aceito, Preço líquido e Valor
+  coerentes. Exemplo: 48,5 − 3,3 = 45,2 × R$ 11,90 = R$ 537,88. A ficha tem
+  data e horário em branco e não rola a página no celular (RD-15).
 
 ## Fora de escopo
 

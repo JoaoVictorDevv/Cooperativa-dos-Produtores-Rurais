@@ -1,6 +1,8 @@
 # Tarefas — Especificação 009
 
 Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído · `[B]` bloqueado.
+Toda tarefa pendente indica o **responsável** (Lucas = banco/API/infra;
+Claude = Next; Operação = cooperativa/ADMIN).
 
 - [x] T01 Reproduzir as falhas do motor antigo (zero descartado, `1.000` → 1, coluna duplicada, conflito 2044, só 1ª aba / exige "CÓDIGO") — confirmadas lendo o código e rodando o motor.
 - [x] T02 Grade neutra + leitor `.xlsx` preservando tipos (CA-009.7) — `xlsx.test.ts`.
@@ -11,9 +13,9 @@ Legenda: `[ ]` pendente · `[~]` em andamento · `[x]` concluído · `[B]` bloqu
 - [x] T07 PDF com texto (CA-009.13) — `pdf.test.tsx`.
 - [x] T08 Grade atualiza após importação sem perder edição em andamento (CA-009.14) — `SchoolOrderCell.tsx`.
 - [x] T09 Ovos fora de novos lançamentos (tela e servidor) sem esconder histórico.
-- [B] T10 Validar com pedido oficial da prefeitura de Petrópolis (Excel e PDF) — **nenhum exemplo oficial disponível**.
-- [B] T11 Associações persistidas entre importações — exige tabela nova (Lucas).
-- [B] T12 OCR para PDF digitalizado — infraestrutura não autorizada.
+- [B] T10 Validar com pedido oficial da prefeitura de Petrópolis (Excel e PDF) — **nenhum exemplo oficial disponível**. **Responsável: Operação** (obter o arquivo oficial da prefeitura). Depois, **Claude** importa em banco descartável, confere reconhecimento, pendências e totais, e ajusta o que o layout oficial exigir.
+- [B] T11 Associações persistidas entre importações — exige tabela nova — **Responsável: Lucas**.
+- [B] T12 OCR para PDF digitalizado — infraestrutura não autorizada — **Responsável: Lucas** (infra), se a operação precisar.
 
 ## Evidências (26/09/2026)
 
