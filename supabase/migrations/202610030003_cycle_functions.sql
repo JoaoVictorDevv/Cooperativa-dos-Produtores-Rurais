@@ -36,6 +36,7 @@ begin
   if not private.has_role(p_organization_id, array['ADMIN','OPERADOR']::public.member_role[]) then
     raise exception 'Sem permissão para ativar ciclo' using errcode = '42501';
   end if;
+  perform set_config('app.audit_action','ATIVAR_CICLO',true);
   update public.weeks set status = 'ABERTO', activated_at = now()
   where id = p_week_id and organization_id = p_organization_id and status = 'PLANEJAMENTO'
   returning * into v_week;
@@ -56,6 +57,7 @@ begin
   perform 1 from public.weeks where id = p_week_id and organization_id = p_organization_id and status = 'ABERTO' for update;
   if not found then raise exception 'Ciclo não está aberto' using errcode = 'P0001'; end if;
 
+  perform set_config('app.audit_action','REGISTRAR_RECEBIMENTO_GALPAO',true);
   select * into v_existing from public.warehouse_receipts
   where organization_id = p_organization_id and week_id = p_week_id
     and idempotency_key = p_input->>'idempotencyKey';
@@ -101,6 +103,10 @@ begin
   end if;
   perform 1 from public.weeks where id = p_week_id and organization_id = p_organization_id and status = 'ABERTO' for update;
   if not found then raise exception 'Ciclo não está aberto' using errcode = 'P0001'; end if;
+  perform set_config('app.audit_action',coalesce(v_type,'COMANDO_DESCONHECIDO'),true);
+  if v_type in ('CORRIGIR_EVENTO','MARCAR_FALTA_EM_RESOLUCAO','ENCERRAR_FALTA_SEM_ATENDIMENTO','REVOGAR_DECISAO_FALTA') then
+    perform set_config('app.audit_reason',coalesce(p_command->>'reason',''),true);
+  end if;
 
   if v_type in ('REGISTRAR_ENTREGA_INICIAL','REGISTRAR_COMPLEMENTO') then
     select * into v_existing from public.school_delivery_events
@@ -234,11 +240,18 @@ begin
   end if;
   select * into v_week from public.weeks where organization_id=p_organization_id and id=p_week_id for update;
   if not found or v_week.status <> 'ABERTO' then raise exception 'Ciclo não está aberto' using errcode = 'P0001'; end if;
+  perform set_config('app.audit_action','FECHAR_CICLO',true);
+
+  if not exists (
+    select 1 from public.school_orders o
+    where o.organization_id=p_organization_id and o.week_id=p_week_id
+  ) then v_blockers := v_blockers || '"O ciclo ainda não possui pedido."'::jsonb; end if;
 
   if exists (
     select 1 from public.school_orders o
     left join public.school_delivery_events e on e.organization_id=o.organization_id and e.week_id=o.week_id and e.school_id=o.school_id and e.product_id=o.product_id and e.kind='INICIAL'
-    where o.organization_id=p_organization_id and o.week_id=p_week_id and (e.id is null or e.presented_qty is null)
+    where o.organization_id=p_organization_id and o.week_id=p_week_id and o.ordered_qty > 0
+      and (e.id is null or e.presented_qty is null)
   ) then v_blockers := v_blockers || '"Há pedidos sem entrega inicial conferida."'::jsonb; end if;
 
   if exists (

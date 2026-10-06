@@ -148,6 +148,7 @@ create table public.audit_logs (
   entity_id uuid,
   before_data jsonb,
   after_data jsonb,
+  reason text,
   request_id uuid,
   created_at timestamptz not null default now()
 );
@@ -180,15 +181,16 @@ create or replace function private.audit_row()
 returns trigger language plpgsql security definer set search_path = '' as $$
 declare v_row jsonb := case when tg_op = 'DELETE' then to_jsonb(old) else to_jsonb(new) end;
 begin
-  insert into public.audit_logs(organization_id, user_id, action, entity_type, entity_id, before_data, after_data)
+  insert into public.audit_logs(organization_id, user_id, action, entity_type, entity_id, before_data, after_data, reason)
   values (
     (v_row->>'organization_id')::uuid,
     (select auth.uid()),
-    tg_op,
+    coalesce(nullif(current_setting('app.audit_action', true), ''), tg_op),
     tg_table_name,
     nullif(v_row->>'id', '')::uuid,
     case when tg_op in ('UPDATE','DELETE') then to_jsonb(old) else null end,
-    case when tg_op in ('INSERT','UPDATE') then to_jsonb(new) else null end
+    case when tg_op in ('INSERT','UPDATE') then to_jsonb(new) else null end,
+    nullif(current_setting('app.audit_reason', true), '')
   );
   return coalesce(new, old);
 end;

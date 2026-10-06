@@ -44,6 +44,7 @@ begin
   if not private.has_role(p_organization_id, array['ADMIN','OPERADOR']::public.member_role[]) then
     raise exception 'Sem permissão para alterar preços' using errcode='42501';
   end if;
+  perform set_config('app.audit_action','ALTERAR_PRECO',true);
   perform 1 from public.products
   where organization_id=p_organization_id and id=v_product_id for update;
   if not found then raise exception 'Produto não encontrado' using errcode='P0001'; end if;
