@@ -59,6 +59,33 @@ paths:
       summary: Cria ciclo em planejamento
       parameters: [ { $ref: "#/components/parameters/OrganizationId" } ]
       responses: { "201": { description: Ciclo criado } }
+  /organizations/{organizationId}/members:
+    get:
+      summary: Lista membros da cooperativa (somente ADMIN)
+      parameters: [ { $ref: "#/components/parameters/OrganizationId" } ]
+      responses: { "200": { description: Membros }, "403": { $ref: "#/components/responses/Problem" } }
+    put:
+      summary: Associa ou atualiza papel de um usuário do Supabase Auth (somente ADMIN)
+      parameters: [ { $ref: "#/components/parameters/OrganizationId" } ]
+      responses: { "200": { description: Membro salvo }, "403": { $ref: "#/components/responses/Problem" } }
+  /organizations/{organizationId}/prices:
+    get:
+      summary: Lista histórico de preços
+      parameters: [ { $ref: "#/components/parameters/OrganizationId" } ]
+      responses: { "200": { description: Preços } }
+    post:
+      summary: Abre nova vigência de preço sem alterar snapshots anteriores
+      parameters: [ { $ref: "#/components/parameters/OrganizationId" } ]
+      responses: { "201": { description: Preço criado }, "409": { $ref: "#/components/responses/Problem" } }
+  /organizations/{organizationId}/production-map:
+    get:
+      summary: Lista o mapa de produção ofertada
+      parameters: [ { $ref: "#/components/parameters/OrganizationId" } ]
+      responses: { "200": { description: Mapa de produção } }
+    put:
+      summary: Cria ou atualiza oferta mensal de produtor e produto
+      parameters: [ { $ref: "#/components/parameters/OrganizationId" } ]
+      responses: { "200": { description: Oferta salva } }
   /organizations/{organizationId}/weeks/{weekId}/activate:
     post:
       summary: Ativa um ciclo planejado
@@ -69,6 +96,16 @@ paths:
       summary: Cria ou atualiza pedido por escola e produto
       parameters: [ { $ref: "#/components/parameters/OrganizationId" }, { $ref: "#/components/parameters/WeekId" } ]
       responses: { "200": { description: Pedido salvo } }
+  /organizations/{organizationId}/weeks/{weekId}/producer-orders:
+    put:
+      summary: Cria ou atualiza a parcela pedida a um produtor
+      parameters: [ { $ref: "#/components/parameters/OrganizationId" }, { $ref: "#/components/parameters/WeekId" } ]
+      responses: { "200": { description: Pedido ao produtor salvo } }
+  /organizations/{organizationId}/weeks/{weekId}/costs:
+    post:
+      summary: Registra custo operacional do ciclo
+      parameters: [ { $ref: "#/components/parameters/OrganizationId" }, { $ref: "#/components/parameters/WeekId" } ]
+      responses: { "201": { description: Custo registrado } }
   /organizations/{organizationId}/weeks/{weekId}/warehouse-receipts:
     post:
       summary: Registra recebimento e rejeição no galpão
@@ -89,6 +126,11 @@ paths:
       summary: Confere bloqueios e fecha o ciclo
       parameters: [ { $ref: "#/components/parameters/OrganizationId" }, { $ref: "#/components/parameters/WeekId" } ]
       responses: { "200": { description: Prévia ou ciclo fechado } }
+  /organizations/{organizationId}/audit:
+    get:
+      summary: Lista os 500 registros de auditoria mais recentes
+      parameters: [ { $ref: "#/components/parameters/OrganizationId" } ]
+      responses: { "200": { description: Trilha de auditoria }, "403": { $ref: "#/components/responses/Problem" } }
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }

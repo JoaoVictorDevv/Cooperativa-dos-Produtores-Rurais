@@ -4,6 +4,8 @@ import { roles, type Identity, type Role } from "../../domain/actor.js";
 import { AppError, notFound } from "../../domain/errors.js";
 
 type DbError = { code?: string; message: string; details?: string; hint?: string };
+type OrganizationRelation = { name: string } | Array<{ name: string }>;
+type MembershipRow = { organization_id: string; role: unknown; organizations: OrganizationRelation };
 
 export class SupabaseColheitaRepository implements ColheitaRepository {
   constructor(private readonly url: string, private readonly publishableKey: string) {}
@@ -14,9 +16,9 @@ export class SupabaseColheitaRepository implements ColheitaRepository {
       .select("organization_id, role, organizations!inner(name)")
       .eq("active", true);
     this.raise(error);
-    return (data ?? []).map((row: any) => ({
+    return ((data ?? []) as unknown as MembershipRow[]).map((row) => ({
       organizationId: row.organization_id,
-      organizationName: row.organizations.name,
+      organizationName: this.organizationName(row.organizations),
       role: this.role(row.role),
     }));
   }
@@ -31,8 +33,12 @@ export class SupabaseColheitaRepository implements ColheitaRepository {
       .maybeSingle();
     this.raise(error);
     if (!data) return null;
-    const row = data as any;
-    return { organizationId: row.organization_id, organizationName: row.organizations.name, role: this.role(row.role) };
+    const row = data as unknown as MembershipRow;
+    return {
+      organizationId: row.organization_id,
+      organizationName: this.organizationName(row.organizations),
+      role: this.role(row.role),
+    };
   }
 
   async list(identity: Identity, organizationId: string, table: CatalogName | "weeks" | "prices"): Promise<unknown[]> {
@@ -170,6 +176,12 @@ export class SupabaseColheitaRepository implements ColheitaRepository {
   private role(value: unknown): Role {
     if (typeof value === "string" && roles.includes(value as Role)) return value as Role;
     throw new AppError("Papel de usuário inválido no banco.", 500, "INVALID_ROLE");
+  }
+
+  private organizationName(value: OrganizationRelation): string {
+    const organization = Array.isArray(value) ? value[0] : value;
+    if (organization?.name) return organization.name;
+    throw new AppError("Organização inválida no banco.", 500, "INVALID_ORGANIZATION");
   }
 
   private raise(error: DbError | null): asserts error is null {

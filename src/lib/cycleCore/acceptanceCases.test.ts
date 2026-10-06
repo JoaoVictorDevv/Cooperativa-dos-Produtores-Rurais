@@ -27,6 +27,9 @@ describe("pacote de aceitação (referência para a API Java)", () => {
   });
 
   it("docs/aceitacao está atualizado com os casos e o contrato (rode scripts/export-acceptance.ts)", () => {
-    for (const [path, content] of Object.entries(acceptanceFiles())) expect(readFileSync(path, "utf8"), path).toBe(content);
+    const normalizeLines = (value: string) => value.replace(/\r\n/g, "\n");
+    for (const [path, content] of Object.entries(acceptanceFiles())) {
+      expect(normalizeLines(readFileSync(path, "utf8")), path).toBe(normalizeLines(content));
+    }
   });
 });

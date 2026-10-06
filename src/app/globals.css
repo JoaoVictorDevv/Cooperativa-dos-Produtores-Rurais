@@ -1,4 +1,7 @@
 :root {
+  --font-plex-sans: "Segoe UI", Inter, Arial, sans-serif;
+  --font-fraunces: Georgia, "Times New Roman", serif;
+  --font-plex-mono: "Cascadia Mono", Consolas, monospace;
   --bg: #f5f1e6;
   --panel: #ffffff;
   --ink: #23281e;
