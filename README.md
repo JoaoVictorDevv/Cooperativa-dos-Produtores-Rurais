@@ -2,13 +2,19 @@
 
 Sistema de gestão do ciclo semanal da Cooperativa dos Produtores Rurais de Petrópolis para o PNAE. Substitui o fluxo operacional mantido em uma grande planilha por lançamentos rastreáveis de pedido, divisão, entrega, devolução e financeiro.
 
-## Nova estrutura de backend
+## Backend definitivo em construção
 
-- `api/`: API REST em Java 21 e Spring Boot, organizada em Clean Architecture;
-- `database/`: PostgreSQL com migrações, papéis técnicos, permissões, auditoria e inicialização local;
+- `api/`: API REST TypeScript/Fastify em Clean Architecture;
+- `supabase/`: PostgreSQL para Supabase com Auth, RLS, auditoria e migrações;
+- `database/`: protótipo legado da API Java, mantido apenas como referência de migração;
 - `/`: redireciona diretamente para `/login`, sem landing page pública.
 
-Veja as instruções específicas em [`api/README.md`](./api/README.md) e [`database/README.md`](./database/README.md).
+Veja [`api/README.md`](./api/README.md), [`supabase/README.md`](./supabase/README.md)
+e a [`spec 011`](./specs/011-api-typescript-supabase/spec.md).
+
+O frontend ainda usa Prisma e o modelo anterior. Ele só será apontado para a
+API depois da migração histórica e do ensaio de restauração; não mantenha o
+mesmo ciclo gravando nas duas bases.
 
 ## Estado do produto
 
@@ -49,13 +55,17 @@ repositório. Planilhas com pedido real ou simulação não são versionadas.
 
 ## Ambiente local
 
-Requisitos: Node.js, npm e PostgreSQL.
+O frontend atual requer Node.js, npm e PostgreSQL. A API nova requer Node.js
+22+; o Supabase local requer Docker Desktop e a CLI do Supabase.
 
 1. Instale as dependências com `npm ci`.
 2. Copie `.env.example` para `.env` e preencha valores locais.
 3. Aplique as migrações com `npx prisma migrate deploy`.
 4. Carregue os cadastros iniciais com `npm run db:seed`.
 5. Inicie com `npm run dev`.
+
+Para a API nova, use `npm install` e `npm run dev` dentro de `api/`. Para o
+banco novo, siga `supabase/README.md`.
 
 Nesta máquina, o banco isolado de desenvolvimento fica em `.local/` e usa a porta 5433. Depois de reiniciar o Windows, execute `npm run db:local:start` antes de `npm run dev`. Para encerrá-lo manualmente, use `npm run db:local:stop`.
 
@@ -68,6 +78,8 @@ Nunca use um banco de produção para testes. O `.env.test` só indica o servido
 - `npm run lint`: análise estática;
 - `npm run build`: build de produção;
 - `npx prisma validate`: validação do modelo de dados.
+- `npm run api:test`: testes da API TypeScript;
+- `npm run api:build`: typecheck e build da API TypeScript.
 
 ## Dados e segurança
 

@@ -12,6 +12,12 @@ operacionais ou no financeiro oficial ainda.
 **Origem:** regras confirmadas com Seu Paulo e registradas no prompt
 `docs/prompts/2026-09-24-prompt-v2-operacao-specs-develop.md` (§3–§10).
 
+> **Atualização de 03/10/2026:** a spec 011 substituiu a API Java por
+> TypeScript e criou o schema Supabase para estes eventos. O exemplo
+> 200/180/170 e o fechamento foram validados num PostgreSQL descartável. A
+> persistência ainda não alimenta as telas; faltam o adaptador do Next, a
+> migração histórica e a execução completa do pacote com 17 cenários.
+
 ## Por que existe
 
 O app hoje sabe o que a escola **pediu** e o que ela **devolveu**, e cobra a

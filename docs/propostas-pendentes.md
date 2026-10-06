@@ -1,5 +1,12 @@
 # O que falta no Colheita, e de quem depende
 
+> **Atualização de 03/10/2026:** a API Java e o banco sem RLS citados neste
+> histórico foram substituídos pela API TypeScript e pelo schema Supabase da
+> spec 011. L1–L8 ganharam uma implementação inicial e o caso 200/180/170 foi
+> validado em banco descartável. Continuam pendentes: executar todo o pacote de
+> 17 cenários, adaptar o Next, migrar os dados históricos, configurar o projeto
+> remoto e ensaiar a restauração. Confira `specs/README.md` para o estado atual.
+
 Este arquivo tem duas partes:
 
 1. **Comece por aqui:** o que falta, em ordem, com o responsável e com o que

@@ -12,15 +12,17 @@ Cada incremento deve ter:
 O código pode explicar **como** algo funciona. As especificações devem explicar
 **por que** a regra existe e **qual comportamento** o usuário pode esperar.
 
-## Estado geral (27/09/2026)
+## Estado geral (03/10/2026)
 
 - **O app em uso continua no modelo antigo.** A cobrança é
   `(pedido − devolução) × preço`, sobre as tabelas atuais do Prisma.
-- **O modelo novo (spec 008) está pronto só em memória.** Isso inclui entrega
-  real por escola, complementos, faltas e cobrança pelo aceito na escola. O
-  que falta é banco e API (Lucas).
-- As pastas `api/` e `database/` não foram tocadas, e nenhum banco real foi
-  consultado ou alterado.
+- **O modelo novo (spec 008) ainda não está ligado às telas.** A regra de
+  domínio continua testada no Next; a spec 011 criou a API TypeScript e as
+  migrações Supabase para entrega real, complementos, faltas e cobrança pelo
+  aceito na escola. Falta adaptar o frontend e migrar o histórico.
+- `api/` substituiu o protótipo Java e `supabase/` é a nova fonte de verdade do
+  banco. As cinco migrações foram aplicadas em PostgreSQL descartável e o caso
+  200/180/170 passou; nenhum banco remoto ou dado real foi alterado.
 - A referência operacional da planilha é a **MODELO v22**
   (`docs/referencia-planilha/`; diferenças com o app em
   [`docs/propostas-pendentes.md` §12](../docs/propostas-pendentes.md#12-planilha-modelo-v22--app-27092026)).
@@ -39,7 +41,7 @@ O código pode explicar **como** algo funciona. As especificações devem explic
 | "Validar este ciclo fechado" (só leitura, só ADMIN) | Semana fechada → link no fim da página | `docs/validacao-ciclo-fechado.md` |
 | Verificação de backup só leitura (conta linhas e compara conteúdo antes e depois de restaurar) | `scripts/backup-verify.ts` | `docs/backup-e-restauracao.md` |
 
-### Pronto, mas só com dado fictício (espera banco e API)
+### Pronto, mas ainda fora das telas operacionais
 
 | O quê | Onde está | Estado |
 |---|---|---|
@@ -64,6 +66,7 @@ suas tarefas, com o responsável, no próprio `tasks.md`.
 - [`008-recebimentos-faltas-fechamento`](./008-recebimentos-faltas-fechamento/spec.md): dois recebimentos (galpão e escola), complementos (um romaneio por escola e visita, RN-22), faltas e fechamento. Regras confirmadas e testadas em memória; persistência bloqueada (Lucas).
 - [`009-importacao-pedido-prefeitura`](./009-importacao-pedido-prefeitura/spec.md): importação do pedido da prefeitura (Excel com várias abas e PDF com texto), com conferência e gravação atômica. Implementada e testada; falta validar com arquivo oficial da prefeitura.
 - [`010-divisao-para-pedidos`](./010-divisao-para-pedidos/spec.md): gerar pedidos aos produtores a partir da divisão, com prévia e confirmação, sem apagar nem sobrescrever em silêncio. Implementada e testada (tabelas atuais, sem mudança de schema).
+- [`011-api-typescript-supabase`](./011-api-typescript-supabase/spec.md): substituição da API Java por TypeScript e persistência do ciclo confirmado em PostgreSQL/Supabase com Auth, RLS, concorrência e auditoria.
 - [`backlog.md`](./backlog.md): próximas especificações candidatas, ainda não aprovadas para implementação.
 
 ## Numeração

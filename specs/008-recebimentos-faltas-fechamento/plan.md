@@ -1,5 +1,10 @@
 # Plano técnico — Especificação 008
 
+> **Atualização de 03/10/2026:** o alvo Java descrito abaixo foi substituído
+> pela API TypeScript e pelas migrações Supabase da spec 011. Este documento
+> preserva o diagnóstico original; para o estado atual, leia
+> `specs/011-api-typescript-supabase/` e `docs/revisao-api-banco-2026-10-03.md`.
+
 ## Situação em uma leitura (27/09/2026)
 
 1. **O app em uso continua no modelo antigo.** A cobrança é
