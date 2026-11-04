@@ -59,3 +59,6 @@ next-env.d.ts
 # Python (ferramentas/planilha)
 __pycache__/
 *.pyc
+
+# Dados do app da Cooperativa (nomes, telefones e valores reais)
+dados-cooperativa/

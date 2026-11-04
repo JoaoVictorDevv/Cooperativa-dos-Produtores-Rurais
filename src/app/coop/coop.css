@@ -1,0 +1,194 @@
+/* App da Cooperativa — visual simples, letra grande, funciona no celular. */
+.coop {
+  --c-bg: #f4f2ea;
+  --c-card: #ffffff;
+  --c-ink: #1f261d;
+  --c-soft: #5b6455;
+  --c-line: #dfe3d6;
+  --c-verde: #1d5c3a;
+  --c-verde-2: #2e7d4f;
+  --c-verde-claro: #e3efe5;
+  --c-amarelo: #fff6cf;
+  --c-amarelo-borda: #e8cf63;
+  --c-vermelho: #a3362a;
+  --c-vermelho-claro: #f8e1dc;
+  --c-azul: #24527a;
+  min-height: 100vh;
+  background: var(--c-bg);
+  color: var(--c-ink);
+  font-size: 15px;
+}
+.coop * { box-sizing: border-box; }
+.coop a { color: var(--c-verde); }
+.coop-top {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 18px;
+  padding: 10px 18px;
+  background: var(--c-verde);
+  color: #fff;
+}
+.coop-top .marca { font-weight: 700; font-size: 17px; color: #fff; text-decoration: none; margin-right: auto; }
+.coop-top nav { display: flex; gap: 4px; flex-wrap: wrap; }
+.coop-top nav a { color: #e9f3ec; text-decoration: none; padding: 6px 10px; border-radius: 8px; font-size: 14px; }
+.coop-top nav a:hover { background: rgba(255, 255, 255, 0.14); }
+.coop-main { max-width: 1180px; margin: 0 auto; padding: 18px 16px 60px; }
+.coop h1 { font-size: 24px; margin: 4px 0 4px; }
+.coop h2 { font-size: 18px; margin: 22px 0 10px; }
+.coop h3 { font-size: 15px; margin: 14px 0 8px; }
+.coop .sub { color: var(--c-soft); margin: 0 0 14px; }
+.coop .voltar { display: inline-block; margin-bottom: 8px; font-size: 14px; text-decoration: none; }
+.coop .card {
+  background: var(--c-card);
+  border: 1px solid var(--c-line);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.coop .grade { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.coop .numero { background: var(--c-card); border: 1px solid var(--c-line); border-radius: 12px; padding: 12px 14px; }
+.coop .numero small { display: block; color: var(--c-soft); font-size: 12.5px; }
+.coop .numero strong { display: block; font-size: 21px; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.coop .numero.bom strong { color: var(--c-verde); }
+.coop .numero.ruim strong { color: var(--c-vermelho); }
+.coop .botoes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.coop .botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--c-verde);
+  background: var(--c-verde);
+  color: #fff !important;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+.coop .botao:disabled { opacity: 0.55; cursor: not-allowed; }
+.coop .botao.claro { background: #fff; color: var(--c-verde) !important; }
+.coop .botao.zap { background: #1f8a4c; border-color: #1f8a4c; }
+.coop .botao.pequeno { min-height: 32px; padding: 4px 10px; font-size: 13.5px; }
+.coop .botao.perigo { background: #fff; color: var(--c-vermelho) !important; border-color: var(--c-vermelho); }
+.coop .passos { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+.coop .passo {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--c-line);
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+}
+.coop .passo:hover { border-color: var(--c-verde-2); }
+.coop .passo .bola {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #eceee6;
+  color: var(--c-soft);
+  font-weight: 700;
+}
+.coop .passo.feito .bola { background: var(--c-verde); color: #fff; }
+.coop .passo strong { display: block; }
+.coop .passo span { color: var(--c-soft); font-size: 13.5px; }
+.coop .rolar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.coop table.tabela { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.coop .tabela th,
+.coop .tabela td { padding: 6px 8px; border-bottom: 1px solid var(--c-line); text-align: left; vertical-align: top; }
+.coop .tabela th { font-size: 12.5px; color: var(--c-soft); font-weight: 600; background: #fafaf6; position: sticky; top: 0; }
+.coop .tabela td.n,
+.coop .tabela th.n { text-align: right; white-space: nowrap; }
+.coop .tabela tfoot td { font-weight: 700; border-top: 2px solid var(--c-ink); }
+.coop .tabela tr.marcada td { background: var(--c-amarelo); }
+.coop .tabela tr.cinza td { color: #9aa093; }
+.coop input[type="number"],
+.coop input[type="text"],
+.coop input[type="date"],
+.coop select,
+.coop textarea {
+  font: inherit;
+  padding: 7px 9px;
+  border: 1px solid #c9cfbf;
+  border-radius: 8px;
+  background: #fff;
+  min-height: 38px;
+}
+.coop input.digita { background: var(--c-amarelo); border-color: var(--c-amarelo-borda); width: 92px; text-align: right; }
+.coop input.digita:focus { outline: 2px solid var(--c-verde-2); }
+.coop textarea { width: 100%; min-height: 90px; }
+.coop label.campo { display: grid; gap: 4px; font-size: 13.5px; color: var(--c-soft); }
+.coop .aviso { background: var(--c-amarelo); border: 1px solid var(--c-amarelo-borda); border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+.coop .erro { background: var(--c-vermelho-claro); border: 1px solid #e3a99e; color: #6e1f16; border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+.coop .ok { background: var(--c-verde-claro); border: 1px solid #b8d6bf; border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+.coop .etiqueta { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 99px; background: #eceee6; color: var(--c-soft); }
+.coop .etiqueta.verde { background: var(--c-verde-claro); color: var(--c-verde); }
+.coop .etiqueta.vermelha { background: var(--c-vermelho-claro); color: var(--c-vermelho); }
+.coop .etiqueta.amarela { background: var(--c-amarelo); color: #6b5800; }
+.coop pre.msg {
+  white-space: pre-wrap;
+  font: 14px/1.45 inherit;
+  background: #f6f8f3;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 8px 0;
+}
+.coop .abas { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 14px; }
+.coop .abas a { padding: 7px 12px; border-radius: 99px; border: 1px solid var(--c-line); background: #fff; text-decoration: none; color: var(--c-ink); font-size: 14px; }
+.coop .abas a.ativa { background: var(--c-verde); border-color: var(--c-verde); color: #fff; }
+.coop .rota-titulo { background: var(--c-verde); color: #fff; padding: 8px 12px; border-radius: 10px 10px 0 0; font-weight: 700; }
+.coop .rota-corpo { border: 1px solid var(--c-line); border-top: 0; border-radius: 0 0 10px 10px; background: #fff; margin-bottom: 16px; }
+.coop .escola-linha { cursor: pointer; }
+.coop .escola-linha:hover td { background: #f3f7f1; }
+.coop .discreto { color: var(--c-soft); font-size: 13px; }
+.coop .direita { text-align: right; }
+@media (max-width: 640px) {
+  .coop-main { padding: 12px 12px 60px; }
+  .coop h1 { font-size: 21px; }
+  .coop .tabela th,
+  .coop .tabela td { padding: 6px 5px; }
+}
+@media print {
+  .coop-top,
+  .nao-imprimir { display: none !important; }
+  .coop { background: #fff; }
+}
+
+/* Impressão: cada folha numa página, como na planilha. */
+.coop .folha { background: #fff; border: 1px solid var(--c-line); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; color: #000; }
+.coop .folha h3 { margin: 0 0 6px; font-size: 15px; text-transform: uppercase; letter-spacing: 0.02em; }
+.coop .folha .linha-cab { margin: 2px 0; font-size: 13.5px; }
+.coop .folha table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.coop .folha th,
+.coop .folha td { border: 1px solid #555; padding: 5px 7px; text-align: left; }
+.coop .folha th { background: #ececec; font-size: 12px; }
+.coop .folha td.n,
+.coop .folha th.n { text-align: right; }
+.coop .folha td.escrever { min-width: 90px; }
+.coop .folha .assina { margin-top: 18px; font-size: 13px; }
+.coop .folha .assina p { margin: 14px 0 0; }
+.coop .mapa-tab { font-size: 12.5px; }
+.coop .mapa-tab th { writing-mode: initial; }
+@media print {
+  .coop-main { max-width: none; padding: 0; }
+  .coop .folha { border: 0; border-radius: 0; padding: 0; margin: 0; break-after: page; }
+  .coop .folha:last-child { break-after: auto; }
+  .coop .card { border: 0; padding: 0; }
+}
+.coop .folha td.n { white-space: nowrap; }
+.coop .folha.mapa table { font-size: 11px; }
+.coop .folha.mapa th,
+.coop .folha.mapa td { padding: 2px 4px; }
+.coop .folha.mapa th { font-size: 9.5px; }

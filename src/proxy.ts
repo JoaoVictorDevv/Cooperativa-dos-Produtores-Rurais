@@ -11,6 +11,15 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
+  // App da Cooperativa (/coop): por enquanto só no computador local, sem
+  // login (npm run coop liga COOP_LOCAL=1). Fora disso, cai no login normal.
+  if (process.env.COOP_LOCAL === "1" && (pathname === "/coop" || pathname.startsWith("/coop/"))) {
+    return NextResponse.next();
+  }
+  if (process.env.COOP_LOCAL === "1" && pathname === "/") {
+    return NextResponse.redirect(new URL("/coop", request.url));
+  }
+
   const token = request.cookies.get(COOKIE_NAME)?.value;
   const session = await decryptSession(token);
 
