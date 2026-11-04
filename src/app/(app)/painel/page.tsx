@@ -4,6 +4,7 @@ import { getOpenWeek } from "@/lib/week";
 import { getWeekFinancialSummary, getPendingProducerDeliveries } from "@/lib/weekSummary";
 import { formatQty } from "@/lib/format";
 import { Icon } from "@/components/Icon";
+import { verifySession } from "@/lib/dal";
 
 function fmtMoney(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -13,6 +14,8 @@ function fmt(date: Date) {
 }
 
 export default async function DashboardPage() {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const week = await getOpenWeek();
 
   const producers = await prisma.producer.findMany({ where: { active: true } });
@@ -77,7 +80,7 @@ export default async function DashboardPage() {
 
       <div className="stat-row">
         <div className="card stat money-in">
-          <div className="stat-label">Vendas Merenda Escolar (PMP)</div>
+          <div className="stat-label">A cobrar — Merenda Escolar (PMP)</div>
           <div className="stat-value">{fmtMoney(summary.treasuryTotal)}</div>
         </div>
         <div className="card stat money-out">
@@ -86,7 +89,7 @@ export default async function DashboardPage() {
           <div className="stat-sub">{pending.length} produtor(es) com pedido sem entrega registrada</div>
         </div>
         <div className={`card stat ${summary.balance >= 0 ? "balance-pos" : "balance-neg"}`}>
-          <div className="stat-label">Saldo da semana (após custos)</div>
+          <div className="stat-label">Resultado calculado (após custos)</div>
           <div className={`stat-value ${summary.balance >= 0 ? "pos" : "neg"}`}>{fmtMoney(summary.balance)}</div>
           <div className="stat-sub">Margem bruta − custos reais de logística</div>
         </div>
@@ -122,6 +125,10 @@ export default async function DashboardPage() {
         <Link className="quick-btn" href="/produtores">
           <Icon name="users" size={19} />
           <div className="qb-label">Divisão / Pedido / Entrega</div>
+        </Link>
+        <Link className="quick-btn" href="/diferenca">
+          <Icon name="truck" size={19} />
+          <div className="qb-label">Diferença do galpão</div>
         </Link>
         <Link className="quick-btn" href="/balanco">
           <Icon name="balance" size={19} />

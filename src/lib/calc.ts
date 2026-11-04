@@ -24,6 +24,15 @@ export function treasuryTotal(
   );
 }
 
+// Regra decidida em 26/09/2026 (ciclos novos): cada linha e arredondada a
+// centavos e o total e a soma das linhas arredondadas — igual a planilha.
+// A funcao acima (arredonda so no fim) continua valendo para ciclos antigos.
+export function treasuryTotalPerLine(
+  lines: { orderedQty: number; returnedQty: number; price: number }[],
+): number {
+  return round2(lines.reduce((sum, l) => sum + schoolValue(l.orderedQty, l.returnedQty, l.price), 0));
+}
+
 // Regra #6: liquido do produtor = entrega - devolucao
 export function producerNetQty(deliveredQty: number, returnedQty: number): number {
   return round2(deliveredQty - returnedQty);
@@ -74,6 +83,27 @@ export function balanceStatus(balance: number): BalanceStatus {
   if (balance > 0) return "POSITIVO";
   if (balance < 0) return "NEGATIVO";
   return "ZERO";
+}
+
+// Painel Diferenca do galpao (plano docs/plano-de-implementacao.md §7):
+// compara, por produto, o pedido das escolas com o que efetivamente saiu
+// do galpao pros produtores (entrega bruta - devolucao). Isso NAO e o
+// mesmo que estoque atual do galpao nem atendimento individual de escola
+// — e uma comparacao agregada por produto, sempre na mesma unidade dele.
+export function netProducerDelivered(deliveredQty: number, returnedQty: number): number {
+  return round2(deliveredQty - returnedQty);
+}
+
+export function warehouseDifference(orderedQty: number, netDeliveredQty: number): number {
+  return round2(netDeliveredQty - orderedQty);
+}
+
+export type DifferenceStatus = "FALTA" | "SOBRA" | "OK";
+
+export function differenceStatus(difference: number): DifferenceStatus {
+  if (difference < 0) return "FALTA";
+  if (difference > 0) return "SOBRA";
+  return "OK";
 }
 
 // Conferencia financeira (secao 33-34)

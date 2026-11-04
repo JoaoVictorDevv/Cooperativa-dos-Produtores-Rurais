@@ -77,3 +77,30 @@ Critérios de aceite:
 - alteração de limites ou regras regulatórias do PNAE.
 
 Esses itens exigem especificações próprias e validação com os responsáveis da cooperativa.
+
+## Adendo 2026-09 — o que mudou depois desta spec
+
+- **CA-03.1 e CA-03.2** (fechar quando existe registro de entrega) continuam
+  valendo como mínimo técnico, mas **não representam** mais o fechamento
+  correto: a regra confirmada exige aceite por escola/produto, complementos e
+  decisão sobre faltas. Ver
+  [`008-recebimentos-faltas-fechamento`](../008-recebimentos-faltas-fechamento/spec.md)
+  (CA-008.5). A troca depende de persistência nova (Lucas).
+- **Devolução única por origem/produto (US-02)** continua valendo para o
+  modelo atual. No novo modelo, a rejeição escolar é limitada pela entrega
+  real daquele evento, não pelo pedido (CA-008.6).
+- **Testes seguros (T09 → T10)**: o nome `colheita_test` sozinho **não**
+  comprova que o banco é descartável. Desde 26/09/2026 os testes destrutivos
+  só rodam por `npm run test:integration`
+  (`scripts/run-integration-tests.mjs`), que cria um banco **novo** com nome
+  único (`colheita_descartavel_<data>_<aleatório>`) no servidor local indicado
+  em `.env.test` (o banco citado lá não é usado), grava nele uma marca com um
+  código aleatório desta execução, aplica as migrações existentes, roda os
+  testes e apaga o banco no fim. O teste (`src/lib/testing/disposableDb.ts`)
+  só limpa tabelas depois de conferir no próprio banco a marca com o mesmo
+  código; servidor não local é recusado (salvo `COLHEITA_TEST_ALLOW_REMOTE=1`)
+  e nenhuma mensagem imprime a URL.
+- **Backup**: a suíte de integração chama `resetDb()` e **apaga** os dados;
+  nunca usá-la para verificar uma restauração. Verificação só leitura e roteiro
+  em `docs/backup-e-restauracao.md` (`scripts/backup-verify.ts`; ensaio em
+  `src/lib/backup/backupDrill.integration.test.ts`).

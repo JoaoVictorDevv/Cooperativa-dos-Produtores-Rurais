@@ -6,8 +6,10 @@ import { requireOperator } from "@/lib/dal";
 import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable } from "@/lib/week";
 import { moneySchema } from "@/lib/validation";
-import type { CostCategory } from "@prisma/client";
+import { CostCategory } from "@prisma/client";
+import { z } from "zod";
 import type { SaveResult } from "./schoolOrders";
+import { publicErrorMessage } from "@/lib/publicError";
 
 // CA-BAL-01/02/06: cada uma das 8 categorias e vinculada a semana; o
 // total e o saldo (secao 30-32) sao sempre recalculados por query.
@@ -19,6 +21,9 @@ export async function saveWeeklyCost(
   try {
     const user = await requireOperator();
     const amount = moneySchema.parse(amountRaw);
+    // A categoria vinha do navegador sem checagem; agora só as do cadastro.
+    const parsedCategory = z.enum(Object.values(CostCategory) as [CostCategory, ...CostCategory[]]).safeParse(category);
+    if (!parsedCategory.success) return { ok: false, error: "Categoria de custo inválida." };
 
     const week = await prisma.week.findUniqueOrThrow({ where: { id: weekId } });
     assertWeekEditable(week);
@@ -45,6 +50,6 @@ export async function saveWeeklyCost(
     revalidatePath("/balanco");
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+    return { ok: false, error: publicErrorMessage(err, "Erro desconhecido") };
   }
 }

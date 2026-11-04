@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { ScheduleForm } from "./ScheduleForm";
+import { verifySession } from "@/lib/dal";
 
 function fmt(date: Date) {
   return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" }).format(date);
@@ -9,6 +10,8 @@ function fmtMoney(value: number) {
 }
 
 export default async function PrecosPage() {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const products = await prisma.product.findMany({
     where: { active: true },
     orderBy: { name: "asc" },

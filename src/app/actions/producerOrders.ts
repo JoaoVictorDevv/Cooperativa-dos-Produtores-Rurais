@@ -3,10 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireOperator } from "@/lib/dal";
+import { isOfferedForNewEntries } from "@/lib/productPolicy";
 import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable, getCurrentPrice } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
 import type { SaveResult } from "./schoolOrders";
+import { publicErrorMessage } from "@/lib/publicError";
+import { assertProducerAcceptsNewEntries } from "@/lib/entityPolicy";
 
 // CA-PED-PROD-01..05, regra absoluta #1: pedido ao produtor e
 // COMPLETAMENTE independente da entrega — tabela propria, nunca
@@ -29,9 +32,19 @@ export async function saveProducerOrder(
       const existing = await tx.producerOrder.findUnique({
         where: { weekId_producerId_productId: { weekId, producerId, productId } },
       });
+      if (!existing) {
+        await assertProducerAcceptsNewEntries(tx, producerId);
+        const product = await tx.product.findUniqueOrThrow({ where: { id: productId } });
+        if (!isOfferedForNewEntries(product)) {
+          throw new Error(`${product.name} está fora da oferta ativa: não recebe novos lançamentos (os antigos continuam no histórico).`);
+        }
+      }
+      // Preco congelado no primeiro lancamento (ver mesma regra em
+      // schoolOrders.ts/producerDeliveries.ts) — correcao de quantidade
+      // nao re-resolve o preco vigente.
       const saved = await tx.producerOrder.upsert({
         where: { weekId_producerId_productId: { weekId, producerId, productId } },
-        update: { orderedQty, priceId: price.id },
+        update: { orderedQty },
         create: { weekId, producerId, productId, orderedQty, priceId: price.id },
       });
       await writeAudit(
@@ -49,6 +62,6 @@ export async function saveProducerOrder(
     revalidatePath("/produtores");
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+    return { ok: false, error: publicErrorMessage(err, "Erro desconhecido") };
   }
 }

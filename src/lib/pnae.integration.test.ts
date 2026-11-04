@@ -1,37 +1,22 @@
-import { config } from "dotenv";
-import { resolve } from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { getProducerAnnualTotal } from "./pnae";
+import { getWeekFinancialSummary } from "./weekSummary";
+import { checkDisposableTarget } from "./testing/disposableDb";
+import { resetDisposableDb } from "./testing/integrationDb";
 
-// Estes testes rodam contra um banco Postgres real e dedicado
-// (colheita_test) — nao mockam o Prisma, porque os proprios criterios de
-// aceite (historico, preco historico, PNAE) sao sobre persistencia real.
-config({ path: resolve(__dirname, "../../.env.test"), override: true });
+// Estes testes rodam contra um Postgres real (não mockam o Prisma, porque os
+// critérios de aceite são sobre persistência). Só rodam pelo executor
+// `npm run test:integration` (scripts/run-integration-tests.mjs), que cria um
+// banco novo e exclusivo, marca-o com um código desta execução, aplica as
+// migrações e o apaga no fim. Sem essa prova, nada é apagado.
+const target = checkDisposableTarget(process.env);
 
 const prisma = new PrismaClient();
 
-async function resetDb() {
-  await prisma.auditLog.deleteMany();
-  await prisma.weekReopening.deleteMany();
-  await prisma.producerReturn.deleteMany();
-  await prisma.producerDelivery.deleteMany();
-  await prisma.producerOrder.deleteMany();
-  await prisma.producerAllocation.deleteMany();
-  await prisma.schoolReturn.deleteMany();
-  await prisma.schoolDelivery.deleteMany();
-  await prisma.schoolOrder.deleteMany();
-  await prisma.weeklyCost.deleteMany();
-  await prisma.week.deleteMany();
-  await prisma.price.deleteMany();
-  await prisma.productionMapEntry.deleteMany();
-  await prisma.returnReason.deleteMany();
-  await prisma.school.deleteMany();
-  await prisma.producer.deleteMany();
-  await prisma.product.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.settings.deleteMany();
-}
+// Confere nome + marca do banco descartável e só então apaga os dados
+// (mesmo auxiliar dos outros testes de integração).
+const resetDb = () => resetDisposableDb(prisma, target, process.env.COLHEITA_TEST_DB_TOKEN!);
 
 beforeAll(async () => {
   await resetDb();
@@ -284,5 +269,37 @@ describe("Teste 10 — datas de domingo/segunda/terca", () => {
     expect(deliveryA.deliveredAt.toISOString().slice(0, 10)).toBe("2026-09-14");
     expect(deliveryB.weekday).toBe("TERCA");
     expect(deliveryB.deliveredAt.toISOString().slice(0, 10)).toBe("2026-09-15");
+  });
+});
+
+describe("Arredondamento do total a cobrar — só ciclos novos (decisão 26/09/2026)", () => {
+  it("ciclo antigo fechado mantém o total antigo; ciclo novo soma as linhas arredondadas", async () => {
+    const product = await prisma.product.create({ data: { slug: "abacate", name: "Abacate" } });
+    const price = await prisma.price.create({ data: { productId: product.id, price: 10.05, validFrom: new Date("2020-01-01") } });
+    const schools = await Promise.all(
+      ["1001", "1002", "1003"].map((code) => prisma.school.create({ data: { code, name: `Escola ${code}` } })),
+    );
+
+    async function weekWithOrders(createdAt: Date, start: string) {
+      const week = await prisma.week.create({
+        data: { referenceDate: new Date(start), startDate: new Date(start), endDate: new Date(start), status: "ABERTA", createdAt },
+      });
+      for (const s of schools) {
+        await prisma.schoolOrder.create({ data: { weekId: week.id, schoolId: s.id, productId: product.id, orderedQty: 0.33, priceId: price.id } });
+      }
+      return week;
+    }
+
+    const antigo = await weekWithOrders(new Date("2026-09-20T12:00:00Z"), "2026-09-20");
+    await prisma.week.update({ where: { id: antigo.id }, data: { status: "FECHADA", closedAt: new Date() } });
+    const novo = await weekWithOrders(new Date("2026-09-28T12:00:00Z"), "2026-09-28");
+
+    const a = await getWeekFinancialSummary(antigo.id);
+    const n = await getWeekFinancialSummary(novo.id);
+    expect(a.treasuryRounding).toBe("TOTAL_LEGADO");
+    expect(a.treasuryTotal).toBe(9.95);
+    expect(n.treasuryRounding).toBe("POR_LINHA");
+    expect(n.treasuryTotal).toBe(9.96);
+    expect(n.treasuryLines.reduce((sum, l) => sum + l.value, 0)).toBeCloseTo(n.treasuryTotal, 10);
   });
 });

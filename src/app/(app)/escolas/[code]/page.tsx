@@ -5,13 +5,26 @@ import { getOpenWeek } from "@/lib/week";
 import { PrintButton } from "@/components/PrintButton";
 import { ReturnRow } from "./ReturnRow";
 import { DeliveryForm } from "./DeliveryForm";
+import { verifySession } from "@/lib/dal";
 
-export default async function SchoolDetailPage({ params }: { params: Promise<{ code: string }> }) {
+// Aceita ?week=<id> pra abrir a ficha de uma semana especifica (aberta ou
+// ja fechada) — sem o parametro, cai na semana aberta atual (comportamento
+// de sempre).
+export default async function SchoolDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ code: string }>;
+  searchParams: Promise<{ week?: string }>;
+}) {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const { code } = await params;
+  const { week: weekIdParam } = await searchParams;
   const school = await prisma.school.findUnique({ where: { code } });
   if (!school) notFound();
 
-  const week = await getOpenWeek();
+  const week = weekIdParam ? await prisma.week.findUnique({ where: { id: weekIdParam } }) : await getOpenWeek();
   const reasons = await prisma.returnReason.findMany({ where: { active: true }, orderBy: { code: "asc" } });
 
   let orders: { productId: string; orderedQty: number }[] = [];
@@ -24,7 +37,9 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ c
       prisma.schoolOrder.findMany({ where: { weekId: week.id, schoolId: school.id } }),
       prisma.schoolReturn.findMany({ where: { weekId: week.id, schoolId: school.id } }),
       prisma.schoolDelivery.findUnique({ where: { weekId_schoolId: { weekId: week.id, schoolId: school.id } } }),
-      prisma.product.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
+      // Sem filtro de ativo: a ficha só lista produtos com pedido neste ciclo,
+      // e um produto desativado depois (ex.: Ovos) não pode sumir do histórico.
+      prisma.product.findMany({ orderBy: { name: "asc" } }),
     ]);
     orders = orderRows.map((o) => ({ productId: o.productId, orderedQty: Number(o.orderedQty) }));
     returnsByProduct = new Map(
@@ -39,13 +54,19 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ c
 
   return (
     <>
-      <Link className="back-link" href="/escolas">
+      <Link className="back-link" href={week ? `/escolas?week=${week.id}` : "/escolas"}>
         ← Voltar para Pedido das Escolas
       </Link>
 
-      {week && week.status === "ABERTA" && (
+      {week && (
         <div className="rm-actions">
-          <PrintButton />
+          {week.status === "ABERTA" && <PrintButton />}
+          <a className="btn-ghost" href={`/api/semanas/${week.id}/pdf/romaneios-escolas?escola=${encodeURIComponent(school.code)}`}>
+            Romaneio desta escola (PDF)
+          </a>
+          <a className="btn-ghost" href={`/api/semanas/${week.id}/pdf/romaneios-escolas?escola=${encodeURIComponent(school.code)}&vias=4`}>
+            4 vias (PDF)
+          </a>
         </div>
       )}
       {!week && <p>Não há semana aberta — exibindo apenas o cadastro da escola.</p>}
@@ -80,6 +101,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ c
 
         {week && (
           <DeliveryForm
+            key={week.id}
             weekId={week.id}
             schoolId={school.id}
             initialWeekday={delivery?.weekday ?? null}
@@ -89,6 +111,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ c
         )}
 
         <div className="rm-table-title">Produtos pedidos nesta semana</div>
+        <div className="table-scroll">
         <table>
           <thead>
             <tr>
@@ -104,7 +127,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ c
               const existingReturn = returnsByProduct.get(p.id);
               return (
                 <ReturnRow
-                  key={p.id}
+                  key={`${week?.id}-${p.id}`}
                   weekId={week!.id}
                   schoolId={school.id}
                   productId={p.id}
@@ -127,6 +150,7 @@ export default async function SchoolDetailPage({ params }: { params: Promise<{ c
             )}
           </tbody>
         </table>
+        </div>
 
         <div className="rm-sign">
           <div className="line">Assinatura de quem recebeu</div>

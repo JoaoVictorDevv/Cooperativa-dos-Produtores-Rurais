@@ -2,10 +2,18 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getOpenWeek, getSettings } from "@/lib/week";
 import { producerPayment } from "@/lib/calc";
+import { isOfferedForNewEntries } from "@/lib/productPolicy";
 import { ProdutoresTable } from "./ProdutoresTable";
+import { GenerateOrdersFromAllocation } from "./GenerateOrdersFromAllocation";
+import { verifySession } from "@/lib/dal";
 
-export default async function ProdutoresPage() {
-  const week = await getOpenWeek();
+// Aceita ?week=<id> pra consultar (so leitura) uma semana ja fechada —
+// sem o parametro, mostra a semana aberta atual.
+export default async function ProdutoresPage({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
+  const { week: weekIdParam } = await searchParams;
+  const week = weekIdParam ? await prisma.week.findUnique({ where: { id: weekIdParam } }) : await getOpenWeek();
 
   if (!week) {
     return (
@@ -25,9 +33,10 @@ export default async function ProdutoresPage() {
 
   const [producers, products, mapEntries, allocations, orders, deliveries, returns, settings, reasons] =
     await Promise.all([
-      prisma.producer.findMany({ where: { active: true }, orderBy: { name: "asc" } }),
+      prisma.producer.findMany({ orderBy: { name: "asc" } }),
+      // Todos os produtos: linhas antigas de um produto desativado depois
+      // (ex.: Ovos) continuam aparecendo. Novos lançamentos só na oferta ativa.
       prisma.product.findMany({
-        where: { active: true },
         orderBy: { name: "asc" },
         include: { prices: { where: { validTo: null } } },
       }),
@@ -69,7 +78,12 @@ export default async function ProdutoresPage() {
     returns.map((r) => [`${r.producerId}:${r.productId}`, { returnedQty: Number(r.returnedQty), returnReasonId: r.returnReasonId }]),
   );
 
-  const rows = producers.map((producer) => {
+  const producersWithData = new Set(
+    [...allocations, ...orders, ...deliveries, ...returns].map((x) => x.producerId),
+  );
+  const visibleProducers = producers.filter((p) => p.active || producersWithData.has(p.id));
+
+  const rows = visibleProducers.map((producer) => {
     const relevantIds = new Set<string>(planByProducer.get(producer.id) ?? []);
     for (const key of [...allocByKey.keys(), ...orderByKey.keys(), ...deliveryByKey.keys(), ...returnByKey.keys()]) {
       const [pid, prodId] = key.split(":");
@@ -116,7 +130,7 @@ export default async function ProdutoresPage() {
       editable: week.status === "ABERTA",
       reasons,
       initialLines: lines,
-      allProducts: products.map((p) => ({
+      allProducts: products.filter((p) => isOfferedForNewEntries(p)).map((p) => ({
         id: p.id,
         name: p.name,
         slug: p.slug,
@@ -139,8 +153,14 @@ export default async function ProdutoresPage() {
         </div>
         <span className={`badge ${week.status === "ABERTA" ? "aberta" : "fechada"}`}>{week.status}</span>
       </div>
+      <p className="table-foot-note" style={{ textAlign: "left", marginTop: -8 }}>
+        <Link className="link-action" href={`/semanas/${week.id}`}>
+          Ver semana completa (documentos, diferença, balanço) →
+        </Link>
+      </p>
 
-      <ProdutoresTable rows={rows} />
+      {week.status === "ABERTA" && <GenerateOrdersFromAllocation key={week.id} weekId={week.id} />}
+      <ProdutoresTable key={week.id} rows={rows} />
     </>
   );
 }

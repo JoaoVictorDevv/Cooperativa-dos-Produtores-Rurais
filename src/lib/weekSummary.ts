@@ -1,17 +1,23 @@
 import { prisma } from "./prisma";
 import {
   balanceStatus,
+  differenceStatus,
   grossMargin,
+  netProducerDelivered,
   producerPayment,
   reconcile,
   schoolNetQty,
   schoolValue,
   treasuryTotal,
+  treasuryTotalPerLine,
+  warehouseDifference,
   weekBalance,
   type BalanceStatus,
+  type DifferenceStatus,
   type ReconciliationResult,
 } from "./calc";
 import type { CostCategory } from "@prisma/client";
+import { treasuryRoundingFor, type TreasuryRounding } from "./roundingPolicy";
 
 export interface TreasuryLine {
   schoolId: string;
@@ -110,6 +116,7 @@ export async function getProducerPaymentLines(weekId: string): Promise<ProducerP
 export interface WeekFinancialSummary {
   treasuryLines: TreasuryLine[];
   treasuryTotal: number;
+  treasuryRounding: TreasuryRounding;
   producerLines: ProducerPaymentLine[];
   producersTotal: number;
   grossMargin: number;
@@ -121,15 +128,16 @@ export interface WeekFinancialSummary {
 }
 
 export async function getWeekFinancialSummary(weekId: string): Promise<WeekFinancialSummary> {
-  const [treasuryLines, producerLines, costs] = await Promise.all([
+  const [week, treasuryLines, producerLines, costs] = await Promise.all([
+    prisma.week.findUniqueOrThrow({ where: { id: weekId }, select: { createdAt: true } }),
     getTreasuryLines(weekId),
     getProducerPaymentLines(weekId),
     prisma.weeklyCost.findMany({ where: { weekId } }),
   ]);
 
-  const treasuryTotalValue = treasuryTotal(
-    treasuryLines.map((l) => ({ orderedQty: l.orderedQty, returnedQty: l.returnedQty, price: l.price })),
-  );
+  const treasuryRounding = treasuryRoundingFor(week);
+  const treasuryInput = treasuryLines.map((l) => ({ orderedQty: l.orderedQty, returnedQty: l.returnedQty, price: l.price }));
+  const treasuryTotalValue = treasuryRounding === "POR_LINHA" ? treasuryTotalPerLine(treasuryInput) : treasuryTotal(treasuryInput);
   const producersTotalValue = producerLines.reduce((sum, l) => sum + l.payment, 0);
   const margin = grossMargin(treasuryTotalValue, producersTotalValue);
   const totalCosts = costs.reduce((sum, c) => sum + Number(c.amount), 0);
@@ -144,6 +152,7 @@ export async function getWeekFinancialSummary(weekId: string): Promise<WeekFinan
   return {
     treasuryLines,
     treasuryTotal: treasuryTotalValue,
+    treasuryRounding,
     producerLines,
     producersTotal: Math.round(producersTotalValue * 100) / 100,
     grossMargin: margin,
@@ -189,4 +198,72 @@ export async function getPendingProducerDeliveries(weekId: string): Promise<Pend
     byProducer.set(order.producerId, entry);
   }
   return [...byProducer.values()];
+}
+
+export interface WarehouseDifferenceLine {
+  productId: string;
+  productName: string;
+  productSlug: string;
+  orderedQty: number; // pedido total das escolas
+  deliveredQty: number; // entrega bruta dos produtores (galpao)
+  returnedQty: number; // devolucao aos produtores (galpao)
+  netDeliveredQty: number; // entrega bruta - devolucao
+  difference: number; // liquida - pedido
+  status: DifferenceStatus;
+}
+
+// Painel Diferenca do galpao (plano docs/plano-de-implementacao.md §7).
+// Funciona pra semana aberta OU fechada (o weekId decide, nao ha
+// dependencia de status). Compara, por produto, quanto as escolas
+// pediram com quanto realmente saiu do galpao pros produtores — NAO e
+// estoque atual do galpao nem atendimento individual de cada escola
+// (isso e outra pergunta, ver plano §8/§11).
+export async function getWarehouseDifferenceLines(weekId: string): Promise<WarehouseDifferenceLine[]> {
+  const [orders, deliveries, returns] = await Promise.all([
+    prisma.schoolOrder.findMany({ where: { weekId }, include: { product: true } }),
+    prisma.producerDelivery.findMany({ where: { weekId }, include: { product: true } }),
+    prisma.producerReturn.findMany({ where: { weekId } }),
+  ]);
+
+  const orderedByProduct = new Map<string, number>();
+  const productInfo = new Map<string, { name: string; slug: string }>();
+  for (const o of orders) {
+    orderedByProduct.set(o.productId, (orderedByProduct.get(o.productId) ?? 0) + Number(o.orderedQty));
+    productInfo.set(o.productId, { name: o.product.name, slug: o.product.slug });
+  }
+
+  const deliveredByProduct = new Map<string, number>();
+  for (const d of deliveries) {
+    deliveredByProduct.set(d.productId, (deliveredByProduct.get(d.productId) ?? 0) + Number(d.deliveredQty));
+    productInfo.set(d.productId, { name: d.product.name, slug: d.product.slug });
+  }
+
+  const returnedByProduct = new Map<string, number>();
+  for (const r of returns) {
+    returnedByProduct.set(r.productId, (returnedByProduct.get(r.productId) ?? 0) + Number(r.returnedQty));
+  }
+
+  const productIds = new Set([...orderedByProduct.keys(), ...deliveredByProduct.keys()]);
+
+  return [...productIds]
+    .map((productId) => {
+      const orderedQty = orderedByProduct.get(productId) ?? 0;
+      const deliveredQty = deliveredByProduct.get(productId) ?? 0;
+      const returnedQty = returnedByProduct.get(productId) ?? 0;
+      const netDeliveredQty = netProducerDelivered(deliveredQty, returnedQty);
+      const difference = warehouseDifference(orderedQty, netDeliveredQty);
+      const info = productInfo.get(productId)!;
+      return {
+        productId,
+        productName: info.name,
+        productSlug: info.slug,
+        orderedQty,
+        deliveredQty,
+        returnedQty,
+        netDeliveredQty,
+        difference,
+        status: differenceStatus(difference),
+      };
+    })
+    .sort((a, b) => a.productName.localeCompare(b.productName));
 }

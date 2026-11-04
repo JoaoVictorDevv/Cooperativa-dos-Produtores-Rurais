@@ -1,0 +1,259 @@
+# Especificação 008 — Recebimentos, faltas e fechamento do ciclo
+
+**Status:** regras confirmadas; regras de domínio implementadas e testadas em
+memória (`src/lib/domain/cycle.ts`). Complementos e encerramento de faltas
+(etapa 4, 26/09/2026): comandos em `src/lib/domain/cycleLedger.ts`, porta de
+persistência, componentes e **tela de demonstração sem gravação**
+(`/complementos-faltas`, dados fictícios). **Persistência bloqueada** por
+dependência de banco/API do Lucas — ver `plan.md` e
+`docs/propostas-pendentes.md` §9. Nada desta spec está em uso nas telas
+operacionais ou no financeiro oficial ainda.
+
+**Origem:** regras confirmadas com Seu Paulo e registradas no prompt
+`docs/prompts/2026-09-24-prompt-v2-operacao-specs-develop.md` (§3–§10).
+
+> **Atualização de 03/10/2026:** a spec 011 substituiu a API Java por
+> TypeScript e criou o schema Supabase para estes eventos. O exemplo
+> 200/180/170 e o fechamento foram validados num PostgreSQL descartável. A
+> persistência ainda não alimenta as telas; faltam o adaptador do Next, a
+> migração histórica e a execução completa do pacote com 17 cenários.
+
+## Por que existe
+
+O app hoje sabe o que a escola **pediu** e o que ela **devolveu**, e cobra a
+prefeitura por `pedido − devolução`. Isso trata o pedido como se fosse
+entregue. Na operação real há dois recebimentos com responsáveis diferentes:
+
+- no **galpão**, a cooperativa confere o que o produtor trouxe;
+- na **escola**, a merendeira/diretora confere o que a cooperativa levou.
+
+Misturar os dois faz a cooperativa cobrar o que não entregou, ou descontar do
+produtor uma perda que foi da cooperativa.
+
+## Regras substituídas (histórico preservado)
+
+| Regra antiga | Onde estava | Substituída por | Alcance |
+|---|---|---|---|
+| Cobrança = (pedido − devolução) × preço | `src/lib/calc.ts` (`schoolValue`, `treasuryTotal`), view `v_week_financial_summary` em `database/migrations/V003…` | RN-04 abaixo | **Novo fluxo**. O código antigo continua calculando assim até existir fonte persistida de entrega por escola/produto. Semanas antigas **não** são recalculadas. |
+| Uma entrega (data) por escola/semana | `SchoolDelivery` (Prisma) / `school_deliveries` (SQL) | RN-06 (vários eventos por escola/produto) | Novo fluxo |
+| Fechar = existe registro de entrega (spec 001, CA-03.1/03.2) | `src/lib/weekPolicy.ts`, `WeekJdbcAdapter.closingBlockers` | CA-008.5 | CA-03.* continuam como mínimo técnico até a troca |
+| Carregar reposição pendente para a semana seguinte | proposta da Rodada 1 (`docs/propostas-pendentes.md` §2) | RN-09 | Proibido |
+
+## Fluxo de quem opera (ciclo real)
+
+1. Quarta/quinta: prefeitura envia o pedido por escola e produto (spec 009).
+2. A cooperativa divide a demanda e emite pedidos aos produtores.
+3. Domingo/segunda: produtores entregam no galpão; o administrador confere e
+   rejeita o que estiver ruim.
+4. Segunda/terça: a cooperativa entrega nas escolas; a escola confere e
+   assina o romaneio (spec 004).
+5. Quarta seguinte: o ciclo é conferido e encerrado (ação deliberada); a nota
+   fiscal segue o processo atual da cooperativa (fora do app).
+
+Pedido da quinta anterior, recebimento no domingo e entrega na segunda
+pertencem ao **mesmo ciclo**, mesmo atravessando a semana do calendário.
+
+## Regras de negócio confirmadas
+
+- **RN-01 Quatro quantidades distintas**: pedido da prefeitura, pedido a cada
+  produtor, aceito no galpão, aceito na escola. Nunca usar uma no lugar da
+  outra.
+- **RN-02 Galpão**: aceito do produtor = entrega bruta − rejeição no galpão.
+  Base do valor **a pagar** ao produtor, com o preço e o desconto de logística
+  congelados no lançamento. Produto não entregue não é pago e não é registrado
+  como devolução.
+- **RN-03 Escola**: aceito da escola = quantidade apresentada − rejeição da
+  escola, somando entregas e complementos do ciclo.
+- **RN-04 Cobrança**: a prefeitura paga pelo aceito na escola, com o preço
+  congelado do pedido. Rejeição na escola é **perda da cooperativa**: não é
+  descontada do produtor nem de motorista/funcionário (registra-se a
+  ocorrência e o motivo conhecido, sem culpados inventados).
+- **RN-05 Falta e excedente**: falta = máx(pedido − aceito, 0); excedente =
+  máx(aceito − pedido, 0). Não compensar falta de uma escola/produto com
+  excesso de outro; excedente fica visível e não é cortado.
+- **RN-06 Complementos**: o gerente pode completar o atendimento no mesmo
+  ciclo com outro produtor. Cada complemento é um evento novo, ligado à
+  escola, produto, ciclo e pedido original, com o fornecedor de origem; não
+  apaga a entrega inicial, suas rejeições nem horários. Correção de um
+  lançamento errado é auditada e **não** é uma nova entrega.
+- **RN-07 Perda antes da escola**: perda de transporte/manuseio registrada
+  antes da apresentação é ocorrência distinta da rejeição escolar. As duas são
+  posteriores ao aceite do galpão e não reduzem o pagamento ao produtor.
+- **RN-08 Vazio × zero**: vazio = não informado (pendente); zero = conferência
+  feita com resultado zero. Entregas nunca são preenchidas automaticamente a
+  partir dos pedidos.
+- **RN-09 Resolução das faltas**: antes de fechar, cada falta é resolvida por
+  complemento (o total aceito comprova) ou **encerrada sem atendimento**, com
+  motivo e responsável. "Resolvida" não é marcação manual. Falta encerrada fica
+  no histórico e não vira pedido, cobrança ou pendência na semana seguinte.
+- **RN-10 Fechamento**: três indicadores separados — recebimentos conferidos,
+  valores calculados, pronto para fechar. Fechar é ação deliberada com prévia
+  (totais, rejeições/perdas, faltas encerradas, a cobrar, a pagar). Não há
+  reabertura ou alteração silenciosa de ciclo fechado.
+- **RN-11 Recalcular decisões**: toda alteração posterior de entrega,
+  rejeição ou complemento reavalia a situação; uma decisão de encerramento
+  que deixou de bater com a falta atual vira "decisão incoerente" e bloqueia.
+- **RN-12 Histórico**: semanas antigas sem entrega real registrada não ganham
+  esse dado por suposição; continuam com a metodologia antiga, identificada
+  como tal nos documentos.
+- **RN-13 Termos financeiros**: usar "A pagar", "A cobrar" e "Resultado
+  calculado" enquanto não houver registro de quitação.
+- **RN-14 Unidades**: quantidades de unidades diferentes (kg, dz) nunca são
+  somadas; totais e percentual de atendimento são por unidade.
+- **RN-15 Arredondamento**: cada linha (escola × produto a cobrar; produtor ×
+  produto a pagar) é arredondada a centavos; o total é a soma das linhas
+  arredondadas, para que tela, PDF e total batam. **Decidido em 26/09/2026 e
+  já aplicado ao modelo atual para ciclos criados a partir de 27/09/2026**
+  (ver plan.md); ciclos anteriores não são recalculados.
+- **RN-16 Duas dimensões por escola**: "entrega registrada" (conferência
+  feita) e "pedido atendido" (sem falta) são mostradas separadamente:
+  entrega = sem pedido / pendente de conferência / registrada / com erros;
+  atendimento = sem pedido / a conferir / atendido / atendimento parcial /
+  não atendido.
+
+- **RN-17 Origem do complemento**: todo complemento informa de onde veio —
+  um produtor (que precisa ter recebimento conferido no galpão para ser pago)
+  ou o saldo já recebido no galpão. Não há valor padrão.
+- **RN-18 Sem duplicação**: cada registro leva uma chave de envio; reenvio ou
+  duplo clique com a mesma chave não cria outro evento. Correção usa a versão
+  aberta na tela; se outra pessoa corrigiu antes, a correção é recusada.
+- **RN-19 Quem decide a falta**: perfis que operam o ciclo (ADMIN e OPERADOR —
+  os mesmos que fecham a semana hoje); CONSULTA só vê. **Confirmado em
+  27/09/2026.** A decisão guarda motivo, responsável, data e a falta no
+  momento da decisão.
+- **RN-20 Complemento com produto já no galpão**: aceito, com origem "saldo do
+  galpão" (produto já recebido e pago a quem entregou). **Confirmado em
+  27/09/2026.** Sobra vinda de outro ciclo não é modelada; por isso escolas
+  com mais do que o galpão aceitou num produto geram só aviso de saldo a
+  conferir.
+- **RN-21 Motivo obrigatório**: rejeição e perda antes da escola exigem motivo,
+  com a opção "Motivo não identificado" (sem inventar culpados). **Confirmado
+  em 27/09/2026.**
+- **RN-22 Um romaneio por escola e visita**: todo complemento informa se foi
+  na **mesma viagem** da entrega inicial ou em **outra viagem**. Não há valor
+  padrão. **Decidido em 27/09/2026**, como na planilha MODELO v22.
+  - **Mesma viagem:** o complemento sai no mesmo romaneio da entrega inicial,
+    sem documento separado. A entrega inicial registra o **total** da linha
+    do romaneio: 170 do produtor original + 30 do complementar = 200.
+  - A origem do complemento continua registrada internamente: o produtor ou o
+    saldo do galpão e a quantidade. Isso serve para o pagamento no galpão e
+    para a auditoria. Esse registro não soma de novo no entregue à escola: a
+    cobrança é 200, não 230.
+  - A rejeição, a perda, a data/horário e quem recebeu ficam na entrega
+    inicial. O complemento da mesma viagem não tem esses campos próprios.
+  - As origens da mesma viagem não podem somar mais que o total da entrega
+    inicial.
+  - **Outra viagem:** nova entrega física, com romaneio próprio (RN-06,
+    spec 004 RD-12).
+  - A viagem pode ser corrigida. Passar de "mesma viagem" para "outra
+    viagem" volta a somar a quantidade.
+  - O produtor do complemento continua precisando de recebimento conferido
+    no galpão para ser pago (RN-17, CA-008.20).
+
+## Exemplo obrigatório (testado)
+
+| Etapa | kg |
+|---|---|
+| Pedido da escola (alface) | 200 |
+| Produtor entregou no galpão | 200 |
+| Rejeitado no galpão | 20 |
+| **Aceito no galpão → base para pagar o produtor** | **180** |
+| Apresentado à escola | 180 |
+| Rejeitado pela escola (perda da cooperativa) | 10 |
+| **Aceito pela escola → base para cobrar a prefeitura** | **170** |
+| Falta de atendimento | 30 |
+
+A fórmula antiga daria 190 (`schoolNetQty(200, 10)`); a regra confirmada exige
+170. Os 30 kg de falta **não** são perda; as rejeições não são subtraídas duas
+vezes; o pagamento do produtor não cai para 170.
+
+Com complemento de 30 kg aceitos de outro produtor, em outra viagem:
+- a escola totaliza 200;
+- o produtor original continua com 180 e o novo tem seu próprio recebimento
+  de 30;
+- a perda de 10 continua registrada;
+- a cobrança de 200 é feita uma única vez.
+
+Complemento na **mesma viagem** (RN-22; planilha MODELO v22, Índice
+"Complemento: primeira carga ou outra viagem"):
+- o galpão aceitou 170 do produtor A e 30 do produtor B, e os 200 foram
+  juntos na mesma carga;
+- sai um romaneio só, e a entrega inicial registra 200;
+- o complemento registra só "30 do produtor B, mesma viagem";
+- a escola é cobrada por 200, e não por 230;
+- A recebe por 170 e B por 30.
+
+## Critérios de aceite
+
+- **CA-008.1** Exemplo 200/180/170 com pagamento 180, cobrança 170, falta 30,
+  perda escolar 10, rejeição no galpão 20.
+- **CA-008.2** Complemento de 30 de outro produtor: escola 200, fornecedor
+  original 180, novo 30, perda 10 mantida, sem cobrança duplicada.
+- **CA-008.3** Sem reposição: encerrar em 170 com falta final 30 e motivo; não
+  gera pendência nem cobrança no ciclo seguinte.
+- **CA-008.4** Vazio fica pendente; zero confirmado é conferência; pedido zero
+  sem movimento não bloqueia; pedido 30 + complemento 20 + inicial vazio fica
+  pendente, e confirmando inicial zero a falta é 10.
+- **CA-008.5** Estados: ciclo vazio = "Aguardando pedido"; recebimento não
+  conferido = "Em conferência"; conferido com falta sem decisão ou em resolução
+  = "Aguardando decisões"; erro = "Com erros"; "Pronto para fechar" só com
+  tudo conferido e todas as faltas decididas de forma coerente.
+- **CA-008.6** Rejeição no galpão ≤ entrega bruta; rejeição na escola ≤
+  quantidade apresentada (não o pedido).
+- **CA-008.7** Perda antes da escola separada da rejeição escolar; saldo entre
+  galpão e escolas aparece como "saldo a conferir", não como perda.
+- **CA-008.8** Excedente de uma escola/produto não compensa falta de outra;
+  percentual de atendimento limita cada linha ao próprio pedido e é "não
+  aplicável" com demanda zero.
+- **CA-008.12** Totais e percentual de atendimento separados por unidade
+  (kg × dz).
+- **CA-008.13** Situação por escola nas duas dimensões (RN-16); falta
+  encerrada deixa a escola pronta para fechar, mas não "atendida".
+- **CA-008.14** Prévia de fechamento com a cobrar (aceito na escola × preço
+  congelado), a pagar (aceito no galpão × (preço − desconto) congelados),
+  resultado calculado, rejeições e perdas por unidade, faltas encerradas com
+  motivo, e motivos de bloqueio (sem conferência, falta sem decisão, preço não
+  congelado, erro). Total igual à soma das linhas arredondadas.
+- **CA-008.15** Complemento registrado não altera a entrega inicial (quantidades,
+  rejeições, horário); exige pedido original, origem explícita e quantidade > 0.
+- **CA-008.16** Reenvio/duplo clique do mesmo complemento grava uma vez; mesmo
+  envio com outros valores é recusado.
+- **CA-008.17** Segunda entrega inicial é recusada (correção ≠ nova entrega);
+  correção guarda antes/depois e motivo; versão antiga é recusada.
+- **CA-008.18** Encerrar falta exige conferência completa, motivo e a falta
+  mostrada igual à atual; decisão concorrente é recusada.
+- **CA-008.19** Correção ou complemento posterior que muda a falta deixa a
+  decisão incoerente, com aviso, e bloqueia o fechamento até revogar e decidir
+  de novo.
+- **CA-008.20** Complemento de produtor sem recebimento conferido no galpão
+  bloqueia o fechamento; escolas com mais do que o galpão aceitou é aviso de
+  saldo a conferir.
+- **CA-008.21** Complemento na mesma viagem (RN-22):
+  - um romaneio só por escola e visita, com o total na entrega inicial;
+  - nenhum documento de complemento;
+  - a origem fica registrada e auditada;
+  - a escola é cobrada 200, e não 230;
+  - cada produtor é pago pelo seu aceito no galpão.
+- **CA-008.22** Complemento sem viagem informada é recusado. Na mesma viagem,
+  também são recusados:
+  - rejeição, perda, data/horário ou recebedor próprios;
+  - origens que somem mais que o total da entrega inicial, ao registrar ou ao
+    corrigir a entrega inicial.
+  - Trocar a viagem para "outra viagem" volta a somar.
+- **CA-008.9** Correção de quantidade não altera preço/desconto histórico;
+  tela, PDF e balanço mostram os mesmos valores. *(depende da persistência)*
+- **CA-008.10** Tentativa de reduzir recebimento abaixo da rejeição já
+  registrada é recusada, inclusive com duas pessoas editando ao mesmo tempo.
+  *(depende da persistência)*
+- **CA-008.11** Fluxo completo integrado: pedido → pedido aos produtores →
+  galpão → rejeição → escola → rejeição → complemento/encerramento → resumo →
+  diferenças → documentos → fechamento. *(depende da persistência e da
+  integração)*
+
+## Fora de escopo
+
+- Emissão fiscal eletrônica.
+- Upload de assinatura, geolocalização, comprovantes obrigatórios.
+- Rateio automático de falta entre escolas (o gerente decide).
+- Recalcular semanas antigas.
+- Mapa de Montagem (etapa posterior ao núcleo).

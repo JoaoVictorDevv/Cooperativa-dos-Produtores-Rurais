@@ -1,8 +1,11 @@
 import Link from "next/link";
+import { LEGACY_BILLING_NOTE } from "@/lib/methodology";
+import { TREASURY_ROUNDING_NOTE } from "@/lib/roundingPolicy";
 import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
 import { getWeekFinancialSummary } from "@/lib/weekSummary";
 import { formatQty } from "@/lib/format";
+import { verifySession } from "@/lib/dal";
 
 function fmtMoney(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -12,6 +15,8 @@ function fmtMoney(value: number) {
 // historico com os valores originais dela — sem parametro, mostra a
 // semana aberta atual.
 export default async function ResumoPage({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const { week: weekIdParam } = await searchParams;
   const week = weekIdParam ? await prisma.week.findUnique({ where: { id: weekIdParam } }) : await getOpenWeek();
   if (!week) {
@@ -58,10 +63,18 @@ export default async function ResumoPage({ searchParams }: { searchParams: Promi
         </div>
         <span className={`badge ${week.status === "ABERTA" ? "aberta" : "fechada"}`}>{week.status}</span>
       </div>
+      <p className="table-foot-note" style={{ textAlign: "left", marginTop: -8 }}>
+        <Link className="link-action" href={`/semanas/${week.id}`}>
+          Ver semana completa (documentos, diferença, balanço) →
+        </Link>
+      </p>
 
+      <p className="table-foot-note" style={{ textAlign: "left" }}>
+        {LEGACY_BILLING_NOTE} {TREASURY_ROUNDING_NOTE[summary.treasuryRounding]}
+      </p>
       <div className="stat-row">
         <div className="card stat money-in">
-          <div className="stat-label">Vendas Merenda Escolar (PMP)</div>
+          <div className="stat-label">A cobrar — Merenda Escolar (PMP)</div>
           <div className="stat-value">{fmtMoney(summary.treasuryTotal)}</div>
         </div>
         <div className="card stat money-out">

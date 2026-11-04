@@ -7,6 +7,7 @@ export const NAV_ITEMS = [
   { href: "/produtores", label: "Produtores", icon: "users", group: "operacao" },
   { href: "/mapa-producao", label: "Mapa de produção", icon: "map", group: "operacao" },
   { href: "/resumo", label: "Resumo operacional", icon: "chart", group: "gestao" },
+  { href: "/diferenca", label: "Diferença do galpão", icon: "truck", group: "gestao" },
   { href: "/balanco", label: "Balanço", icon: "balance", group: "gestao" },
   { href: "/historico", label: "Histórico", icon: "history", group: "gestao" },
   { href: "/motivos", label: "Motivos", icon: "package", group: "gestao" },

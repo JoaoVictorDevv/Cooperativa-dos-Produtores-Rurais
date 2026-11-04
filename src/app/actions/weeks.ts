@@ -8,12 +8,13 @@ import { requireOperator, requireRole } from "@/lib/dal";
 import { writeAudit } from "@/lib/audit";
 import { getOpenWeek } from "@/lib/week";
 import { getWeekClosingBlockers, validateOperationalWeekDates } from "@/lib/weekPolicy";
+import { publicErrorMessage } from "@/lib/publicError";
 
 const CreateWeekSchema = z.object({
   referenceDate: z.string().min(1, "Informe a data de referencia"),
   startDate: z.string().min(1, "Informe a data inicial"),
   endDate: z.string().min(1, "Informe a data final"),
-  notes: z.string().optional(),
+  notes: z.string().max(2000, "Observacoes muito longas (maximo 2000 caracteres)").optional(),
 });
 
 export interface WeekFormState {
@@ -130,7 +131,7 @@ export async function closeWeek(weekId: string): Promise<{ ok: boolean; error?: 
     });
     if (!result.ok) return result;
   } catch (error) {
-    return { ok: false, error: error instanceof Error ? error.message : "Nao foi possivel fechar a semana." };
+    return { ok: false, error: publicErrorMessage(error, "Nao foi possivel fechar a semana.") };
   }
   revalidatePath(`/semanas/${weekId}`);
   revalidatePath("/semanas");
@@ -139,7 +140,7 @@ export async function closeWeek(weekId: string): Promise<{ ok: boolean; error?: 
 }
 
 const ReopenSchema = z.object({
-  reason: z.string().trim().min(5, "Explique o motivo da reabertura (minimo 5 caracteres)"),
+  reason: z.string().trim().min(5, "Explique o motivo da reabertura (minimo 5 caracteres)").max(2000, "Motivo muito longo (maximo 2000 caracteres)"),
 });
 
 export interface ReopenFormState {

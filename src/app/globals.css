@@ -1,4 +1,7 @@
 :root {
+  --font-plex-sans: "Segoe UI", Inter, Arial, sans-serif;
+  --font-fraunces: Georgia, "Times New Roman", serif;
+  --font-plex-mono: "Cascadia Mono", Consolas, monospace;
   --bg: #f5f1e6;
   --panel: #ffffff;
   --ink: #23281e;
@@ -448,6 +451,13 @@ button {
   padding: 9px 14px;
   font-size: 13px;
   color: var(--ink-soft);
+  cursor: pointer;
+}
+.filter-chip.active {
+  background: var(--sage-soft);
+  color: var(--forest);
+  border-color: var(--sage);
+  font-weight: 600;
 }
 
 table {
@@ -766,6 +776,7 @@ footer.build-note {
 }
 .rm-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 16px;
 }
@@ -940,6 +951,9 @@ footer.build-note {
     border: none;
     padding: 0;
     max-width: none;
+  }
+  .romaneio-sheet .table-scroll {
+    overflow: visible;
   }
 }
 
@@ -1224,6 +1238,9 @@ tbody tr:hover td { background-color: #fafbf8; }
 
 @media (max-width: 860px) {
   .shell { grid-template-columns: 1fr; }
+  /* Repetido aqui porque as regras base de .sidebar vêm depois da media query
+     do topo do arquivo e a anulavam; no celular a navegação é .mobile-top/.mobile-bottom. */
+  .sidebar { display: none; }
   .workspace { min-height: calc(100vh - 58px); }
   .app-topbar { height: 56px; padding: 0 18px; position: static; }
   .app-context { display: none; }

@@ -7,6 +7,8 @@ import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable, getCurrentPrice, getSettings } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
 import type { SaveResult } from "./schoolOrders";
+import { publicErrorMessage } from "@/lib/publicError";
+import { lockLine } from "@/lib/locks";
 
 // CA-ENT-PROD-01..07, regra absoluta #2 e #4: entrega real (normalmente
 // domingo) — e esta tabela, nunca o pedido, que alimenta o pagamento.
@@ -35,22 +37,40 @@ export async function saveProducerDelivery(
     if (deliveredAt < week.startDate || deliveredAt > week.endDate) {
       return { ok: false, error: "A entrega precisa estar dentro do periodo da semana." };
     }
+
     const [price, settings] = await Promise.all([
       getCurrentPrice(productId, week.referenceDate),
       getSettings(),
     ]);
 
     await prisma.$transaction(async (tx) => {
+      // Trava da linha (produtor × produto × semana), a mesma usada pela
+      // devolução: a checagem abaixo e a gravação não podem ser furadas por
+      // uma devolução simultânea (antes: corrida sob READ COMMITTED).
+      await lockLine(tx, "galpao", weekId, producerId, productId);
+      const existingReturn = await tx.producerReturn.findUnique({
+        where: { weekId_producerId_productId: { weekId, producerId, productId } },
+      });
+      const existingReturnedQty = existingReturn ? Number(existingReturn.returnedQty) : 0;
+      if (deliveredQty < existingReturnedQty) {
+        throw new Error(
+          `Nao e possivel reduzir a entrega para ${deliveredQty} kg: ja ha ${existingReturnedQty} kg de ` +
+            `devolucao registrada para este produto nesta semana. Corrija a devolucao primeiro.`,
+        );
+      }
+
       const existing = await tx.producerDelivery.findUnique({
         where: { weekId_producerId_productId: { weekId, producerId, productId } },
       });
+      // Regra #55/secao 5: preco e deducao sao congelados no primeiro
+      // lancamento (snapshot). Uma correcao de quantidade/data NAO deve
+      // trocar silenciosamente esses valores pela configuracao atual —
+      // por isso o update preserva o que ja estava gravado.
       const saved = await tx.producerDelivery.upsert({
         where: { weekId_producerId_productId: { weekId, producerId, productId } },
         update: {
           deliveredQty,
           deliveredAt,
-          priceId: price.id,
-          logisticsDeductionSnapshot: settings.logisticsDeductionPerKg,
         },
         create: {
           weekId,
@@ -77,6 +97,6 @@ export async function saveProducerDelivery(
     revalidatePath("/produtores");
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+    return { ok: false, error: publicErrorMessage(err, "Erro desconhecido") };
   }
 }

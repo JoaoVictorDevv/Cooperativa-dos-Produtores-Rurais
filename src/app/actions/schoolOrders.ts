@@ -6,6 +6,10 @@ import { requireOperator } from "@/lib/dal";
 import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable, getCurrentPrice } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
+import { isOfferedForNewEntries } from "@/lib/productPolicy";
+import { publicErrorMessage } from "@/lib/publicError";
+import { assertSchoolAcceptsNewEntries } from "@/lib/entityPolicy";
+import { lockLine } from "@/lib/locks";
 
 export interface SaveResult {
   ok: boolean;
@@ -27,15 +31,39 @@ export async function saveSchoolOrder(
 
     const week = await prisma.week.findUniqueOrThrow({ where: { id: weekId } });
     assertWeekEditable(week);
+
     const price = await getCurrentPrice(productId, week.referenceDate);
 
     await prisma.$transaction(async (tx) => {
+      await lockLine(tx, "escola", weekId, schoolId, productId);
+      // Checagem contra devolucao dentro da mesma transacao que a
+      // gravacao (ver mesmo comentario em producerDeliveries.ts).
+      const existingReturn = await tx.schoolReturn.findUnique({
+        where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
+      });
+      const existingReturnedQty = existingReturn ? Number(existingReturn.returnedQty) : 0;
+      if (orderedQty < existingReturnedQty) {
+        throw new Error(
+          `Nao e possivel reduzir o pedido para ${orderedQty} kg: ja ha ${existingReturnedQty} kg de ` +
+            `devolucao registrada para este produto nesta semana. Corrija a devolucao primeiro.`,
+        );
+      }
+
       const existing = await tx.schoolOrder.findUnique({
         where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
       });
+      if (!existing) {
+        await assertSchoolAcceptsNewEntries(tx, schoolId);
+        const product = await tx.product.findUniqueOrThrow({ where: { id: productId } });
+        if (!isOfferedForNewEntries(product)) {
+          throw new Error(`${product.name} está fora da oferta ativa: não recebe novos pedidos (lançamentos antigos continuam no histórico).`);
+        }
+      }
+      // Preco congelado no primeiro lancamento — uma correcao de
+      // quantidade nao deve re-resolver o preco vigente por baixo.
       const saved = await tx.schoolOrder.upsert({
         where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
-        update: { orderedQty, priceId: price.id },
+        update: { orderedQty },
         create: { weekId, schoolId, productId, orderedQty, priceId: price.id },
       });
       await writeAudit(
@@ -53,6 +81,6 @@ export async function saveSchoolOrder(
     revalidatePath("/escolas");
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+    return { ok: false, error: publicErrorMessage(err, "Erro desconhecido") };
   }
 }

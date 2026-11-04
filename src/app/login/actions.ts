@@ -11,6 +11,9 @@ const LoginSchema = z.object({
   password: z.string().min(1, "Informe a senha"),
 });
 
+// Hash bcrypt (custo 10) de um texto aleatório descartado; nunca corresponde a senha alguma.
+const DUMMY_HASH = "$2b$10$CwTycUXWue0Thq9StjUM0uJ8.Qh1Y4vWjs0G5Df6hR3VrZVI2mO6y";
+
 export interface LoginState {
   error?: string;
 }
@@ -25,12 +28,10 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
   }
 
   const user = await prisma.user.findUnique({ where: { email: parsed.data.email.toLowerCase() } });
-  if (!user || !user.active) {
-    return { error: "Email ou senha invalidos." };
-  }
-
-  const passwordOk = await bcrypt.compare(parsed.data.password, user.passwordHash);
-  if (!passwordOk) {
+  // Compara sempre (com um hash fictício quando o usuário não existe ou está
+  // inativo) para o tempo de resposta não revelar quais emails têm conta.
+  const passwordOk = await bcrypt.compare(parsed.data.password, user?.passwordHash ?? DUMMY_HASH);
+  if (!user || !user.active || !passwordOk) {
     return { error: "Email ou senha invalidos." };
   }
 

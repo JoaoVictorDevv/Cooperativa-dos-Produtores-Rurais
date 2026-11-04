@@ -7,6 +7,8 @@ import { writeAudit } from "@/lib/audit";
 import { assertWeekEditable } from "@/lib/week";
 import { qtySchema } from "@/lib/validation";
 import type { SaveResult } from "./schoolOrders";
+import { publicErrorMessage } from "@/lib/publicError";
+import { lockLine } from "@/lib/locks";
 
 // CA-DEV-01/03/04/05/06/07/08: devolucao da escola, vinculada a
 // semana+produto, com motivo obrigatorio. Regra operacional definida
@@ -22,28 +24,56 @@ export async function saveSchoolReturn(
   try {
     const user = await requireOperator();
     const returnedQty = qtySchema.parse(returnedQtyRaw);
-    if (!returnReasonId) {
-      return { ok: false, error: "Selecione o motivo da devolucao." };
-    }
 
     const week = await prisma.week.findUniqueOrThrow({ where: { id: weekId } });
     assertWeekEditable(week);
 
-    const order = await prisma.schoolOrder.findUnique({
-      where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
-    });
-    const orderedQty = order ? Number(order.orderedQty) : 0;
-    if (returnedQty > orderedQty) {
-      return {
-        ok: false,
-        error: `Devolucao (${returnedQty}) nao pode ser maior que o pedido (${orderedQty}).`,
-      };
+    // Corrigir uma devolucao pra zero significa "essa devolucao nao devia
+    // ter sido lancada" — o modelo nao tem um conceito de "devolucao zero
+    // com motivo", entao a correcao remove o lancamento em vez de gravar
+    // uma linha com quantidade zero. Sem devolucao existente, e um no-op
+    // (nada foi digitado, nao ha nada pra corrigir) e nao exige motivo.
+    if (returnedQty === 0) {
+      return prisma.$transaction(async (tx) => {
+        const existing = await tx.schoolReturn.findUnique({
+          where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
+        });
+        if (!existing) return { ok: true };
+        await tx.schoolReturn.delete({ where: { id: existing.id } });
+        await writeAudit(
+          {
+            userId: user.id,
+            action: "SCHOOL_RETURN_DELETE",
+            entityType: "SchoolReturn",
+            entityId: existing.id,
+            before: existing,
+            after: undefined,
+          },
+          tx,
+        );
+        revalidatePath("/escolas");
+        return { ok: true };
+      });
+    }
+
+    if (!returnReasonId) {
+      return { ok: false, error: "Selecione o motivo da devolucao." };
     }
 
     const reason = await prisma.returnReason.findFirst({ where: { id: returnReasonId, active: true } });
     if (!reason) return { ok: false, error: "Selecione um motivo de devolucao ativo." };
 
     await prisma.$transaction(async (tx) => {
+      // Mesma trava do pedido: a checagem devolução ≤ pedido é feita dentro da
+      // transação, depois da trava (antes era lida fora e podia ser furada).
+      await lockLine(tx, "escola", weekId, schoolId, productId);
+      const order = await tx.schoolOrder.findUnique({
+        where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
+      });
+      const orderedQty = order ? Number(order.orderedQty) : 0;
+      if (returnedQty > orderedQty) {
+        throw new Error(`Devolucao (${returnedQty}) nao pode ser maior que o pedido (${orderedQty}).`);
+      }
       const existing = await tx.schoolReturn.findUnique({
         where: { weekId_schoolId_productId: { weekId, schoolId, productId } },
       });
@@ -67,6 +97,6 @@ export async function saveSchoolReturn(
     revalidatePath("/escolas");
     return { ok: true };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "Erro desconhecido" };
+    return { ok: false, error: publicErrorMessage(err, "Erro desconhecido") };
   }
 }

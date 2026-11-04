@@ -1,9 +1,12 @@
 import Link from "next/link";
+import { LEGACY_BILLING_NOTE } from "@/lib/methodology";
+import { TREASURY_ROUNDING_NOTE } from "@/lib/roundingPolicy";
 import { prisma } from "@/lib/prisma";
 import { getOpenWeek } from "@/lib/week";
 import { getWeekFinancialSummary } from "@/lib/weekSummary";
 import { CostCell } from "./CostCell";
 import type { CostCategory } from "@prisma/client";
+import { verifySession } from "@/lib/dal";
 
 function fmtMoney(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -22,6 +25,8 @@ const COST_LABELS: Record<CostCategory, string> = {
 const COST_ORDER = Object.keys(COST_LABELS) as CostCategory[];
 
 export default async function BalancoPage({ searchParams }: { searchParams: Promise<{ week?: string }> }) {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const { week: weekIdParam } = await searchParams;
   const week = weekIdParam ? await prisma.week.findUnique({ where: { id: weekIdParam } }) : await getOpenWeek();
   if (!week) {
@@ -59,14 +64,22 @@ export default async function BalancoPage({ searchParams }: { searchParams: Prom
           <div className="page-title display">Balanço Financeiro</div>
         </div>
       </div>
+      <p className="table-foot-note" style={{ textAlign: "left", marginTop: -8 }}>
+        <Link className="link-action" href={`/semanas/${week.id}`}>
+          Ver semana completa (documentos, diferença, produtores) →
+        </Link>
+      </p>
 
+      <p className="table-foot-note" style={{ textAlign: "left" }}>
+        {LEGACY_BILLING_NOTE} {TREASURY_ROUNDING_NOTE[summary.treasuryRounding]}
+      </p>
       <div className="stat-row">
         <div className="card stat money-in">
-          <div className="stat-label">Vendas Merenda Escolar (PMP)</div>
+          <div className="stat-label">A cobrar — Merenda Escolar (PMP)</div>
           <div className="stat-value">{fmtMoney(summary.treasuryTotal)}</div>
         </div>
         <div className="card stat money-out">
-          <div className="stat-label">Pago aos produtores</div>
+          <div className="stat-label">A pagar aos produtores</div>
           <div className="stat-value">{fmtMoney(summary.producersTotal)}</div>
         </div>
         <div className="card stat">
@@ -77,7 +90,7 @@ export default async function BalancoPage({ searchParams }: { searchParams: Prom
 
       <div className={`balance-hero${summary.balance < 0 ? " negative" : ""}`}>
         <div>
-          <div className="bh-label">Saldo da semana</div>
+          <div className="bh-label">Resultado calculado</div>
           <div className="bh-value display">{fmtMoney(summary.balance)}</div>
           <div className="bh-formula">
             Margem bruta ({fmtMoney(summary.grossMargin)}) − Custos reais ({fmtMoney(summary.totalCosts)})
@@ -88,11 +101,11 @@ export default async function BalancoPage({ searchParams }: { searchParams: Prom
       <div className="two-col">
         <div>
           <div className="card">
-            <div className="panel-title">Custos reais desta semana</div>
+            <div className="panel-title">Custos reais registrados nesta semana</div>
             <div className="panel-pad">
               <div className="cost-list">
                 {COST_ORDER.map((category) => (
-                  <div className="cost-row" key={category}>
+                  <div className="cost-row" key={`${week.id}-${category}`}>
                     <span className="cr-label">{COST_LABELS[category]}</span>
                     <CostCell
                       weekId={week.id}
@@ -113,7 +126,7 @@ export default async function BalancoPage({ searchParams }: { searchParams: Prom
 
         <div>
           <div className="card">
-            <div className="panel-title">Conferência — valor pago por produtor</div>
+            <div className="panel-title">Conferência — valor a pagar por produtor</div>
             <div className="panel-pad">
               {[...byProducer.values()].map((p) => (
                 <div className="audit-row" key={p.producerName}>

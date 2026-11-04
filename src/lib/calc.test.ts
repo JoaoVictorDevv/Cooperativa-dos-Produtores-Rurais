@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   balanceStatus,
+  differenceStatus,
   grossMargin,
   netPrice,
+  netProducerDelivered,
   pnaeCycleRange,
   pnaeUsage,
   producerNetQty,
@@ -12,6 +14,7 @@ import {
   schoolNetQty,
   schoolValue,
   treasuryTotal,
+  warehouseDifference,
   weekBalance,
 } from "./calc";
 
@@ -136,6 +139,43 @@ describe("Limite anual PNAE (CA-PNAE-*)", () => {
 
     const antesDeOutubro = pnaeCycleRange(new Date(Date.UTC(2026, 2, 1))); // marco/2026
     expect(antesDeOutubro.start.getUTCFullYear()).toBe(2025);
+  });
+});
+
+describe("Painel Diferenca do galpao (plano §7)", () => {
+  it("entrega liquida = entrega bruta - devolucao", () => {
+    expect(netProducerDelivered(500, 50)).toBe(450);
+    expect(netProducerDelivered(500, 0)).toBe(500);
+  });
+
+  it("FALTA quando entrega liquida < pedido das escolas", () => {
+    const net = netProducerDelivered(80, 0);
+    const diff = warehouseDifference(100, net);
+    expect(diff).toBe(-20);
+    expect(differenceStatus(diff)).toBe("FALTA");
+  });
+
+  it("SOBRA quando entrega liquida > pedido das escolas", () => {
+    const net = netProducerDelivered(120, 0);
+    const diff = warehouseDifference(100, net);
+    expect(diff).toBe(20);
+    expect(differenceStatus(diff)).toBe("SOBRA");
+  });
+
+  it("OK quando entrega liquida == pedido das escolas", () => {
+    const net = netProducerDelivered(100, 0);
+    const diff = warehouseDifference(100, net);
+    expect(diff).toBe(0);
+    expect(differenceStatus(diff)).toBe("OK");
+  });
+
+  it("devolucao reduz a entrega liquida e pode transformar OK em FALTA", () => {
+    // pedido 100, entrega bruta 100, devolucao 10 -> liquida 90 -> FALTA
+    const net = netProducerDelivered(100, 10);
+    const diff = warehouseDifference(100, net);
+    expect(net).toBe(90);
+    expect(diff).toBe(-10);
+    expect(differenceStatus(diff)).toBe("FALTA");
   });
 });
 

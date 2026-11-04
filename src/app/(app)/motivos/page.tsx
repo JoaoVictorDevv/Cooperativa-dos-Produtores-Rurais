@@ -1,8 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { NewReasonForm } from "./NewReasonForm";
 import { ToggleActive } from "./ToggleActive";
+import { verifySession } from "@/lib/dal";
 
 export default async function MotivosPage() {
+  // Checagem por página: o layout não roda de novo na navegação (docs do Next, Autenticação).
+  await verifySession();
   const reasons = await prisma.returnReason.findMany({ orderBy: { code: "asc" } });
 
   return (

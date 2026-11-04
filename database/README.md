@@ -1,6 +1,11 @@
-# Banco PostgreSQL do Colheita
+# Banco PostgreSQL legado — não usar em novas instalações
 
-Banco independente do frontend e preparado para ser consumido pela API Java.
+> **Substituído em 03/10/2026.** Este diretório permanece somente como fonte
+> de migração do protótipo Java. O banco vigente está em [`../supabase`](../supabase/README.md),
+> usa Supabase Auth, RLS e o modelo de recebimentos da spec 008. Não execute o
+> `compose.yaml` desta pasta para desenvolver a API TypeScript.
+
+Banco independente do frontend que havia sido preparado para a API Java.
 
 ## Segurança
 
