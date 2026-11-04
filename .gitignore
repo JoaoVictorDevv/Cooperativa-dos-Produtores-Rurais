@@ -55,3 +55,7 @@ next-env.d.ts
 # banco PostgreSQL local de desenvolvimento
 /.local/
 /.tools/
+
+# Python (ferramentas/planilha)
+__pycache__/
+*.pyc
