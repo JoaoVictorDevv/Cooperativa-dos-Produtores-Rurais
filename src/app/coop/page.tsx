@@ -14,7 +14,7 @@ export default async function Inicio() {
     return (
       <>
         <h1>Bem-vindo, João</h1>
-        <p className="sub">Para começar, traga a planilha MODELO (v100) para o app (só uma vez).</p>
+        <p className="sub">Para começar, traga a planilha MODELO (v101) para o app (só uma vez).</p>
         <Link className="botao" href="/coop/cadastro">
           Ir para o Cadastro
         </Link>

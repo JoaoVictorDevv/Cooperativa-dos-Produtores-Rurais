@@ -1,12 +1,12 @@
 # Ferramentas da planilha da Cooperativa
 
-Automatizam a planilha semanal (MODELO v100) sem mudar nenhuma fórmula dela.
+Automatizam a planilha semanal (MODELO v101) sem mudar nenhuma fórmula dela.
 
 ## Pedido da Prefeitura chegou → semana + mensagens (um comando)
 
 ```
 python nova_semana.py --pedido "Planilha de Pedido 08-11-2026.xlsx" ^
-  --modelo controle_escolas_produtores_2026_MODELO_v100.xlsx ^
+  --modelo controle_escolas_produtores_2026_MODELO_v101.xlsx ^
   --data 08/11/2026 --entrega 3 --pular Claudeni
 ```
 

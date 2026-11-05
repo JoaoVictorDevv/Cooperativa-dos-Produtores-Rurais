@@ -3,7 +3,8 @@ import type { ResultadoSemana } from "@/lib/coop/motor";
 import type { Cadastro } from "@/lib/coop/tipos";
 
 // Lista de EXCEDENTE do MAPA DE MONTAGEM (MODELO v100, linhas 280–301):
-// o que chegou a mais e pode ir a mais nas escolas.
+// o que chegou a mais e pode ir a mais nas escolas. Menos de 0,1 kg não
+// aparece (é só arredondamento), igual à planilha a partir da v101.
 export function Excedente({ cad, r, impresso = false }: { cad: Cadastro; r: ResultadoSemana; impresso?: boolean }) {
   const linhas = cad.produtos
     .map((p) => ({ p, e: r.entregaProduto[p.nome] }))
@@ -27,10 +28,10 @@ export function Excedente({ cad, r, impresso = false }: { cad: Cadastro; r: Resu
               {p.nome} ({folha(e) ? "folha" : "legume"})
             </td>
             <td className="n">
-              <strong>{e.excedente1 > 0.004 ? `${kg2(e.excedente1)} ${p.unidade}` : ""}</strong>
+              <strong>{e.excedente1 >= 0.1 ? `${kg2(e.excedente1)} ${p.unidade}` : ""}</strong>
             </td>
             <td className="n">
-              <strong>{folha(e) ? (e.excedente2 > 0.004 ? `${kg2(e.excedente2)} ${p.unidade}` : "") : "resto da segunda"}</strong>
+              <strong>{folha(e) ? (e.excedente2 >= 0.1 ? `${kg2(e.excedente2)} ${p.unidade}` : "") : "resto da segunda"}</strong>
             </td>
           </tr>
         ))}

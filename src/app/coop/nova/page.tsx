@@ -11,7 +11,7 @@ export default async function Nova() {
   if (!cad) {
     return (
       <p className="aviso">
-        Primeiro traga o MODELO (v100) no <Link href="/coop/cadastro">Cadastro</Link>.
+        Primeiro traga o MODELO (v101) no <Link href="/coop/cadastro">Cadastro</Link>.
       </p>
     );
   }

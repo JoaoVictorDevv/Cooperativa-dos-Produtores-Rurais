@@ -10,7 +10,7 @@ Faz o que antes era manual:
 
 Uso:
     python nova_semana.py --pedido "Planilha de Pedido 08-11-2026.xlsx" \\
-        --modelo controle_escolas_produtores_2026_MODELO_v100.xlsx \\
+        --modelo controle_escolas_produtores_2026_MODELO_v101.xlsx \\
         --data 08/11/2026 --entrega 3 --proxima 15/11
 """
 
@@ -98,7 +98,7 @@ def criar_semana(pedido_arq: Path, modelo_arq: Path, data: str, entrega: int, pa
 def main():
     ap = argparse.ArgumentParser(description="Cria a planilha da semana a partir do pedido da Prefeitura.")
     ap.add_argument("--pedido", type=Path, required=True, help="Planilha de Pedido da Prefeitura (.xlsx)")
-    ap.add_argument("--modelo", type=Path, required=True, help="controle_escolas_produtores_2026_MODELO_v100.xlsx")
+    ap.add_argument("--modelo", type=Path, required=True, help="controle_escolas_produtores_2026_MODELO_v101.xlsx")
     ap.add_argument("--data", required=True, help="semana / data de referência, ex.: 08/11/2026")
     ap.add_argument("--entrega", type=int, required=True, help="nº da entrega (20/10 foi 1, 26/10 foi 2)")
     ap.add_argument("--pasta", type=Path, default=Path("."), help="onde gravar (padrão: pasta atual)")
