@@ -1,13 +1,10 @@
 import { textoPedido } from "@/lib/coop/mensagens";
-import { referenciaDeData, somarDias, curta } from "@/lib/coop/semana";
+import { referenciaDeData } from "@/lib/coop/semana";
 import { carregarSemana } from "../../../dados";
 import { Divisao, type LinhaDivisao } from "./Divisao";
 import { Mensagens } from "./Mensagens";
 
 export const metadata = { title: "Pedido e mensagens" };
-
-const NOME_DIA = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
-const nomeDia = (d: string) => NOME_DIA[new Date(`${d}T12:00:00Z`).getUTCDay()];
 
 export default async function Pedido({ params }: PageProps<"/coop/semana/[data]/pedido">) {
   const { data } = await params;
@@ -38,14 +35,6 @@ export default async function Pedido({ params }: PageProps<"/coop/semana/[data]/
     })
     .filter((l) => l.pedido > 0);
 
-  // Próxima entrega: a semana seguinte, com os dias do galpão.
-  const proxRef = somarDias(sem.data, 7);
-  const galpao = sem.diasGalpao[0] === "DOMINGO" ? [somarDias(proxRef, -1), proxRef] : [proxRef, somarDias(proxRef, 1)];
-  const sugestao = {
-    proxima: curta(proxRef),
-    diasProxima: `${nomeDia(galpao[0])} ${curta(galpao[0])} e ${nomeDia(galpao[1])} ${curta(galpao[1])}`,
-    prazo: `quarta ${curta(somarDias(sem.data, 2))}`,
-  };
   const msgs = cad.produtores.map((p) => ({
     id: p.id,
     nome: p.nome,
@@ -64,7 +53,7 @@ export default async function Pedido({ params }: PageProps<"/coop/semana/[data]/
       </p>
       <Divisao data={sem.data} linhas={linhas} />
       <h2>Mensagens para os produtores</h2>
-      <Mensagens data={sem.data} itens={msgs} sugestao={sugestao} />
+      <Mensagens data={sem.data} itens={msgs} />
     </>
   );
 }

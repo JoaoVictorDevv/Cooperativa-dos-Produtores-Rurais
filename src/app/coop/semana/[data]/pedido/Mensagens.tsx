@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { juntarPergunta, linkWhatsApp } from "@/lib/coop/mensagens";
+import Link from "next/link";
+import { linkWhatsApp } from "@/lib/coop/mensagens";
 import { marcarMensagemEnviada } from "../../../acoes";
 import { useAcao } from "../../../ui";
 
@@ -14,40 +15,20 @@ interface Item {
   enviadaEm: string | null;
 }
 
-export function Mensagens({ data, itens, sugestao }: { data: string; itens: Item[]; sugestao: { proxima: string; diasProxima: string; prazo: string } }) {
-  const [o, setO] = useState(sugestao);
-  const [semPedido, setSemPedido] = useState(false);
-  const lista = itens.filter((i) => semPedido || i.pedido);
-  const enviadas = itens.filter((i) => i.pedido && i.enviadaEm).length;
-  const total = itens.filter((i) => i.pedido).length;
+export function Mensagens({ data, itens }: { data: string; itens: Item[] }) {
+  const lista = itens.filter((i) => i.pedido);
+  const enviadas = lista.filter((i) => i.enviadaEm).length;
   return (
     <>
       <div className="card">
-        <p style={{ marginTop: 0 }}>
+        <p style={{ margin: 0 }}>
           <strong>Como funciona:</strong> clique em <em>Abrir no WhatsApp</em>. A conversa do produtor abre com o texto pronto; é só apertar enviar. O app marca como enviada.
-          Já foram {enviadas} de {total}.
+          Já foram {enviadas} de {lista.length}. A pergunta da previsão vai separada, depois da entrega (tela <Link href="/coop/previsao">Previsão</Link>).
         </p>
-        <div className="botoes" style={{ alignItems: "flex-end" }}>
-          <label className="campo">
-            Pergunta da entrega seguinte: data
-            <input type="text" value={o.proxima} onChange={(e) => setO({ ...o, proxima: e.target.value })} style={{ width: 110 }} />
-          </label>
-          <label className="campo">
-            Dias no galpão
-            <input type="text" value={o.diasProxima} onChange={(e) => setO({ ...o, diasProxima: e.target.value })} style={{ width: 240 }} />
-          </label>
-          <label className="campo">
-            Prazo da nutrição
-            <input type="text" value={o.prazo} onChange={(e) => setO({ ...o, prazo: e.target.value })} style={{ width: 140 }} />
-          </label>
-          <label className="discreto">
-            <input type="checkbox" checked={semPedido} onChange={(e) => setSemPedido(e.target.checked)} /> mostrar também quem não tem pedido (só a pergunta)
-          </label>
-        </div>
       </div>
       <div className="grade" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(330px, 1fr))" }}>
         {lista.map((i) => (
-          <Cartao key={i.id} data={data} i={i} texto={juntarPergunta(i, i.pedido, o)} />
+          <Cartao key={i.id} data={data} i={i} texto={i.pedido ?? ""} />
         ))}
       </div>
     </>

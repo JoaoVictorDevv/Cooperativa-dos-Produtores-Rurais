@@ -27,7 +27,7 @@ function erro(e: unknown): { ok: false; erro: string } {
 
 async function exigirCadastro(): Promise<Cadastro> {
   const c = await lerCadastro();
-  if (!c) throw new Error("Importe primeiro o MODELO v99 (tela Cadastro).");
+  if (!c) throw new Error("Importe primeiro o MODELO (tela Cadastro).");
   return c;
 }
 

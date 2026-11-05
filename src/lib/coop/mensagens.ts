@@ -1,5 +1,5 @@
 // Mensagens de WhatsApp para os produtores — o mesmo texto da planilha
-// (aba de cada produtor, A28), com a pergunta da próxima entrega no fim.
+// (aba de cada produtor, A28). A pergunta da previsão é outra mensagem.
 // O que vai na mensagem é o que vale para pagar.
 
 import type { ResultadoSemana } from "./motor";
@@ -44,27 +44,13 @@ export function textoPedido(cad: Cadastro, sem: Semana, r: ResultadoSemana, prod
   return linhas.join("\n");
 }
 
-// Pedido + pergunta da entrega seguinte (quem não tem pedido recebe só a pergunta).
-export function juntarPergunta(produtor: Pick<Produtor, "curto">, pedido: string | null, o: { proxima: string; diasProxima: string; prazo: string }): string {
-  if (!o.proxima.trim()) return pedido ?? perguntaPrevisao(produtor, "semana que vem", o.diasProxima, o.prazo);
-  return pedido
-    ? `${pedido}\n\nE pra entrega seguinte (${o.proxima}), o que você vai ter? Me fala o produto e quantos kg.`
-    : perguntaPrevisao(produtor, o.proxima, o.diasProxima, o.prazo);
-}
-
-export function mensagensDaSemana(
-  cad: Cadastro,
-  sem: Semana,
-  r: ResultadoSemana,
-  opcoes: { proxima: string; diasProxima: string; prazo: string; pular: string[] },
-): Mensagem[] {
-  return cad.produtores
-    .filter((p) => !opcoes.pular.includes(p.id))
-    .map((produtor) => {
-      const pedido = textoPedido(cad, sem, r, produtor);
-      const texto = juntarPergunta(produtor, pedido, opcoes);
-      return { produtor, temPedido: Boolean(pedido), texto, link: linkWhatsApp(produtor.telefone, texto) };
-    });
+// 04/11/2026: a mensagem do pedido vai SEM a pergunta da próxima (para não
+// confundir). A previsão é perguntada separado, depois da entrega (tela Previsão).
+export function mensagensDaSemana(cad: Cadastro, sem: Semana, r: ResultadoSemana): Mensagem[] {
+  return cad.produtores.flatMap((produtor) => {
+    const texto = textoPedido(cad, sem, r, produtor);
+    return texto ? [{ produtor, temPedido: true, texto, link: linkWhatsApp(produtor.telefone, texto) }] : [];
+  });
 }
 
 export function perguntaPrevisao(produtor: Pick<Produtor, "curto">, entrega: string, dias: string, prazo: string): string {

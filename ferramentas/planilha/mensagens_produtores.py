@@ -2,9 +2,14 @@
 
 O texto do pedido é o que a própria planilha monta (aba de cada produtor,
 célula A28): já usa a divisão, os ajustes do Paulo e os dias da semana. Aqui
-só se acrescenta a pergunta da próxima entrega e o botão do WhatsApp.
+só se acrescenta o botão do WhatsApp.
+
+Desde 04/11/2026 a pergunta da previsão vai SEPARADA, depois da entrega (para
+não confundir com o pedido). Com --proxima, o arquivo também traz essa
+pergunta para todos os produtores, numa seção à parte.
 
 Uso (depois de mexer na divisão, é só rodar de novo):
+    python mensagens_produtores.py controle_2026-11-08_Proc_6040-2026.xlsx
     python mensagens_produtores.py controle_2026-11-08_Proc_6040-2026.xlsx --proxima 15/11
 """
 
@@ -80,34 +85,33 @@ def ler_produtores(wb) -> list[dict]:
     return produtores
 
 
-def montar(produtores, proxima: str, dias: str, prazo: str, pular: list[str], dias_semana: list[str] | None = None):
+def montar(produtores, proxima: str | None, dias: str, prazo: str, pular: list[str], dias_semana: list[str] | None = None):
+    """Uma lista de cartões: o pedido de quem tem pedido e, se pedir (--proxima),
+    a pergunta da previsão para todos (mensagem separada, depois da entrega)."""
     pular_chaves = [p.strip().lower() for p in pular if p.strip()]
+    cartoes = []
     for p in produtores:
         p["mensagem"] = trocar_dias(p["mensagem"], dias_semana)
+        numero = telefone_whatsapp(p["telefone"])
+        link = lambda t: f"https://wa.me/{numero}?text={quote(t)}" if numero else None  # noqa: E731
         if any(k in p["nome"].lower() for k in pular_chaves):
-            p["texto"] = None
-            p["grupo"] = "pulado"
-        elif p["tem_pedido"]:
-            p["texto"] = (
-                f"{p['mensagem']}\n\n"
-                f"E pra entrega seguinte ({proxima}), o que você vai ter? Me fala o produto e quantos kg."
-            )
-            p["grupo"] = "pedido"
-        else:
-            p["texto"] = (
+            cartoes.append({**p, "texto": None, "link": None, "grupo": "pulado"})
+            continue
+        if p["tem_pedido"]:
+            cartoes.append({**p, "texto": p["mensagem"], "link": link(p["mensagem"]), "grupo": "pedido"})
+        if proxima:
+            t = (
                 f"Bom dia, {p['curto']}! O que você vai ter pra entrega de {proxima} ({dias})? "
                 f"Me fala o produto e quantos kg. Precisamos passar essa previsão pra nutrição até {prazo}. Obrigado!"
             )
-            p["grupo"] = "previsao"
-        numero = telefone_whatsapp(p["telefone"])
-        p["link"] = f"https://wa.me/{numero}?text={quote(p['texto'])}" if numero and p["texto"] else None
-    return produtores
+            cartoes.append({**p, "texto": t, "link": link(t), "grupo": "previsao"})
+    return cartoes
 
 
 def gravar(produtores, semana: str, destino_html: Path, destino_txt: Path):
     grupos = [
-        ("pedido", "Com pedido nesta semana (pedido + pergunta da próxima)"),
-        ("previsao", "Sem pedido: só a pergunta da previsão"),
+        ("pedido", "Pedido da semana (mandar agora)"),
+        ("previsao", "Pergunta da previsão (mandar SEPARADO, depois da entrega)"),
         ("pulado", "Pulados (sem produção)"),
     ]
     cartoes = []
@@ -164,7 +168,7 @@ navigator.clipboard.writeText(t).then(()=>{{b.textContent='Copiado!';setTimeout(
 
 def gerar(
     arquivo_semana: Path,
-    proxima: str,
+    proxima: str | None = None,
     dias: str = "domingo e segunda",
     prazo: str = "terça",
     pular: list[str] | None = None,
@@ -181,7 +185,7 @@ def gerar(
 def main():
     ap = argparse.ArgumentParser(description="Gera as mensagens de WhatsApp dos produtores a partir da planilha da semana.")
     ap.add_argument("semana", type=Path, help="arquivo controle_AAAA-MM-DD_....xlsx")
-    ap.add_argument("--proxima", required=True, help="data da entrega seguinte, ex.: 15/11")
+    ap.add_argument("--proxima", help="data da entrega seguinte, ex.: 15/11 (acrescenta a pergunta da previsão, separada)")
     ap.add_argument("--dias", default="domingo e segunda", help='dias da entrega seguinte (padrão: "domingo e segunda")')
     ap.add_argument("--prazo", default="terça", help="até quando a previsão vai para a nutrição (padrão: terça)")
     ap.add_argument("--pular", default="", help='produtores sem produção, separados por vírgula (ex.: "Claudeni")')
@@ -199,7 +203,7 @@ def resumir(produtores, h: Path, t: Path):
     prev = [p["curto"] for p in produtores if p["grupo"] == "previsao"]
     sem_tel = [p["nome"] for p in produtores if p["texto"] and not p["link"]]
     print(f"Com pedido ({len(com)}): {', '.join(com) or '—'}")
-    print(f"Só previsão ({len(prev)}): {', '.join(prev) or '—'}")
+    print(f"Pergunta da previsão, separada ({len(prev)}): {', '.join(prev) or '—'}")
     if sem_tel:
         print(f"Sem telefone válido: {', '.join(sem_tel)}")
     print(f"Abra no navegador: {h}")

@@ -23,6 +23,8 @@ export interface LinhaEntregaProduto {
   fator2: number; // linha 14
   faltaDividida: number; // linha 15
   planejadoNaoLancado: number; // linha 16
+  excedente1: number; // a mais na segunda (lista EXCEDENTE do mapa)
+  excedente2: number; // a mais na terça (só folhas; legume = "resto da segunda")
 }
 
 export interface FichaProduto {
@@ -210,7 +212,8 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
     const precisa1 =
       planejado2 > 0.004 ? pedidoSeg : sem.regraPrimeiroDia === "corrigida" ? pedidoSeg + Math.max(0, pedidoTer - entregue2) : pedidoSeg + pedidoTer;
     const fator1 = precisa1 <= 0.0001 ? 1 : entregue1 >= precisa1 - 0.05 ? 1 : entregue1 / precisa1;
-    const disponivel2 = entregue1 + entregue2 - pedidoSeg * fator1;
+    // v100: folha (tem 2º dia planejado) usa só o que chegou no 2º dia.
+    const disponivel2 = sem.folhaSoNoDia && planejado2 > 0.004 ? entregue2 : entregue1 + entregue2 - pedidoSeg * fator1;
     const fator2 = pedidoTer <= 0.0001 ? 1 : disponivel2 >= pedidoTer - 0.05 ? 1 : Math.max(0, disponivel2) / pedidoTer;
     const naoLancado = soma(
       produtores.map(
@@ -231,6 +234,11 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
       disponivel2,
       fator2,
       faltaDividida: arred(pedidoSeg * (1 - fator1) + pedidoTer * (1 - fator2)),
+      // EXCEDENTE do MAPA DE MONTAGEM (v100, linhas 283+): o que pode ir a mais.
+      // Folha: chegou no dia − o que foi para as rotas do dia. Legume: o que sobra da semana (vai na segunda).
+      excedente1:
+        planejado2 > 0.004 ? Math.max(0, entregue1 - pedidoSeg * fator1) : Math.max(0, entregue1 + entregue2 - pedidoSeg * fator1 - pedidoTer * fator2),
+      excedente2: planejado2 > 0.004 ? Math.max(0, entregue2 - pedidoTer * fator2) : 0,
       planejadoNaoLancado: naoLancado,
     };
   }

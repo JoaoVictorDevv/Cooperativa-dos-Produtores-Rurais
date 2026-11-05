@@ -1,4 +1,4 @@
-// Lê a planilha da Cooperativa (MODELO v99 ou uma semana controle_...xlsx)
+// Lê a planilha da Cooperativa (MODELO v99/v100 ou uma semana controle_...xlsx)
 // e devolve o cadastro e o que foi digitado na semana. Só leitura: nada é
 // gravado na planilha.
 
@@ -61,7 +61,7 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
   const avisos: string[] = [];
   const aba = (nome: string) => {
     const ws = wb.getWorksheet(nome);
-    if (!ws) throw new Error(`A planilha não tem a aba "${nome}". Use o MODELO v99 ou uma semana feita a partir dele.`);
+    if (!ws) throw new Error(`A planilha não tem a aba "${nome}". Use o MODELO (v100) ou uma semana feita a partir dele.`);
     return ws;
   };
   const ent = aba("Entrada de Dados");
@@ -262,6 +262,7 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
   const msg = formula(primeiraProd.getCell("A28")) ?? "";
   const dias = [...msg.matchAll(/Entregar n[oa] ([^:*]+):/g)].map((x) => x[1].trim());
   const f11 = formula(aba("_ENTREGA").getCell("C11")) ?? "";
+  const f13 = formula(aba("_ENTREGA").getCell("C13")) ?? "";
 
   const semana: Semana = {
     data: m ? `${m[3]}-${m[2]}-${m[1]}` : "",
@@ -282,6 +283,7 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
     custos,
     rotas,
     regraPrimeiroDia: f11.includes("MAX(0") ? "corrigida" : "modelo",
+    folhaSoNoDia: /IF\(C6>0\.004,C8,/.test(f13.replace(/\s/g, "")),
   };
   return { cadastro, semana, avisos };
 }

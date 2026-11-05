@@ -73,6 +73,22 @@ async function main() {
     for (const [linha, nosso] of linhas) conf("4 entrega por dia (_ENTREGA)", `${p.nome} linha ${linha}`, nosso, val("_ENTREGA", [linha, col]));
   });
 
+  // v100: lista de EXCEDENTE no MAPA DE MONTAGEM (linhas 283 em diante).
+  const bruto = (aba: string, linha: number, coluna: number): unknown => {
+    const v = wb.getWorksheet(aba)?.getCell(linha, coluna).value as unknown;
+    return v && typeof v === "object" && "result" in (v as object) ? (v as { result: unknown }).result : v;
+  };
+  if (String(bruto("MAPA DE MONTAGEM", 280, 1) ?? "").startsWith("EXCEDENTE")) {
+    for (let linha = 283; linha <= 301; linha++) {
+      const nome = String(bruto("MAPA DE MONTAGEM", linha, 4) ?? "").replace(/ \((folha|legume)\)$/, "");
+      const e = r.entregaProduto[nome];
+      if (!nome || !e) continue;
+      conf("12 excedente (mapa)", `${nome} segunda`, e.excedente1, val("MAPA DE MONTAGEM", [linha, 5]));
+      const ter = bruto("MAPA DE MONTAGEM", linha, 7);
+      if (typeof ter === "number") conf("12 excedente (mapa)", `${nome} terça`, e.excedente2, ter);
+    }
+  }
+
   for (const esc of cadastro.escolas) {
     P.forEach((p, i) => {
       const f = r.fichas[esc.codigo][p.nome];

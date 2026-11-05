@@ -1,4 +1,4 @@
-// Tipos do app da Cooperativa, espelhando a planilha MODELO v99.
+// Tipos do app da Cooperativa, espelhando a planilha MODELO v100 (contas da v99 + regra das folhas).
 // Tudo é guardado em arquivos JSON (um cadastro + um arquivo por semana).
 
 export type DiaRota = "SEG" | "TER"; // SEG = rotas do 1º dia de entrega das escolas; TER = do 2º
@@ -107,6 +107,9 @@ export interface Semana {
   // Regra da linha 11 da aba _ENTREGA: a semana 26/10 corrigiu (produto que
   // não é folha não pede nada no 2º dia). O app usa a corrigida.
   regraPrimeiroDia: "corrigida" | "modelo";
+  // MODELO v100 (04/11/2026): folha não dorme no galpão. Nas rotas de terça a
+  // folha usa só o que chegou no 2º dia (_ENTREGA linha 13). Ausente = regra antiga (v99).
+  folhaSoNoDia?: boolean;
   atualizadoEm?: string;
   mensagensEnviadas?: Record<string, string>; // produtor → data/hora em que o botão foi usado
 }

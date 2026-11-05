@@ -1,6 +1,6 @@
 # App da Cooperativa (modo local)
 
-Uma planilha mais limpa: mesmas contas da MODELO v99, em telas.
+Uma planilha mais limpa: mesmas contas da MODELO v100, em telas.
 
 ## Abrir
 

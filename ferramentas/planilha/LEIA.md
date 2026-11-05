@@ -1,13 +1,13 @@
 # Ferramentas da planilha da Cooperativa
 
-Automatizam a planilha semanal (MODELO v99) sem mudar nenhuma fórmula dela.
+Automatizam a planilha semanal (MODELO v100) sem mudar nenhuma fórmula dela.
 
 ## Pedido da Prefeitura chegou → semana + mensagens (um comando)
 
 ```
 python nova_semana.py --pedido "Planilha de Pedido 08-11-2026.xlsx" ^
-  --modelo controle_escolas_produtores_2026_MODELO_v99.xlsx ^
-  --data 08/11/2026 --entrega 3 --proxima 15/11 --pular Claudeni
+  --modelo controle_escolas_produtores_2026_MODELO_v100.xlsx ^
+  --data 08/11/2026 --entrega 3 --pular Claudeni
 ```
 
 O que faz:
@@ -22,8 +22,9 @@ O que faz:
    - se tem escola que não existe no MODELO (nesse caso, para sem gravar).
 5. Grava `controle_AAAA-MM-DD_Proc_6040-2026.xlsx`. Nunca sobrescreve uma
    semana que já existe.
-6. Com `--proxima`, gera as mensagens dos produtores
-   (`mensagens_....html` e `.txt`).
+6. Gera as mensagens do pedido aos produtores (`mensagens_....html` e
+   `.txt`). Com `--proxima 15/11`, o arquivo também traz a pergunta da
+   previsão, numa seção à parte.
 
 ## Só as mensagens (depois de mexer na divisão)
 
@@ -31,14 +32,16 @@ Se o Paulo mudar o pedido de algum produtor, digite por cima na planilha,
 salve e rode de novo:
 
 ```
-python mensagens_produtores.py controle_2026-11-08_Proc_6040-2026.xlsx --proxima 15/11 --pular Claudeni
+python mensagens_produtores.py controle_2026-11-08_Proc_6040-2026.xlsx --pular Claudeni
 ```
 
 - O texto do pedido é o da própria planilha (aba de cada produtor, célula
   A28). Ou seja, vale a divisão com os ajustes do Paulo, e **o que vai na
   mensagem é o que vale para pagar**.
-- Quem tem pedido recebe o pedido e, no fim, a pergunta da entrega seguinte.
-- Quem não tem pedido recebe só a pergunta da previsão.
+- Quem tem pedido recebe só o pedido (desde 04/11, sem a pergunta da
+  próxima, para não confundir).
+- A pergunta da previsão vai **separada, depois da entrega**: com
+  `--proxima 15/11` ela aparece para todos os produtores, numa seção à parte.
 - `--pular` pula quem está sem produção (ex.: Claudeni).
 - Semana com feriado: `--dias-semana "SEGUNDA,TERÇA"` troca "DOMINGO /
   SEGUNDA" pelos dias certos na mensagem.
@@ -64,6 +67,6 @@ python mensagens_produtores.py controle_2026-11-08_Proc_6040-2026.xlsx --proxima
   (cenoura e cheiro verde da CEI), porque esses itens ficaram fora quando a
   semana foi lançada à mão.
 - A planilha gerada recalcula com zero erros.
-- As mensagens são o texto da planilha mais a pergunta da próxima entrega.
+- A mensagem do pedido é exatamente o texto da planilha (A28).
 
 Não versionar planilhas com pedido ou semanas: elas ficam fora do repositório.

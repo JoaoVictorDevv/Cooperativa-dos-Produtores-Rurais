@@ -7,6 +7,7 @@ import { NOMES_CUSTOS } from "@/lib/coop/semana";
 import type { Cadastro, DiaRota, Semana } from "@/lib/coop/tipos";
 import { carregarSemana } from "../../../../dados";
 import { BotaoImprimir } from "../../../../ui";
+import { Excedente } from "../../Excedente";
 
 export const metadata = { title: "Imprimir" };
 
@@ -275,6 +276,7 @@ function MapaImpresso({ cad, sem, r, dia, rota }: P & { dia: DiaRota; rota?: str
           </div>
         );
       })}
+      {!rota && <Excedente cad={cad} r={r} impresso />}
     </>
   );
 }

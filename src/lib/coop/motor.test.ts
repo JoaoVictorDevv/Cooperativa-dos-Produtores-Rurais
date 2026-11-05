@@ -115,6 +115,25 @@ describe("semana inteira", () => {
     expect(r.produtores["PROD - A"]["Alface lisa"].pagoKg).toBe(5);
   });
 
+  it("v100: folha não dorme no galpão — a sobra do domingo vira excedente da segunda, não cobre a terça", () => {
+    const entregas = {
+      entrega1: { "PROD - A": { "Alface lisa": 15 }, "PROD - B": { "Alface lisa": 15, Beterraba: 20 } },
+      entrega2: { "PROD - A": { "Alface lisa": 5 }, "PROD - B": { "Alface lisa": 5 } },
+    };
+    const antiga = calcularSemana(cadastro(), semana(entregas));
+    expect(antiga.entregaProduto["Alface lisa"].fator2).toBe(1);
+    expect(antiga.enviado["3"]["Alface lisa"]).toBe(20);
+    const v100 = calcularSemana(cadastro(), semana({ ...entregas, folhaSoNoDia: true }));
+    const e = v100.entregaProduto["Alface lisa"];
+    expect(e.disponivel2).toBe(10);
+    expect(e.fator2).toBe(0.5);
+    expect(v100.enviado["3"]["Alface lisa"]).toBe(10);
+    expect(e.excedente1).toBe(10);
+    expect(e.excedente2).toBe(0);
+    // Legume (beterraba, um dia só) continua igual nas duas regras.
+    expect(v100.entregaProduto.Beterraba.disponivel2).toBe(antiga.entregaProduto.Beterraba.disponivel2);
+  });
+
   it("entrega extra cobre a falta na ordem da rota e o produtor recebe só o que foi usado", () => {
     const r = calcularSemana(
       cadastro(),

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { kg } from "@/lib/coop/numeros";
 import type { DiaRota } from "@/lib/coop/tipos";
 import { carregarSemana } from "../../../dados";
+import { Excedente } from "../Excedente";
 
 export const metadata = { title: "Mapa de montagem" };
 
@@ -108,6 +109,7 @@ export default async function Mapa({ params, searchParams }: PageProps<"/coop/se
           </section>
         );
       })}
+      <Excedente cad={cad} r={r} />
     </>
   );
 }

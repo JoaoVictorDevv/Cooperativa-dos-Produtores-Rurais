@@ -5,12 +5,12 @@ Faz o que antes era manual:
 2. lança o pedido de cada escola na Entrada de Dados (bloco das escolas);
 3. preenche a semana (ÍNDICE D2) e o nº da entrega (ÍNDICE E4);
 4. confere os totais por produto com a aba TOTAL da Prefeitura;
-5. com --proxima, já gera as mensagens de WhatsApp (pedido + pergunta da
-   próxima entrega).
+5. já gera as mensagens de WhatsApp do pedido; com --proxima, também a
+   pergunta da previsão (mensagem separada, para mandar depois da entrega).
 
 Uso:
     python nova_semana.py --pedido "Planilha de Pedido 08-11-2026.xlsx" \\
-        --modelo controle_escolas_produtores_2026_MODELO_v99.xlsx \\
+        --modelo controle_escolas_produtores_2026_MODELO_v100.xlsx \\
         --data 08/11/2026 --entrega 3 --proxima 15/11
 """
 
@@ -98,11 +98,11 @@ def criar_semana(pedido_arq: Path, modelo_arq: Path, data: str, entrega: int, pa
 def main():
     ap = argparse.ArgumentParser(description="Cria a planilha da semana a partir do pedido da Prefeitura.")
     ap.add_argument("--pedido", type=Path, required=True, help="Planilha de Pedido da Prefeitura (.xlsx)")
-    ap.add_argument("--modelo", type=Path, required=True, help="controle_escolas_produtores_2026_MODELO_v99.xlsx")
+    ap.add_argument("--modelo", type=Path, required=True, help="controle_escolas_produtores_2026_MODELO_v100.xlsx")
     ap.add_argument("--data", required=True, help="semana / data de referência, ex.: 08/11/2026")
     ap.add_argument("--entrega", type=int, required=True, help="nº da entrega (20/10 foi 1, 26/10 foi 2)")
     ap.add_argument("--pasta", type=Path, default=Path("."), help="onde gravar (padrão: pasta atual)")
-    ap.add_argument("--proxima", help="data da entrega seguinte, ex.: 15/11 (gera as mensagens)")
+    ap.add_argument("--proxima", help="data da entrega seguinte, ex.: 15/11 (acrescenta a pergunta da previsão)")
     ap.add_argument("--dias", default="domingo e segunda")
     ap.add_argument("--prazo", default="terça")
     ap.add_argument("--pular", default="", help='produtores sem produção, ex.: "Claudeni"')
@@ -127,14 +127,11 @@ def main():
         for linha in pedido.sem_codigo:
             print(f"  {linha}")
 
-    if a.proxima:
-        from mensagens_produtores import gerar, resumir
+    from mensagens_produtores import gerar, resumir
 
-        dias_semana = [d for d in a.dias_semana.split(",") if d.strip()] or None
-        produtores, h, t = gerar(destino, a.proxima, a.dias, a.prazo, a.pular.split(","), dias_semana)
-        resumir(produtores, h, t)
-    else:
-        print("Mensagens: rode com --proxima DD/MM (ou use mensagens_produtores.py depois).")
+    dias_semana = [d for d in a.dias_semana.split(",") if d.strip()] or None
+    produtores, h, t = gerar(destino, a.proxima, a.dias, a.prazo, a.pular.split(","), dias_semana)
+    resumir(produtores, h, t)
 
 
 if __name__ == "__main__":

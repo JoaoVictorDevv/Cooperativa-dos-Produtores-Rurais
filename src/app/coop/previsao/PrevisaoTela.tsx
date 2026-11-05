@@ -20,11 +20,16 @@ const NOME_DIA = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "
 const dd = (d: Date) => `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
 
 export function PrevisaoTela({ data, produtores, produtos, inicial }: { data: string; produtores: Prod[]; produtos: string[]; inicial: Previsao | null }) {
+  // Dias do galpão: domingo e segunda da entrega (a data pode ser o domingo ou a segunda).
   const ref = new Date(`${data}T12:00:00Z`);
-  const ontem = new Date(ref.getTime() - 86400000);
-  const quarta = new Date(ref.getTime() - 5 * 86400000);
-  const [dias, setDias] = useState(`${NOME_DIA[ontem.getUTCDay()]} ${dd(ontem)} e ${NOME_DIA[ref.getUTCDay()]} ${dd(ref)}`);
-  const [prazo, setPrazo] = useState(`${NOME_DIA[quarta.getUTCDay()]} ${dd(quarta)}`);
+  const dia = (d: number) => new Date(ref.getTime() + d * 86400000);
+  const domingo = ref.getUTCDay() === 0 ? ref : dia(-((ref.getUTCDay() + 7) % 7));
+  const segunda = new Date(domingo.getTime() + 86400000);
+  // Prazo da nutrição: a terça antes da entrega (RESUMO, 04/11).
+  let terca = new Date(domingo.getTime() - 86400000);
+  while (terca.getUTCDay() !== 2) terca = new Date(terca.getTime() - 86400000);
+  const [dias, setDias] = useState(`${NOME_DIA[domingo.getUTCDay()]} ${dd(domingo)} e ${NOME_DIA[segunda.getUTCDay()]} ${dd(segunda)}`);
+  const [prazo, setPrazo] = useState(`terça ${dd(terca)}`);
   const [obs, setObs] = useState((inicial?.observacoes ?? []).join("\n"));
   const [e, setE] = useState<Estado>(() =>
     Object.fromEntries(
@@ -75,7 +80,7 @@ export function PrevisaoTela({ data, produtores, produtos, inicial }: { data: st
   return (
     <>
       <div className="card nao-imprimir">
-        <h2 style={{ marginTop: 0 }}>1. Perguntar</h2>
+        <h2 style={{ marginTop: 0 }}>1. Perguntar (mensagem separada, depois da entrega)</h2>
         <div className="botoes" style={{ alignItems: "flex-end" }}>
           <label className="campo">
             Dias no galpão

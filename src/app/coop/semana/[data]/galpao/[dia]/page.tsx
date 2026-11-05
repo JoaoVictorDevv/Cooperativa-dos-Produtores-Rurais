@@ -13,6 +13,7 @@ export default async function PaginaGalpao({ params }: PageProps<"/coop/semana/[
   const campo = dia === "1" ? "planejado1" : "planejado2";
   const digitado = dia === "1" ? sem.entrega1 : sem.entrega2;
   const nomeDia = sem.diasGalpao[dia === "1" ? 0 : 1];
+  const rotasDoDia = dia === "1" ? "rotas de segunda" : "rotas de terça";
 
   const cartoes: CartaoProdutor[] = cad.produtores
     .map((p) => ({
@@ -56,12 +57,12 @@ export default async function PaginaGalpao({ params }: PageProps<"/coop/semana/[
       </div>
       {faltas.length > 0 ? (
         <div className="erro">
-          <strong>Vai faltar nas escolas do {nomeDia.toLowerCase()}:</strong>{" "}
+          <strong>Vai faltar nas {rotasDoDia}:</strong>{" "}
           {faltas.map((f) => `${f.produto} (chegou ${kg(f.entregue)} de ${kg(f.pedido)} kg, cada escola recebe ${Math.round(f.fator * 100)}%)`).join("; ")}. O mapa de
           montagem já divide o que tem.
         </div>
       ) : (
-        <p className="ok">Com o que foi lançado até agora, dá para atender todas as escolas do {nomeDia.toLowerCase()}.</p>
+        <p className="ok">Com o que foi lançado até agora, dá para atender todas as escolas das {rotasDoDia}.</p>
       )}
       <Galpao data={data} dia={dia} cartoes={cartoes} caixa={cad.pesoCaixa} />
     </>

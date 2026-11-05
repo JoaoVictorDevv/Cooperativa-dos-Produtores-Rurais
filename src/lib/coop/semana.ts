@@ -74,6 +74,7 @@ export function novaSemana(
     custos: { ...(p.custosAnteriores ?? CUSTOS_ZERADOS) },
     rotas: structuredClone(cad.rotas),
     regraPrimeiroDia: "corrigida",
+    folhaSoNoDia: true, // MODELO v100
     mensagensEnviadas: {},
   };
 }
