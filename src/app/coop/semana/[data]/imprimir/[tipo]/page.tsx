@@ -8,6 +8,7 @@ import type { Cadastro, DiaRota, Semana } from "@/lib/coop/tipos";
 import { carregarSemana } from "../../../../dados";
 import { BotaoImprimir } from "../../../../ui";
 import { Excedente } from "../../Excedente";
+import { Reentregas, reentregasDoDia } from "../../Reentregas";
 
 export const metadata = { title: "Imprimir" };
 
@@ -25,6 +26,18 @@ export default async function Imprimir({ params, searchParams }: PageProps<"/coo
   else if (tipo === "mapa") {
     paisagem = true;
     conteudo = <MapaImpresso cad={cad} sem={sem} r={r} dia={um("dia") === "TER" ? "TER" : "SEG"} rota={um("rota")} />;
+  } else if (tipo === "dia") {
+    // Pacote do dia num clique: mapa das rotas + excedente + reentregas + romaneios das escolas, na ordem do mapa.
+    const d: DiaRota = um("dia") === "TER" ? "TER" : "SEG";
+    conteudo = (
+      <>
+        <style>{`.coop .folha.mapa, .coop .folha.excedente { page: paisagem; } @page paisagem { size: A4 landscape; margin: 10mm; }`}</style>
+        <MapaImpresso cad={cad} sem={sem} r={r} dia={d} />
+        <Reentregas cad={cad} sem={sem} r={r} dia={d} impresso />
+        <RomaneiosEscolas cad={cad} sem={sem} r={r} dia={d} />
+        <RomaneiosReentrega cad={cad} sem={sem} r={r} dia={d} />
+      </>
+    );
   } else if (tipo === "extratos") conteudo = <Extratos cad={cad} sem={sem} r={r} produtor={um("produtor")} vendidoAno={await vendidoNoAno(cad, sem)} />;
   else if (tipo === "paulo") conteudo = <ResumoPaulo cad={cad} sem={sem} r={r} />;
   else notFound();
@@ -211,12 +224,73 @@ function RomaneiosEscolas({ cad, sem, r, dia, rota }: P & { dia: DiaRota; rota?:
   );
 }
 
+// Romaneio de novo para as escolas em reentrega neste dia (mesmos números do mapa original).
+function RomaneiosReentrega({ cad, sem, r, dia }: P & { dia: DiaRota }) {
+  const lista = reentregasDoDia(cad, sem, dia);
+  if (!lista.length) return null;
+  return (
+    <>
+      {lista.map(({ codigo, re, escola }) => {
+        const e = escola!;
+        const itens = cad.produtos.filter((p) => (sem.pedidoEscolas[codigo]?.[p.nome] ?? 0) > 0);
+        return (
+          <div className="folha" key={`re-${codigo}`}>
+            <p className="discreto" style={{ margin: 0 }}>
+              REENTREGA ({re.motivo}) · {re.quando ?? ""}
+            </p>
+            <h3>Controle de entrega — escola</h3>
+            <p className="linha-cab">
+              <strong>ESCOLA:</strong> {e.nome}
+            </p>
+            <p className="linha-cab">
+              <strong>CÓDIGO:</strong> {e.codigo} &nbsp;|&nbsp; <strong>TELEFONE:</strong> {e.telefone || "—"}
+            </p>
+            <p className="linha-cab">
+              <strong>ENDEREÇO:</strong> {enderecoEscola(e.endereco, e.bairro)}
+            </p>
+            <p className="linha-cab">
+              <strong>SEMANA (REFERÊNCIA):</strong> {sem.referencia} &nbsp;|&nbsp; <strong>ENTREGA</strong> {sem.entrega}
+            </p>
+            <table>
+              <thead>
+                <tr>
+                  <th>PRODUTO</th>
+                  <th className="n">PEDIDO</th>
+                  <th className="n">ENVIADO</th>
+                </tr>
+              </thead>
+              <tbody>
+                {itens.map((p) => (
+                  <tr key={p.nome}>
+                    <td>{p.nome}</td>
+                    <td className="n">
+                      {kg2(sem.pedidoEscolas[codigo][p.nome])} {p.unidade}
+                    </td>
+                    <td className="n">{kg2(r.enviado[codigo]?.[p.nome] ?? 0)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="assina">
+              <strong>OBS:</strong>
+              <Linhas n={3} />
+              <p>DATA DA ENTREGA: ____/____/________</p>
+              <p>ASSINATURA RESPONSÁVEL: ______________________________________________</p>
+              <p>MATRÍCULA: ______________________________________</p>
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 function MapaImpresso({ cad, sem, r, dia, rota }: P & { dia: DiaRota; rota?: string }) {
   const rotas = sem.rotas.filter((x) => x.dia === dia && (!rota || x.id === rota));
   return (
     <>
       {rotas.map((ro) => {
-        const produtos = cad.produtos.filter((p) => ro.paradas.some((pa) => (r.enviado[pa.codigo]?.[p.nome] ?? 0) > 0.0001));
+        const produtos = r.ordemMapa.map((nome) => cad.produtos.find((p) => p.nome === nome)!).filter((p) => ro.paradas.some((pa) => (r.enviado[pa.codigo]?.[p.nome] ?? 0) > 0.0001));
         return (
           <div className="folha mapa" key={ro.id}>
             <h3>Mapa de montagem — {sem.referencia}</h3>
@@ -276,7 +350,7 @@ function MapaImpresso({ cad, sem, r, dia, rota }: P & { dia: DiaRota; rota?: str
           </div>
         );
       })}
-      {!rota && <Excedente cad={cad} r={r} impresso />}
+      {!rota && <Excedente dia={dia} ex={r.excedente[dia]} rotas={sem.rotas} unidade={(p) => cad.produtos.find((x) => x.nome === p)?.unidade ?? "kg"} impresso />}
     </>
   );
 }

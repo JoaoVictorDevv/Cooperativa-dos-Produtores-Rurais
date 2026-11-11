@@ -30,6 +30,7 @@ export default async function Nova() {
         diasSugeridos={["DOMINGO", "SEGUNDA"]}
         semanas={datas}
         produtos={cad.produtos.map((p) => p.nome)}
+        excecoes={Object.entries(cad.excecoesEscolas ?? {}).map(([codigo, ex]) => ({ codigo, nome: cad.escolas.find((e) => e.codigo === codigo)?.nome ?? codigo, ...ex }))}
       />
     </>
   );

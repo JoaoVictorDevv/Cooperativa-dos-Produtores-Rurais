@@ -1,62 +1,104 @@
 import { kg2 } from "@/lib/coop/numeros";
-import type { ResultadoSemana } from "@/lib/coop/motor";
-import type { Cadastro } from "@/lib/coop/tipos";
+import type { ExcedenteDia } from "@/lib/coop/motor";
+import type { DiaRota, Rota } from "@/lib/coop/tipos";
 
-// Lista de EXCEDENTE do MAPA DE MONTAGEM (MODELO v100, linhas 280–301):
-// o que chegou a mais e pode ir a mais nas escolas. Menos de 0,1 kg não
-// aparece (é só arredondamento), igual à planilha a partir da v101.
-export function Excedente({ cad, r, impresso = false }: { cad: Cadastro; r: ResultadoSemana; impresso?: boolean }) {
-  const linhas = cad.produtos
-    .map((p) => ({ p, e: r.entregaProduto[p.nome] }))
-    .filter(({ e }) => e.pedidoSeg + e.pedidoTer > 0);
-  const folha = (e: ResultadoSemana["entregaProduto"][string]) => e.planejado2 > 0.004;
-  const tabela = (
-    <table className={impresso ? undefined : "tabela"}>
-      <thead>
-        <tr>
-          <th>Nº</th>
-          <th>PRODUTO</th>
-          <th className="n">A MAIS NA SEGUNDA</th>
-          <th className="n">A MAIS NA TERÇA</th>
-        </tr>
-      </thead>
-      <tbody>
-        {linhas.map(({ p, e }, i) => (
-          <tr key={p.nome}>
-            <td>{i + 1}</td>
-            <td>
-              {p.nome} ({folha(e) ? "folha" : "legume"})
-            </td>
-            <td className="n">
-              <strong>{e.excedente1 >= 0.1 ? `${kg2(e.excedente1)} ${p.unidade}` : ""}</strong>
-            </td>
-            <td className="n">
-              <strong>{folha(e) ? (e.excedente2 >= 0.1 ? `${kg2(e.excedente2)} ${p.unidade}` : "") : "resto da segunda"}</strong>
-            </td>
+// EXCEDENTE do MAPA DE MONTAGEM (MODELO v100, 09/11): uma página por dia.
+// Folhas e repolho: soma no TOTAL de cada rota (1 a 4, sem a moto).
+// Legumes: um pouco em cada escola que já leva o produto (menos de 0,1 kg = "—").
+export function Excedente({ dia, ex, rotas, unidade, impresso = false }: { dia: DiaRota; ex: ExcedenteDia; rotas: Rota[]; unidade: (p: string) => string; impresso?: boolean }) {
+  const numeradas = rotas.filter((r) => r.dia === dia && /-\d+$/.test(r.id));
+  const nomeDia = dia === "SEG" ? "SEGUNDA" : "TERÇA";
+  const folhas = ex.folhas.filter((x) => x.total > 0.004);
+  const legumes = ex.legumes.filter((x) => x.total > 0.004);
+  const cls = impresso ? undefined : "tabela";
+  const corpo = (
+    <>
+      <p className={impresso ? "linha-cab" : "discreto"} style={impresso ? undefined : { margin: "6px 10px" }}>
+        FOLHAS e REPOLHO: soma no TOTAL da rota. LEGUME: põe em CADA ESCOLA que já tem o legume. Excedente de folha só depois que todos os produtores chegarem.
+      </p>
+      <table className={cls}>
+        <thead>
+          <tr>
+            <th>🥬 FOLHAS + REPOLHO</th>
+            <th className="n">TOTAL A MAIS</th>
+            {numeradas.map((r) => (
+              <th key={r.id} className="n">
+                ROTA {r.id.split("-")[1]}
+              </th>
+            ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {folhas.length === 0 && (
+            <tr>
+              <td colSpan={2 + numeradas.length} className="discreto">
+                nada a mais
+              </td>
+            </tr>
+          )}
+          {folhas.map((x) => (
+            <tr key={x.produto}>
+              <td>{x.produto}</td>
+              <td className="n">
+                <strong>
+                  {kg2(x.total)} {unidade(x.produto)}
+                </strong>
+              </td>
+              {numeradas.map((r) => (
+                <td key={r.id} className="n">
+                  {x.porRota[r.id] !== undefined && x.porRota[r.id] > 0.004 ? kg2(x.porRota[r.id]) : ""}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <table className={cls} style={{ marginTop: impresso ? 14 : 0 }}>
+        <thead>
+          <tr>
+            <th>🥔 LEGUMES</th>
+            <th className="n">TOTAL HOJE</th>
+            <th className="n">POR ESCOLA</th>
+            <th className="n">ESCOLAS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {legumes.length === 0 && (
+            <tr>
+              <td colSpan={4} className="discreto">
+                nada a mais
+              </td>
+            </tr>
+          )}
+          {legumes.map((x) => (
+            <tr key={x.produto}>
+              <td>{x.produto}</td>
+              <td className="n">
+                <strong>
+                  {kg2(x.total)} {unidade(x.produto)}
+                </strong>
+              </td>
+              <td className="n">{x.porEscola === null ? "" : x.porEscola < 0.1 ? "—" : <strong>{kg2(x.porEscola)}</strong>}</td>
+              <td className="n">{x.escolas || ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
   );
-  const texto =
-    "FOLHAS: vai TUDO, nada fica no galpão — o que chegou no 1º dia vai nas rotas de segunda, o que chegou no 2º dia vai nas rotas de terça. LEGUMES: é o que sobra depois de separar segunda e terça (pode ir em qualquer dia).";
   if (impresso)
     return (
-      <div className="folha">
-        <h3>Excedente — o que chegou a mais e pode ir a mais nas escolas</h3>
-        <p className="linha-cab">{texto}</p>
-        {tabela}
+      <div className="folha excedente">
+        <h3>
+          Excedente da {nomeDia} — pode ir A MAIS nas entregas de {nomeDia}
+        </h3>
+        {corpo}
       </div>
     );
   return (
     <section>
-      <div className="rota-titulo">EXCEDENTE — o que chegou a mais e pode ir a mais nas escolas</div>
-      <div className="rota-corpo rolar">
-        <p className="discreto" style={{ margin: "6px 10px" }}>
-          {texto}
-        </p>
-        {tabela}
-      </div>
+      <div className="rota-titulo">EXCEDENTE DA {nomeDia} — pode ir A MAIS nas entregas de {nomeDia.toLowerCase()}</div>
+      <div className="rota-corpo rolar">{corpo}</div>
     </section>
   );
 }

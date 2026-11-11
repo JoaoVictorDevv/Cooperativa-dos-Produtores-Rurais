@@ -3,6 +3,7 @@ import { kg } from "@/lib/coop/numeros";
 import { telefoneWhatsApp } from "@/lib/coop/mensagens";
 import { carregarCadastro } from "../dados";
 import { ImportarModelo, ImportarSemana } from "./Importar";
+import { Configuracoes, ExcecoesEscolas } from "./Configuracoes";
 
 export const metadata = { title: "Cadastro" };
 
@@ -16,7 +17,7 @@ export default async function Cadastro() {
         <code>{pastaDados()}</code>.
       </p>
       <div className="card">
-        <h2 style={{ marginTop: 0 }}>1. Trazer a planilha MODELO (v101)</h2>
+        <h2 style={{ marginTop: 0 }}>1. Trazer a planilha MODELO (v100 de 09/11)</h2>
         <ImportarModelo />
       </div>
       <div className="card">
@@ -26,6 +27,8 @@ export default async function Cadastro() {
       </div>
       {cad && (
         <>
+          <Configuracoes nome={cad.nomeCooperativa ?? ""} cidade={cad.cidade ?? ""} equipe={cad.equipe ?? []} />
+          <ExcecoesEscolas escolas={cad.escolas.map((e) => ({ codigo: e.codigo, nome: e.nome }))} produtos={cad.produtos.map((p) => p.nome)} excecoes={cad.excecoesEscolas ?? {}} />
           <div className="grade">
             <div className="numero">
               <small>Chamada / processo</small>

@@ -129,7 +129,8 @@
 .coop input.digita { background: var(--c-amarelo); border-color: var(--c-amarelo-borda); width: 92px; text-align: right; }
 .coop input.digita:focus { outline: 2px solid var(--c-verde-2); }
 .coop textarea { width: 100%; min-height: 90px; }
-.coop label.campo { display: grid; gap: 4px; font-size: 13.5px; color: var(--c-soft); }
+.coop label.campo,
+.coop div.campo { display: grid; gap: 4px; font-size: 13.5px; color: var(--c-soft); }
 .coop .aviso { background: var(--c-amarelo); border: 1px solid var(--c-amarelo-borda); border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
 .coop .erro { background: var(--c-vermelho-claro); border: 1px solid #e3a99e; color: #6e1f16; border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
 .coop .ok { background: var(--c-verde-claro); border: 1px solid #b8d6bf; border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
@@ -192,3 +193,25 @@
 .coop .folha.mapa th,
 .coop .folha.mapa td { padding: 2px 4px; }
 .coop .folha.mapa th { font-size: 9.5px; }
+.coop .folha.excedente table { font-size: 15px; }
+.coop .folha.excedente th,
+.coop .folha.excedente td { padding: 7px 9px; }
+
+/* Recebimento no galpão */
+.coop .recebimento { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; margin: 10px 0 6px; padding: 10px 12px; background: #f6f8f3; border-radius: 10px; }
+/* Celular: cada linha da tabela do galpão vira um cartão. */
+@media (max-width: 720px) {
+  .coop .galpao-tab thead { display: none; }
+  .coop .galpao-tab,
+  .coop .galpao-tab tbody,
+  .coop .galpao-tab tr,
+  .coop .galpao-tab td { display: block; width: 100%; }
+  .coop .galpao-tab tr { border: 1px solid var(--c-line); border-radius: 10px; padding: 8px 10px; margin-bottom: 10px; background: #fff; }
+  .coop .galpao-tab td { border: 0; padding: 4px 0; display: flex; justify-content: space-between; align-items: center; gap: 10px; text-align: right; }
+  .coop .galpao-tab td::before { content: attr(data-r); color: var(--c-soft); font-size: 12.5px; text-align: left; }
+  .coop .galpao-tab td[data-r="Produto"] { font-weight: 700; font-size: 16px; justify-content: flex-start; }
+  .coop .galpao-tab td[data-r="Produto"]::before { display: none; }
+  .coop .galpao-tab tr.cinza td { color: #9aa093; }
+  .coop input.digita { min-width: 96px; font-size: 17px; }
+  .coop .botao { min-height: 44px; }
+}

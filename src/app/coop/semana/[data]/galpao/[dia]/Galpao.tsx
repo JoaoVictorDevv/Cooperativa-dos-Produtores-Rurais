@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { arred, kg } from "@/lib/coop/numeros";
-import { salvarEntrega } from "../../../../acoes";
+import type { Recebimento } from "@/lib/coop/tipos";
+import { salvarEntrega, salvarRecebimento } from "../../../../acoes";
 import { Aviso, CampoNumero, lerNumero, mostrarNumero, useAcao } from "../../../../ui";
 
 export interface CartaoProdutor {
@@ -10,10 +11,11 @@ export interface CartaoProdutor {
   nome: string;
   curto: string;
   lancado: boolean;
+  recebimento: Recebimento | null;
   itens: { produto: string; unidade: string; planejado: number; entregue: number | null; extra: number | null }[];
 }
 
-export function Galpao({ data, dia, cartoes, caixa }: { data: string; dia: "1" | "2"; cartoes: CartaoProdutor[]; caixa: { grande: number; pequena: number } }) {
+export function Galpao({ data, dia, cartoes, caixa, equipe }: { data: string; dia: "1" | "2"; cartoes: CartaoProdutor[]; caixa: { grande: number; pequena: number }; equipe: string[] }) {
   const [busca, setBusca] = useState("");
   const [soPendentes, setSoPendentes] = useState(false);
   const lista = cartoes.filter((c) => (!soPendentes || !c.lancado) && c.nome.toLowerCase().includes(busca.toLowerCase()));
@@ -29,6 +31,11 @@ export function Galpao({ data, dia, cartoes, caixa }: { data: string; dia: "1" |
           {lancados} de {cartoes.length} lançados
         </span>
       </div>
+      <datalist id="equipe-galpao">
+        {equipe.map((n) => (
+          <option key={n} value={n} />
+        ))}
+      </datalist>
       {lista.map((c) => (
         <Cartao key={c.id} data={data} dia={dia} c={c} caixa={caixa} />
       ))}
@@ -46,6 +53,11 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
   );
   const { pendente, aviso, rodar } = useAcao();
   const visiveis = c.itens.filter((i) => todos || i.planejado > 0.004 || i.entregue !== null || i.extra !== null);
+  const [rec, setRec] = useState<Recebimento>({ hora: c.recebimento?.hora ?? "", conferente: c.recebimento?.conferente ?? "", qualidade: c.recebimento?.qualidade, obs: c.recebimento?.obs ?? "" });
+  const agora = () => {
+    const d = new Date();
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  };
 
   // Líquido = balança − caixas. Se o João digitou o líquido direto, vale o digitado.
   const liquido = (l: Linha): number | null => {
@@ -74,9 +86,14 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
       const e = lerNumero(l.extra);
       extras[i.produto] = e === null || Number.isNaN(e) || e === 0 ? null : e;
     }
+    // Conferência na chegada: se ninguém preencheu a hora, marca a hora de agora.
+    const recSalvar: Recebimento = modo === "naoVeio" ? {} : { ...rec, hora: rec.hora || agora() };
+    if (modo !== "naoVeio" && !rec.hora) setRec(recSalvar);
     rodar(async () => {
       const a = await salvarEntrega(data, dia, c.id, valores);
-      if (!a.ok || !comExtra) return a;
+      if (!a.ok) return a;
+      const b = await salvarRecebimento(data, dia, c.id, Object.keys(recSalvar).length ? recSalvar : null);
+      if (!b.ok || !comExtra) return b;
       return salvarEntrega(data, "extra", c.id, extras);
     }, modo === "naoVeio" ? "Marcado: não veio." : "Lançado.");
     if (modo !== "normal") {
@@ -95,7 +112,9 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
     <div className="card">
       <div className="botoes" style={{ justifyContent: "space-between" }}>
         <div>
-          <strong style={{ fontSize: 17 }}>{c.nome}</strong> {c.lancado ? <span className="etiqueta verde">lançado</span> : <span className="etiqueta amarela">falta lançar</span>}
+          <strong style={{ fontSize: 17 }}>{c.nome}</strong> {c.lancado ? <span className="etiqueta verde">lançado</span> : <span className="etiqueta amarela">falta lançar</span>}{" "}
+          {c.recebimento?.hora && <span className="etiqueta">chegou {c.recebimento.hora}{c.recebimento.conferente ? ` · ${c.recebimento.conferente}` : ""}</span>}{" "}
+          {c.recebimento?.qualidade === "ruim" && <span className="etiqueta vermelha">qualidade ruim</span>}
         </div>
         <div className="botoes nao-imprimir">
           <label className="discreto">
@@ -106,8 +125,38 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
           </label>
         </div>
       </div>
+      <div className="recebimento nao-imprimir">
+        <div className="campo">
+          <span>Chegou às</span>
+          <span className="botoes" style={{ gap: 4 }}>
+            <input type="time" value={rec.hora ?? ""} onChange={(e) => setRec({ ...rec, hora: e.target.value })} aria-label="Hora da chegada" style={{ width: 110 }} />
+            <button type="button" className="botao pequeno claro" onClick={() => setRec({ ...rec, hora: agora() })}>
+              agora
+            </button>
+          </span>
+        </div>
+        <label className="campo">
+          Quem conferiu
+          <input type="text" list="equipe-galpao" value={rec.conferente ?? ""} onChange={(e) => setRec({ ...rec, conferente: e.target.value })} placeholder="nome" style={{ width: 150 }} />
+        </label>
+        <div className="campo">
+          <span>Qualidade</span>
+          <span className="botoes" style={{ gap: 4 }}>
+            <button type="button" className={`botao pequeno ${rec.qualidade === "ok" ? "" : "claro"}`} onClick={() => setRec({ ...rec, qualidade: rec.qualidade === "ok" ? undefined : "ok" })}>
+              OK
+            </button>
+            <button type="button" className={`botao pequeno ${rec.qualidade === "ruim" ? "" : "perigo"}`} style={rec.qualidade === "ruim" ? { background: "var(--c-vermelho)", borderColor: "var(--c-vermelho)" } : undefined} onClick={() => setRec({ ...rec, qualidade: rec.qualidade === "ruim" ? undefined : "ruim" })}>
+              Ruim
+            </button>
+          </span>
+        </div>
+        <label className="campo" style={{ flex: 1, minWidth: 180 }}>
+          Observação
+          <input type="text" value={rec.obs ?? ""} onChange={(e) => setRec({ ...rec, obs: e.target.value })} placeholder="ex.: deixou na porta, folha murcha" />
+        </label>
+      </div>
       <div className="rolar">
-        <table className="tabela">
+        <table className="tabela galpao-tab">
           <thead>
             <tr>
               <th>Produto</th>
@@ -129,20 +178,20 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
               const set = (campo: keyof Linha) => (t: string) => setV({ ...v, [i.produto]: { ...l, [campo]: t } });
               return (
                 <tr key={i.produto} className={i.planejado <= 0.004 ? "cinza" : undefined}>
-                  <td>{i.produto}</td>
-                  <td className="n">
+                  <td data-r="Produto">{i.produto}</td>
+                  <td className="n" data-r="Pedido do dia">
                     <strong>{kg(i.planejado)}</strong> {i.unidade}
                   </td>
-                  <td className="n">
+                  <td className="n" data-r="Balança (kg)">
                     <CampoNumero rotulo={`Balança ${i.produto}`} valor={l.balanca} aoMudar={set("balanca")} largura={84} />
                   </td>
-                  <td className="n">
+                  <td className="n" data-r={`Cx grandes (${caixa.grande} kg)`}>
                     <CampoNumero rotulo={`Caixas grandes ${i.produto}`} valor={l.grandes} aoMudar={set("grandes")} largura={56} />
                   </td>
-                  <td className="n">
+                  <td className="n" data-r={`Cx pequenas (${caixa.pequena} kg)`}>
                     <CampoNumero rotulo={`Caixas pequenas ${i.produto}`} valor={l.pequenas} aoMudar={set("pequenas")} largura={56} />
                   </td>
-                  <td className="n">
+                  <td className="n" data-r="Entregou (líquido)">
                     {temBalanca ? (
                       <strong>{kg(x ?? 0)}</strong>
                     ) : (
@@ -150,11 +199,11 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
                     )}
                   </td>
                   {comExtra && (
-                    <td className="n">
+                    <td className="n" data-r="Extra">
                       <CampoNumero rotulo={`Extra ${i.produto}`} valor={l.extra} aoMudar={set("extra")} largura={70} />
                     </td>
                   )}
-                  <td className="n">
+                  <td className="n" data-r="Diferença">
                     {x === null ? (
                       <span className="discreto">veio o pedido</span>
                     ) : Math.abs(dif) < 0.005 ? (

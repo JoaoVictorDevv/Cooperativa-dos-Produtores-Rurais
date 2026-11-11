@@ -16,6 +16,8 @@ export default async function PaginaRetornos({ params }: PageProps<"/coop/semana
         nome: nomes.get(pa.codigo) ?? pa.nomeMapa,
         nomeMapa: pa.nomeMapa,
         parada: `${pa.par}${pa.sub}`,
+        rotaId: ro.id,
+        reentrega: sem.reentregas?.[pa.codigo] ?? null,
         itens: cad.produtos
           .filter((p) => (sem.pedidoEscolas[pa.codigo]?.[p.nome] ?? 0) > 0)
           .map((p) => {

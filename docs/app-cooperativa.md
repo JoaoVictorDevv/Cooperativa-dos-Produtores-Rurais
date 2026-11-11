@@ -1,6 +1,6 @@
 # App da Cooperativa (modo local)
 
-Uma planilha mais limpa: mesmas contas da MODELO v101, em telas.
+Uma planilha mais limpa: mesmas contas da MODELO v100 (09/11/2026), em telas.
 
 ## Abrir
 
@@ -21,11 +21,12 @@ Sem login: só abre no próprio computador.
 | Perguntar a previsão e montar a tabela da nutricionista | Previsão |
 | Pedido da Prefeitura: cortes por produto × modalidade | Nova semana |
 | Divisão entre produtores e mensagens do WhatsApp (wa.me) | 1. Pedido e mensagens |
-| O que cada produtor trouxe (balança, caixas 4 kg / 2 kg) | 2 e 3. Galpão |
-| Mapa de montagem e romaneios (escolas na ordem da rota) | 4. Mapa e romaneios |
-| Faltas e recusas das escolas (tela ou texto: `1005 não veio cheiro verde`) | 5. Retornos |
+| O que cada produtor trouxe (balança, caixas 4 kg / 2 kg), quem conferiu, hora, qualidade | 2 e 3. Galpão (funciona no celular) |
+| Mapa de montagem (colunas na ordem da planilha), EXCEDENTE do dia, reentregas e romaneios; botão **Tudo do dia** imprime mapa + excedente + romaneios de uma vez | 4. Mapa e romaneios |
+| Faltas e recusas das escolas (busca por código/nome, tela ou texto: `1005 não veio cheiro verde`); escola fechada → **reentrega** outro dia/rota com o mesmo romaneio | 5. Retornos |
 | Conferência da Prefeitura, custos, extratos, resumo do Paulo | 6. Fechamento |
 | Mês a mês, perdas, vendido por produtor (R$ 40 mil só informação) | Relatórios |
+| Nome da cooperativa, equipe do galpão, escolas que não recebem (ex.: não faz almoço) | Cadastro |
 
 Impressão: os botões 🖨 abrem a folha pronta; no navegador, Imprimir ou
 "Salvar como PDF".
@@ -37,3 +38,8 @@ Impressão: os botões 🖨 abrem a folha pronta; no navegador, Imprimir ou
 - Galpão: em branco = veio o pedido do dia (o app grava o planejado; a
   planilha pagaria 0).
 - Trouxe a mais: a sobra não é paga. Extra (complemento) segue a regra do `_EXTRA`.
+- v100 (04/11): folha não dorme no galpão — rotas de terça usam só o que chegou
+  no 2º dia. EXCEDENTE: folhas e repolho por rota (1 a 4), legumes por escola
+  (metade segunda, metade terça); menos de 0,1 kg por escola vira "—".
+- Ajustes feitos no app (nome, equipe, escolas que não recebem) ficam guardados
+  quando o MODELO é trazido de novo.

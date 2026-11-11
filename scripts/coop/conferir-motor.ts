@@ -73,20 +73,54 @@ async function main() {
     for (const [linha, nosso] of linhas) conf("4 entrega por dia (_ENTREGA)", `${p.nome} linha ${linha}`, nosso, val("_ENTREGA", [linha, col]));
   });
 
-  // v100: lista de EXCEDENTE no MAPA DE MONTAGEM (linhas 283 em diante).
+  // v100 (09/11): EXCEDENTE no MAPA DE MONTAGEM, uma página por dia.
+  // Segunda: folhas+repolho 283–301 (E total, G/I/K/M rotas), legumes 304–322 (E total, G por escola).
+  // Terça: 328–346 e 349–367.
   const bruto = (aba: string, linha: number, coluna: number): unknown => {
     const v = wb.getWorksheet(aba)?.getCell(linha, coluna).value as unknown;
-    return v && typeof v === "object" && "result" in (v as object) ? (v as { result: unknown }).result : v;
+    if (v && typeof v === "object") return "result" in (v as object) ? (v as { result: unknown }).result : ""; // fórmula sem resultado = vazio
+    return v;
   };
-  if (String(bruto("MAPA DE MONTAGEM", 280, 1) ?? "").startsWith("EXCEDENTE")) {
-    for (let linha = 283; linha <= 301; linha++) {
-      const nome = String(bruto("MAPA DE MONTAGEM", linha, 4) ?? "").replace(/ \((folha|legume)\)$/, "");
-      const e = r.entregaProduto[nome];
-      if (!nome || !e) continue;
-      conf("12 excedente (mapa)", `${nome} segunda`, e.excedente1, val("MAPA DE MONTAGEM", [linha, 5]));
-      const ter = bruto("MAPA DE MONTAGEM", linha, 7);
-      if (typeof ter === "number") conf("12 excedente (mapa)", `${nome} terça`, e.excedente2, ter);
+  if (String(bruto("MAPA DE MONTAGEM", 280, 1) ?? "").startsWith("EXCEDENTE DA SEGUNDA")) {
+    for (const [dia, l0] of [["SEG", 283], ["TER", 328]] as const) {
+      const ex = r.excedente[dia];
+      const rotas = semana.rotas.filter((x) => x.dia === dia && /-\d+$/.test(x.id));
+      for (let k = 0; k < 19; k++) {
+        const nome = String(bruto("MAPA DE MONTAGEM", l0 + k, 4) ?? "");
+        if (!nome) continue;
+        const item = ex.folhas.find((x) => x.produto === nome);
+        if (!item) {
+          conf(`12 excedente ${dia}`, `${nome} (folha) não está no app`, -1, 0);
+          continue;
+        }
+        conf(`12 excedente ${dia}`, `${nome} total`, item.total, val("MAPA DE MONTAGEM", [l0 + k, 5]));
+        rotas.forEach((rt, i) => {
+          const v = bruto("MAPA DE MONTAGEM", l0 + k, 7 + 2 * i);
+          if (typeof v === "number") conf(`12 excedente ${dia}`, `${nome} ${rt.id}`, item.porRota[rt.id] ?? 0, v);
+        });
+      }
+      for (let k = 0; k < 19; k++) {
+        const nome = String(bruto("MAPA DE MONTAGEM", l0 + 21 + k, 4) ?? "");
+        if (!nome) continue;
+        const item = ex.legumes.find((x) => x.produto === nome);
+        if (!item) {
+          conf(`12 excedente ${dia}`, `${nome} (legume) não está no app`, -1, 0);
+          continue;
+        }
+        conf(`12 excedente ${dia}`, `${nome} total`, item.total, val("MAPA DE MONTAGEM", [l0 + 21 + k, 5]));
+        const v = bruto("MAPA DE MONTAGEM", l0 + 21 + k, 7);
+        if (typeof v === "number") conf(`12 excedente ${dia}`, `${nome} por escola`, item.porEscola ?? 0, v);
+        else if (v === "—") conf(`12 excedente ${dia}`, `${nome} por escola (—)`, (item.porEscola ?? 0) < 0.1 ? 0 : 1, 0);
+      }
     }
+    // Ordem das colunas do mapa (linha 9, F..X), só produtos com pedido.
+    const colunas: string[] = [];
+    for (let c = 6; c <= 24; c++) {
+      const v = String(bruto("MAPA DE MONTAGEM", 9, c) ?? "");
+      if (v) colunas.push(v);
+    }
+    const nossa = r.ordemMapa.filter((p) => r.resumo.produtos.find((x) => x.produto === p)!.pedido > 0);
+    conf("13 ordem das colunas do mapa", colunas.join(" > ") + " × " + nossa.join(" > "), colunas.join("|") === nossa.join("|") ? 1 : 0, 1);
   }
 
   for (const esc of cadastro.escolas) {

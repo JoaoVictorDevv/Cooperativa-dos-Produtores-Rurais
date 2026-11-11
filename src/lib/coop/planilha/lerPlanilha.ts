@@ -150,6 +150,16 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
     atual.paradas.push(parada);
   }
 
+  // Ordem das colunas do MAPA DE MONTAGEM (_MAPA linha 256: "=P255" → coluna P = 11º produto).
+  const ordemMapa: string[] = [];
+  for (let c = 6; c <= 24; c++) {
+    const f = formula(mapa.getCell(256, c)) ?? "";
+    const letra = /^=?\$?([A-Z]+)\$?255$/.exec(f.replace(/\s/g, ""))?.[1];
+    if (!letra) continue;
+    const idx = letra.charCodeAt(0) - "F".charCodeAt(0);
+    if (produtos[idx]) ordemMapa.push(produtos[idx].nome);
+  }
+
   // Mapa de Produção: qual linha vale para cada produto × produtor (_AUX_DIVISAO, coluna C).
   const aux = aba("_AUX_DIVISAO");
   const mp = aba("MAPA DE PRODUÇÃO");
@@ -187,6 +197,7 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
     capacidade,
     motivos,
     pesoCaixa: { grande: 4, pequena: 2 },
+    ordemMapa: ordemMapa.length === produtos.length ? ordemMapa : produtos.map((p) => p.nome),
   };
 
   // ---- O que foi digitado na semana ----

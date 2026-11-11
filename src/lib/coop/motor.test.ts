@@ -128,8 +128,11 @@ describe("semana inteira", () => {
     expect(e.disponivel2).toBe(10);
     expect(e.fator2).toBe(0.5);
     expect(v100.enviado["3"]["Alface lisa"]).toBe(10);
-    expect(e.excedente1).toBe(10);
-    expect(e.excedente2).toBe(0);
+    // EXCEDENTE: alface (folha) sobra 10 na segunda, nada na terça; vai por rota.
+    expect(v100.excedente.SEG.folhas.find((x) => x.produto === "Alface lisa")).toMatchObject({ tipo: "folha", total: 10, porRota: { "SEG-1": 10 } });
+    expect(v100.excedente.TER.folhas.find((x) => x.produto === "Alface lisa")?.total).toBe(0);
+    // Beterraba (legume): 20 pedidos, 20 entregues → nada sobra; é por escola.
+    expect(v100.excedente.SEG.legumes.find((x) => x.produto === "Beterraba")).toMatchObject({ tipo: "legume", total: 0, escolas: 1 });
     // Legume (beterraba, um dia só) continua igual nas duas regras.
     expect(v100.entregaProduto.Beterraba.disponivel2).toBe(antiga.entregaProduto.Beterraba.disponivel2);
   });

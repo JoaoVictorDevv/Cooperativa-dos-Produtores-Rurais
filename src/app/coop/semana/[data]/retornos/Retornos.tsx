@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import { kg } from "@/lib/coop/numeros";
 import { lerRetornos, type MudancaRetorno } from "@/lib/coop/retornos";
-import type { Motivo, RetornoEscola } from "@/lib/coop/tipos";
-import { marcarRomaneiosConferidos, salvarRetornos } from "../../../acoes";
+import type { Motivo, Reentrega, RetornoEscola } from "@/lib/coop/tipos";
+import { marcarRomaneiosConferidos, salvarReentrega, salvarRetornos } from "../../../acoes";
 import { Aviso, CampoNumero, lerNumero, mostrarNumero, useAcao } from "../../../ui";
 
 interface Item {
@@ -20,6 +20,8 @@ interface EscolaRetorno {
   nome: string;
   nomeMapa: string;
   parada: string;
+  rotaId: string;
+  reentrega: Reentrega | null;
   itens: Item[];
 }
 export interface RotaRetorno {
@@ -30,11 +32,46 @@ export interface RotaRetorno {
 
 export function Retornos({ data, rotas, produtos, motivos, conferidos }: { data: string; rotas: RotaRetorno[]; produtos: string[]; motivos: Motivo[]; conferidos: boolean }) {
   const [aberta, setAberta] = useState<string | null>(null);
+  const [busca, setBusca] = useState("");
   const conferir = useAcao();
   const todas = useMemo(() => rotas.flatMap((r) => r.escolas), [rotas]);
   const comProblema = todas.filter((e) => e.itens.some((i) => i.retorno)).length;
+  const reentregas = todas.filter((e) => e.reentrega && !e.reentrega.feita);
+  const semAcento = (t: string) => t.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const achadas = busca.trim().length >= 2 ? todas.filter((e) => e.codigo.startsWith(busca.trim()) || semAcento(e.nome).includes(semAcento(busca)) || semAcento(e.nomeMapa).includes(semAcento(busca))).slice(0, 8) : [];
+  const rotasCurtas = rotas.map((r) => ({ id: r.id, nome: r.titulo.split(" — ")[1]?.split(" · ").slice(0, 2).join(" · ") ?? r.id }));
   return (
     <>
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>Escolher a escola</h3>
+        <input type="text" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Código ou nome da escola…" style={{ width: "100%", maxWidth: 420 }} aria-label="Procurar escola" />
+        {achadas.length > 0 && (
+          <div className="botoes" style={{ marginTop: 8 }}>
+            {achadas.map((e) => (
+              <button
+                key={e.codigo}
+                type="button"
+                className="botao pequeno claro"
+                onClick={() => {
+                  setAberta(`${e.rotaId}|${e.codigo}`);
+                  setBusca("");
+                  setTimeout(() => document.getElementById(`escola-${e.codigo}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+                }}
+              >
+                {e.codigo} · {e.nomeMapa}
+              </button>
+            ))}
+          </div>
+        )}
+        {busca.trim().length >= 2 && achadas.length === 0 && <p className="discreto">Nenhuma escola com pedido nesta semana bate com “{busca}”.</p>}
+      </div>
+      {reentregas.length > 0 && (
+        <p className="aviso">
+          <strong>Reentregas pendentes:</strong>{" "}
+          {reentregas.map((e) => `${e.nomeMapa} (${e.reentrega!.motivo.toLowerCase()} → ${e.reentrega!.dia === "OUTRO" ? e.reentrega!.quando || "outro dia" : e.reentrega!.dia === "SEG" ? "segunda" : "terça"}, ${rotasCurtas.find((r) => r.id === e.reentrega!.rota)?.nome ?? e.reentrega!.rota})`).join("; ")}.
+          Elas aparecem no mapa do dia escolhido com o mesmo romaneio.
+        </p>
+      )}
       <Atalho data={data} escolas={todas} produtos={produtos} />
       <div className="card botoes" style={{ justifyContent: "space-between" }}>
         <span>
@@ -74,6 +111,7 @@ export function Retornos({ data, rotas, produtos, motivos, conferidos }: { data:
                       aberto={aberto}
                       alternar={() => setAberta(aberto ? null : `${ro.id}|${e.codigo}`)}
                       motivos={motivos}
+                      rotas={rotasCurtas}
                     />
                   );
                 })}
@@ -102,6 +140,7 @@ function FragmentoEscola({
   aberto,
   alternar,
   motivos,
+  rotas,
 }: {
   data: string;
   e: EscolaRetorno;
@@ -109,22 +148,27 @@ function FragmentoEscola({
   aberto: boolean;
   alternar: () => void;
   motivos: Motivo[];
+  rotas: { id: string; nome: string }[];
 }) {
   return (
     <>
-      <tr className="escola-linha" onClick={alternar}>
+      <tr className="escola-linha" onClick={alternar} id={`escola-${e.codigo}`}>
         <td style={{ width: 44 }}>{e.parada}</td>
         <td style={{ width: 70 }}>{e.codigo}</td>
         <td>
           <strong>{e.nomeMapa}</strong>
         </td>
-        <td>{problemas.length ? <span className="etiqueta vermelha">{problemas.map(resumoRetorno).join(" · ")}</span> : <span className="etiqueta verde">ok</span>}</td>
+        <td>
+          {problemas.length ? <span className="etiqueta vermelha">{problemas.map(resumoRetorno).join(" · ")}</span> : !e.reentrega ? <span className="etiqueta verde">ok</span> : null}{" "}
+          {e.reentrega && <span className={`etiqueta ${e.reentrega.feita ? "verde" : "amarela"}`}>{e.reentrega.feita ? "reentregue" : `reentrega: ${e.reentrega.motivo.toLowerCase()}`}</span>}
+        </td>
         <td className="direita">{aberto ? "▲" : "▼"}</td>
       </tr>
       {aberto && (
         <tr>
           <td colSpan={5} style={{ background: "#fbfbf7" }}>
             <EditorEscola data={data} e={e} motivos={motivos} />
+            <ReentregaEscola data={data} e={e} rotas={rotas} />
           </td>
         </tr>
       )}
@@ -238,6 +282,83 @@ function EditorEscola({ data, e, motivos }: { data: string; e: EscolaRetorno; mo
       </div>
       <Aviso aviso={aviso} />
     </>
+  );
+}
+
+// Escola fechada no dia: volta e vai outro dia, por outra rota ou pela moto, com o mesmo romaneio.
+function ReentregaEscola({ data, e, rotas }: { data: string; e: EscolaRetorno; rotas: { id: string; nome: string }[] }) {
+  const atual = e.reentrega;
+  const [aberto, setAberto] = useState(Boolean(atual));
+  const [re, setRe] = useState<Reentrega>(atual ?? { motivo: "Escola fechada", dia: e.rotaId.startsWith("SEG") ? "TER" : "SEG", rota: "", quando: "", feita: false });
+  const { pendente, aviso, rodar } = useAcao();
+  if (!aberto)
+    return (
+      <div className="botoes" style={{ marginTop: 10 }}>
+        <button type="button" className="botao claro pequeno" onClick={() => setAberto(true)}>
+          Escola fechada / não recebeu → marcar reentrega
+        </button>
+      </div>
+    );
+  const rotasDoDia = rotas.filter((r) => (re.dia === "OUTRO" ? true : r.id.startsWith(re.dia)));
+  return (
+    <div style={{ marginTop: 12, padding: 10, border: "1px dashed var(--c-amarelo-borda)", borderRadius: 10, background: "var(--c-amarelo)" }}>
+      <strong>Reentrega</strong> <span className="discreto">— a escola recebe depois, com o mesmo romaneio; a semana não muda.</span>
+      <div className="botoes" style={{ marginTop: 8, alignItems: "flex-end" }}>
+        <label className="campo">
+          Motivo
+          <select value={re.motivo} onChange={(ev) => setRe({ ...re, motivo: ev.target.value })}>
+            <option>Escola fechada</option>
+            <option>Ninguém para receber</option>
+            <option>Caminhão não passou</option>
+            <option>Outro</option>
+          </select>
+        </label>
+        <label className="campo">
+          Vai de novo
+          <select value={re.dia} onChange={(ev) => setRe({ ...re, dia: ev.target.value as Reentrega["dia"], rota: "" })}>
+            <option value="SEG">segunda (rotas de segunda)</option>
+            <option value="TER">terça (rotas de terça)</option>
+            <option value="OUTRO">outro dia</option>
+          </select>
+        </label>
+        <label className="campo">
+          Por qual rota
+          <select value={re.rota} onChange={(ev) => setRe({ ...re, rota: ev.target.value })}>
+            <option value="">— escolher —</option>
+            {rotasDoDia.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.id.endsWith("MOTOBOY") ? "Motoboy" : r.nome}
+              </option>
+            ))}
+            <option value="MOTO">Moto (avulso)</option>
+            <option value="CARRO">Carro da cooperativa</option>
+          </select>
+        </label>
+        <label className="campo">
+          Quando / observação
+          <input type="text" value={re.quando ?? ""} onChange={(ev) => setRe({ ...re, quando: ev.target.value })} placeholder="ex.: quarta 12/11 de manhã" style={{ width: 200 }} />
+        </label>
+        <label className="discreto">
+          <input type="checkbox" checked={re.feita} onChange={(ev) => setRe({ ...re, feita: ev.target.checked })} /> já foi entregue
+        </label>
+      </div>
+      <div className="botoes" style={{ marginTop: 8 }}>
+        <button type="button" className="botao pequeno" disabled={pendente || !re.rota} onClick={() => rodar(() => salvarReentrega(data, e.codigo, re), "Reentrega marcada.")}>
+          {pendente ? "Salvando…" : "Salvar reentrega"}
+        </button>
+        {atual && (
+          <button type="button" className="botao pequeno perigo" disabled={pendente} onClick={() => rodar(() => salvarReentrega(data, e.codigo, null), "Reentrega tirada.", () => setAberto(false))}>
+            Tirar reentrega
+          </button>
+        )}
+        {!atual && (
+          <button type="button" className="botao pequeno claro" onClick={() => setAberto(false)}>
+            Cancelar
+          </button>
+        )}
+      </div>
+      <Aviso aviso={aviso} />
+    </div>
   );
 }
 

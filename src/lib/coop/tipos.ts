@@ -44,6 +44,13 @@ export interface Rota {
   paradas: Parada[];
 }
 
+// Escola que não recebe (ex.: 8003 não faz almoço) — avisar a nutrição.
+export interface ExcecaoEscola {
+  naoRecebe: boolean; // true = não recebe nada
+  produtos?: string[]; // ou só estes produtos
+  motivo: string;
+}
+
 export interface Motivo {
   codigo: string;
   texto: string;
@@ -61,6 +68,13 @@ export interface Cadastro {
   capacidade: Record<string, Record<string, number[]>>; // produto → produtor → 12 meses
   motivos: Motivo[];
   pesoCaixa: { grande: number; pequena: number };
+  // Ordem das colunas do MAPA DE MONTAGEM (_MAPA linha 256; v100: chuchu primeiro, espinafre por último).
+  ordemMapa?: string[];
+  // Ajustes feitos no app (não vêm do MODELO; são mantidos quando o MODELO é trazido de novo).
+  nomeCooperativa?: string;
+  cidade?: string;
+  equipe?: string[]; // quem confere no galpão
+  excecoesEscolas?: Record<string, ExcecaoEscola>;
 }
 
 export type PorProdutorProduto = Record<string, Record<string, number>>; // produtor → produto → kg
@@ -70,6 +84,23 @@ export interface RetornoEscola {
   rejeitado?: number;
   motivo?: string; // código do motivo
   situacao?: string; // "Encerrada sem atendimento"
+}
+
+// Conferência na chegada do produtor ao galpão (quem recebeu, hora, qualidade).
+export interface Recebimento {
+  hora?: string; // "09:40"
+  conferente?: string;
+  qualidade?: "ok" | "ruim";
+  obs?: string;
+}
+
+// Escola fechada no dia: vai outro dia, por outra rota, com o mesmo romaneio.
+export interface Reentrega {
+  motivo: string; // "Escola fechada"
+  dia: DiaRota | "OUTRO"; // em que dia vai de novo
+  rota: string; // id da rota ("TER-2", "SEG-MOTOBOY") ou texto livre
+  quando?: string; // data/observação
+  feita: boolean;
 }
 
 export interface Custos {
@@ -112,4 +143,6 @@ export interface Semana {
   folhaSoNoDia?: boolean;
   atualizadoEm?: string;
   mensagensEnviadas?: Record<string, string>; // produtor → data/hora em que o botão foi usado
+  recebimento?: { "1": Record<string, Recebimento>; "2": Record<string, Recebimento> }; // dia → produtor
+  reentregas?: Record<string, Reentrega>; // código da escola
 }

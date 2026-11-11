@@ -23,7 +23,15 @@ type Lido = {
   previsao: Record<string, number> | null;
 };
 
-export function NovaSemana(p: { dataSugerida: string; entregaSugerida: number; diasSugeridos: [string, string]; semanas: string[]; produtos: string[] }) {
+interface Excecao {
+  codigo: string;
+  nome: string;
+  naoRecebe: boolean;
+  produtos?: string[];
+  motivo: string;
+}
+
+export function NovaSemana(p: { dataSugerida: string; entregaSugerida: number; diasSugeridos: [string, string]; semanas: string[]; produtos: string[]; excecoes: Excecao[] }) {
   const router = useRouter();
   const [data, setData] = useState(p.dataSugerida);
   const [entrega, setEntrega] = useState(String(p.entregaSugerida));
@@ -31,21 +39,37 @@ export function NovaSemana(p: { dataSugerida: string; entregaSugerida: number; d
   const [lido, setLido] = useState<Lido | null>(null);
   const [cortes, setCortes] = useState<Set<string>>(new Set());
   const [substituir, setSubstituir] = useState(false);
+  const [manter, setManter] = useState<Set<string>>(new Set());
   const leitura = useAcao();
   const criacao = useAcao();
+
+  // Escolas do cadastro "não recebe" que vieram no pedido: saem, a não ser que o João marque para manter.
+  const excecoesNoPedido = useMemo(() => {
+    if (!lido) return [];
+    return p.excecoes
+      .map((ex) => {
+        const linhas = lido.linhas.filter((l) => l.codigo === ex.codigo && (ex.naoRecebe || ex.produtos?.includes(l.produto)));
+        return { ...ex, kg: linhas.reduce((s, l) => s + l.kg, 0), itens: [...new Set(linhas.map((l) => l.produto))] };
+      })
+      .filter((ex) => ex.kg > 0);
+  }, [lido, p.excecoes]);
+  const tiradaPorExcecao = (l: LinhaPedido) => {
+    const ex = p.excecoes.find((x) => x.codigo === l.codigo);
+    return Boolean(ex && !manter.has(l.codigo) && (ex.naoRecebe || ex.produtos?.includes(l.produto)));
+  };
 
   const tabela = useMemo(() => {
     if (!lido) return [];
     return p.produtos
       .map((produto) => {
         const porMod = Object.fromEntries(MODALIDADES.map((m) => [m, 0])) as Record<string, number>;
-        for (const l of lido.linhas) if (l.produto === produto) porMod[l.modalidade] += l.kg;
+        for (const l of lido.linhas) if (l.produto === produto && !tiradaPorExcecao(l)) porMod[l.modalidade] += l.kg;
         const total = Object.values(porMod).reduce((a, b) => a + b, 0);
         const fica = MODALIDADES.reduce((s, m) => s + (cortes.has(`${m}|${produto}`) ? 0 : porMod[m]), 0);
         return { produto, porMod, total, fica, previsao: lido.previsao?.[produto] ?? null, prefeitura: lido.totalPrefeitura[produto] ?? null };
       })
       .filter((x) => x.total > 0);
-  }, [lido, cortes, p.produtos]);
+  }, [lido, cortes, p.produtos, manter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalFica = tabela.reduce((s, x) => s + x.fica, 0);
   const totalPedido = tabela.reduce((s, x) => s + x.total, 0);
@@ -127,6 +151,7 @@ export function NovaSemana(p: { dataSugerida: string; entregaSugerida: number; d
               </p>
             )}
             {lido.semCodigo.length > 0 && <p className="aviso">Linhas sem código de escola (ficam de fora): {lido.semCodigo.join("; ")}</p>}
+            {excedentesAviso(excecoesNoPedido, manter, setManter)}
             <h3>Cortes da nutricionista</h3>
             <p className="discreto">Clique no número para cortar aquele produto daquela modalidade (fica riscado). Ex.: 26/10 cortou cenoura da CEI e cheiro verde da CEI e da Integral.</p>
             <div className="rolar">
@@ -225,6 +250,7 @@ export function NovaSemana(p: { dataSugerida: string; entregaSugerida: number; d
                       linhas: lido.linhas,
                       cortes: [...cortes],
                       substituir,
+                      manterEscolas: [...manter],
                     }),
                   "Semana criada.",
                   (r) => "data" in r && router.push(`/coop/semana/${r.data}/pedido`),
@@ -238,5 +264,38 @@ export function NovaSemana(p: { dataSugerida: string; entregaSugerida: number; d
         </div>
       )}
     </>
+  );
+}
+
+function excedentesAviso(
+  lista: { codigo: string; nome: string; naoRecebe: boolean; motivo: string; kg: number; itens: string[] }[],
+  manter: Set<string>,
+  setManter: (s: Set<string>) => void,
+) {
+  if (!lista.length) return null;
+  return (
+    <div className="aviso">
+      <strong>Escolas que não recebem (avisar a nutrição):</strong>
+      <ul style={{ margin: "6px 0 0" }}>
+        {lista.map((ex) => (
+          <li key={ex.codigo}>
+            {ex.codigo} · {ex.nome}: {ex.naoRecebe ? "não recebe nada" : `sem ${ex.itens.join(", ")}`} ({kg(ex.kg)} kg){ex.motivo ? ` — ${ex.motivo}` : ""}.{" "}
+            <label className="discreto">
+              <input
+                type="checkbox"
+                checked={manter.has(ex.codigo)}
+                onChange={(e) => {
+                  const n = new Set(manter);
+                  if (e.target.checked) n.add(ex.codigo);
+                  else n.delete(ex.codigo);
+                  setManter(n);
+                }}
+              />{" "}
+              manter nesta semana
+            </label>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

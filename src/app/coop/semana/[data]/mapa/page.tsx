@@ -3,6 +3,7 @@ import { kg } from "@/lib/coop/numeros";
 import type { DiaRota } from "@/lib/coop/tipos";
 import { carregarSemana } from "../../../dados";
 import { Excedente } from "../Excedente";
+import { Reentregas } from "../Reentregas";
 
 export const metadata = { title: "Mapa de montagem" };
 
@@ -15,6 +16,9 @@ export default async function Mapa({ params, searchParams }: PageProps<"/coop/se
   const rotas = sem.rotas.filter((x) => x.dia === dia);
   const nomeDia = (d: DiaRota) => (sem.rotas.find((x) => x.dia === d)?.titulo.split(" — ")[0] ?? (d === "SEG" ? "1º dia" : "2º dia")).toLowerCase();
   const galpao = dia === "SEG" ? sem.diasGalpao[0] : sem.diasGalpao[1];
+  const unidade = (p: string) => cad.produtos.find((x) => x.nome === p)?.unidade ?? "kg";
+  // Colunas na ordem do mapa da planilha (v100: chuchu primeiro, espinafre por último).
+  const produtosMapa = r.ordemMapa.map((nome) => cad.produtos.find((p) => p.nome === nome)!).filter(Boolean);
 
   return (
     <>
@@ -27,11 +31,14 @@ export default async function Mapa({ params, searchParams }: PageProps<"/coop/se
           ))}
         </nav>
         <div className="botoes">
+          <Link className="botao" href={`${base}/imprimir/dia?dia=${dia}`}>
+            🖨 Tudo de {nomeDia(dia)}: mapa + excedente + romaneios
+          </Link>
           <Link className="botao claro" href={`${base}/imprimir/mapa?dia=${dia}`}>
-            🖨 Mapa de montagem
+            só o mapa
           </Link>
           <Link className="botao claro" href={`${base}/imprimir/escolas?dia=${dia}`}>
-            🖨 Romaneios das escolas
+            só os romaneios
           </Link>
         </div>
       </div>
@@ -39,7 +46,7 @@ export default async function Mapa({ params, searchParams }: PageProps<"/coop/se
         Monta com o que os produtores entregaram no {galpao.toLowerCase()}. Quando falta, cada escola recebe a mesma parte, na ordem da rota (igual à planilha).
       </p>
       {rotas.map((rota) => {
-        const produtos = cad.produtos.filter((p) => rota.paradas.some((pa) => (r.enviado[pa.codigo]?.[p.nome] ?? 0) > 0.0001 || (sem.pedidoEscolas[pa.codigo]?.[p.nome] ?? 0) > 0));
+        const produtos = produtosMapa.filter((p) => rota.paradas.some((pa) => (r.enviado[pa.codigo]?.[p.nome] ?? 0) > 0.0001 || (sem.pedidoEscolas[pa.codigo]?.[p.nome] ?? 0) > 0));
         const totais = produtos.map((p) => rota.paradas.reduce((s, pa) => s + (r.enviado[pa.codigo]?.[p.nome] ?? 0), 0));
         return (
           <section key={rota.id}>
@@ -109,7 +116,8 @@ export default async function Mapa({ params, searchParams }: PageProps<"/coop/se
           </section>
         );
       })}
-      <Excedente cad={cad} r={r} />
+      <Reentregas cad={cad} sem={sem} r={r} dia={dia} />
+      <Excedente dia={dia} ex={r.excedente[dia]} rotas={sem.rotas} unidade={unidade} />
     </>
   );
 }

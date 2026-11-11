@@ -7,7 +7,7 @@ import { lerConferencia, lerPedidoPrefeitura, type LinhaPedido } from "@/lib/coo
 import { lerPlanilha } from "@/lib/coop/planilha/lerPlanilha";
 import { novaSemana } from "@/lib/coop/semana";
 import type { Previsao } from "@/lib/coop/previsao";
-import type { Cadastro, Semana } from "@/lib/coop/tipos";
+import type { Cadastro, Reentrega, Semana } from "@/lib/coop/tipos";
 
 export type Resposta<T = object> = ({ ok: true } & T) | { ok: false; erro: string };
 
@@ -43,6 +43,14 @@ export async function importarModelo(form: FormData): Promise<Resposta<{ resumo:
   try {
     garantirLocal();
     const { cadastro, avisos } = await lerPlanilha(await arquivoDoForm(form));
+    // O que foi ajustado no app (nome, equipe, escolas que não recebem) não vem do MODELO: mantém.
+    const antigo = await lerCadastro();
+    if (antigo) {
+      cadastro.nomeCooperativa = antigo.nomeCooperativa;
+      cadastro.cidade = antigo.cidade;
+      cadastro.equipe = antigo.equipe;
+      cadastro.excecoesEscolas = antigo.excecoesEscolas;
+    }
     await gravarCadastro(cadastro);
     revalidatePath("/coop", "layout");
     const rotas = cadastro.rotas.reduce((s, r) => s + r.paradas.length, 0);
@@ -75,6 +83,49 @@ export async function importarSemanaDaPlanilha(form: FormData): Promise<Resposta
   }
 }
 
+const esquemaConfig = z.object({
+  nomeCooperativa: z.string().max(120),
+  cidade: z.string().max(80),
+  equipe: z.array(z.string().min(1).max(60)).max(30),
+});
+
+export async function salvarConfiguracoes(entrada: z.infer<typeof esquemaConfig>): Promise<Resposta> {
+  try {
+    garantirLocal();
+    const c = esquemaConfig.parse(entrada);
+    const cad = await exigirCadastro();
+    cad.nomeCooperativa = c.nomeCooperativa.trim() || undefined;
+    cad.cidade = c.cidade.trim() || undefined;
+    cad.equipe = [...new Set(c.equipe.map((n) => n.trim()).filter(Boolean))];
+    await gravarCadastro(cad);
+    revalidatePath("/coop", "layout");
+    return { ok: true };
+  } catch (e) {
+    return erro(e);
+  }
+}
+
+const esquemaExcecao = z.object({ naoRecebe: z.boolean(), produtos: z.array(z.string().max(60)).max(30).optional(), motivo: z.string().max(200) }).nullable();
+
+// Escola que não recebe (ex.: 8003 não faz almoço). null = tirar a exceção.
+export async function salvarExcecaoEscola(codigo: string, excecao: z.infer<typeof esquemaExcecao>): Promise<Resposta> {
+  try {
+    garantirLocal();
+    const cad = await exigirCadastro();
+    const cod = z.string().max(20).parse(codigo);
+    if (!cad.escolas.some((e) => e.codigo === cod)) throw new Error("Escola não encontrada.");
+    const ex = esquemaExcecao.parse(excecao);
+    cad.excecoesEscolas ??= {};
+    if (ex) cad.excecoesEscolas[cod] = { naoRecebe: ex.naoRecebe, produtos: ex.naoRecebe ? undefined : ex.produtos, motivo: ex.motivo.trim() };
+    else delete cad.excecoesEscolas[cod];
+    await gravarCadastro(cad);
+    revalidatePath("/coop", "layout");
+    return { ok: true };
+  } catch (e) {
+    return erro(e);
+  }
+}
+
 // ---------- Pedido da Prefeitura ----------
 
 export async function analisarPedido(form: FormData): Promise<
@@ -102,6 +153,8 @@ const esquemaCriar = z.object({
   linhas: z.array(z.object({ codigo: z.string().max(20), modalidade: z.enum(["UE", "UE Integral", "EMEI", "CEI"]), produto: z.string().max(60), kg: z.number().min(0).max(100000) })).max(20000),
   cortes: z.array(z.string().max(80)).max(400),
   substituir: z.boolean().optional(),
+  // Escolas do cadastro de exceções que mesmo assim devem entrar nesta semana.
+  manterEscolas: z.array(z.string().max(20)).max(300).optional(),
 });
 
 export async function criarSemana(entrada: z.infer<typeof esquemaCriar>): Promise<Resposta<{ data: string }>> {
@@ -113,6 +166,8 @@ export async function criarSemana(entrada: z.infer<typeof esquemaCriar>): Promis
     const conhecidas = new Set(cad.escolas.map((e) => e.codigo));
     const produtos = new Set(cad.produtos.map((x) => x.nome));
     const cortes = new Set(p.cortes);
+    const manter = new Set(p.manterEscolas ?? []);
+    const excecoes = cad.excecoesEscolas ?? {};
     const pedido: Semana["pedidoEscolas"] = {};
     const original: Semana["pedidoEscolas"] = {};
     for (const l of p.linhas) {
@@ -120,6 +175,8 @@ export async function criarSemana(entrada: z.infer<typeof esquemaCriar>): Promis
       if (!produtos.has(l.produto)) continue;
       (original[l.codigo] ??= {})[l.produto] = (original[l.codigo][l.produto] ?? 0) + l.kg;
       if (cortes.has(`${l.modalidade}|${l.produto}`)) continue;
+      const ex = excecoes[l.codigo];
+      if (ex && !manter.has(l.codigo) && (ex.naoRecebe || ex.produtos?.includes(l.produto))) continue;
       (pedido[l.codigo] ??= {})[l.produto] = (pedido[l.codigo][l.produto] ?? 0) + l.kg;
     }
     const anteriores = (await listarSemanas()).filter((d) => d < p.data);
@@ -207,6 +264,55 @@ export async function salvarEntrega(data: string, dia: "1" | "2" | "extra", prod
     }
     if (Object.keys(atual).length) alvo[id] = atual;
     else delete alvo[id];
+    await gravarSemana(s);
+    revalidatePath(`/coop/semana/${data}`, "layout");
+    return { ok: true };
+  } catch (e) {
+    return erro(e);
+  }
+}
+
+const esquemaRecebimento = z.object({
+  hora: z.string().max(5).optional(),
+  conferente: z.string().max(60).optional(),
+  qualidade: z.enum(["ok", "ruim"]).optional(),
+  obs: z.string().max(300).optional(),
+});
+
+// Conferência na chegada: quem recebeu, hora, qualidade (04/11: mercadoria deixada sem ninguém conferir estragou).
+export async function salvarRecebimento(data: string, dia: "1" | "2", produtor: string, rec: z.infer<typeof esquemaRecebimento> | null): Promise<Resposta> {
+  try {
+    garantirLocal();
+    const s = await exigirSemana(data);
+    const id = z.string().max(80).parse(produtor);
+    const d = z.enum(["1", "2"]).parse(dia);
+    s.recebimento ??= { "1": {}, "2": {} };
+    const r = rec ? esquemaRecebimento.parse(rec) : null;
+    const limpo = r ? Object.fromEntries(Object.entries(r).filter(([, v]) => v !== undefined && v !== "")) : {};
+    if (Object.keys(limpo).length) s.recebimento[d][id] = limpo;
+    else delete s.recebimento[d][id];
+    await gravarSemana(s);
+    revalidatePath(`/coop/semana/${data}`, "layout");
+    return { ok: true };
+  } catch (e) {
+    return erro(e);
+  }
+}
+
+const esquemaReentrega = z
+  .object({ motivo: z.string().max(120), dia: z.enum(["SEG", "TER", "OUTRO"]), rota: z.string().max(60), quando: z.string().max(80).optional(), feita: z.boolean() })
+  .nullable();
+
+// Escola fechada: vai outro dia, por outra rota, com o mesmo romaneio (não muda a semana).
+export async function salvarReentrega(data: string, codigo: string, re: z.infer<typeof esquemaReentrega>): Promise<Resposta> {
+  try {
+    garantirLocal();
+    const s = await exigirSemana(data);
+    const cod = z.string().max(20).parse(codigo);
+    const r = esquemaReentrega.parse(re);
+    s.reentregas ??= {};
+    if (r) s.reentregas[cod] = r as Reentrega;
+    else delete s.reentregas[cod];
     await gravarSemana(s);
     revalidatePath(`/coop/semana/${data}`, "layout");
     return { ok: true };

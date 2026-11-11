@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { modoLocal } from "@/lib/coop/armazem";
+import { lerCadastro, modoLocal } from "@/lib/coop/armazem";
 import "./coop.css";
 
 export const metadata: Metadata = { title: { default: "Cooperativa", template: "%s · Cooperativa" } };
 export const dynamic = "force-dynamic";
 
-export default function CoopLayout({ children }: LayoutProps<"/coop">) {
+export default async function CoopLayout({ children }: LayoutProps<"/coop">) {
+  const nome = modoLocal() ? ((await lerCadastro())?.nomeCooperativa ?? "Cooperativa") : "Cooperativa";
   if (!modoLocal()) {
     return (
       <div className="coop">
@@ -21,7 +22,7 @@ export default function CoopLayout({ children }: LayoutProps<"/coop">) {
     <div className="coop">
       <header className="coop-top nao-imprimir">
         <Link href="/coop" className="marca">
-          Cooperativa
+          🌱 {nome}
         </Link>
         <nav>
           <Link href="/coop">Semanas</Link>

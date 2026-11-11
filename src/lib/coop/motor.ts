@@ -23,8 +23,20 @@ export interface LinhaEntregaProduto {
   fator2: number; // linha 14
   faltaDividida: number; // linha 15
   planejadoNaoLancado: number; // linha 16
-  excedente1: number; // a mais na segunda (lista EXCEDENTE do mapa)
-  excedente2: number; // a mais na terça (só folhas; legume = "resto da segunda")
+}
+
+// EXCEDENTE do MAPA DE MONTAGEM (MODELO v100, uma página por dia).
+export interface ExcedenteProduto {
+  produto: string;
+  tipo: "folha" | "repolho" | "legume";
+  total: number; // "TOTAL A MAIS" / "TOTAL HOJE"
+  porRota: Record<string, number>; // folha e repolho: quanto somar no total de cada rota (1 a 4)
+  porEscola: number | null; // legume: quanto pôr em cada escola que já tem (null = nenhuma escola)
+  escolas: number; // nº de escolas do dia que já levam o legume
+}
+export interface ExcedenteDia {
+  folhas: ExcedenteProduto[]; // folhas + repolho (por rota)
+  legumes: ExcedenteProduto[]; // por escola
 }
 
 export interface FichaProduto {
@@ -65,6 +77,8 @@ export interface ResultadoSemana {
   entregaProduto: Record<string, LinhaEntregaProduto>;
   enviado: Record<string, Record<string, number>>; // mapa de montagem: escola → produto
   extraEscola: Record<string, Record<string, number>>;
+  excedente: Record<DiaRota, ExcedenteDia>;
+  ordemMapa: string[]; // produtos na ordem das colunas do mapa
   fichas: Record<string, Record<string, FichaProduto>>;
   produtores: Record<string, Record<string, ProdutorProduto>>;
   pagarProdutor: Record<string, number>;
@@ -234,11 +248,6 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
       disponivel2,
       fator2,
       faltaDividida: arred(pedidoSeg * (1 - fator1) + pedidoTer * (1 - fator2)),
-      // EXCEDENTE do MAPA DE MONTAGEM (v100, linhas 283+): o que pode ir a mais.
-      // Folha: chegou no dia − o que foi para as rotas do dia. Legume: o que sobra da semana (vai na segunda).
-      excedente1:
-        planejado2 > 0.004 ? Math.max(0, entregue1 - pedidoSeg * fator1) : Math.max(0, entregue1 + entregue2 - pedidoSeg * fator1 - pedidoTer * fator2),
-      excedente2: planejado2 > 0.004 ? Math.max(0, entregue2 - pedidoTer * fator2) : 0,
       planejadoNaoLancado: naoLancado,
     };
   }
@@ -271,6 +280,43 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
       const b = pedidoEscola(codigo, produto);
       const f = diaEscola[codigo] === "TER" ? entregaProduto[produto].fator2 : entregaProduto[produto].fator1;
       enviado[codigo][produto] = f >= 1 ? b : Math.min(b, arredBaixo(b * f));
+    }
+  }
+
+  // 3b. EXCEDENTE (MAPA DE MONTAGEM, v100): o que chegou a mais e pode ir a mais.
+  // Folha: segunda = chegou no domingo − pedido de segunda; terça = chegou na segunda − pedido de terça.
+  // Legume e repolho: o que sobra da semana, metade em cada dia. Folha e repolho vão
+  // somados no total de cada rota (1 a 4, sem a moto); legume vai um pouco em cada escola.
+  const ordemColunas = (cad.ordemMapa ?? produtos).filter((p) => produtos.includes(p));
+  for (const p of produtos) if (!ordemColunas.includes(p)) ordemColunas.push(p);
+  const excedente: Record<DiaRota, ExcedenteDia> = { SEG: { folhas: [], legumes: [] }, TER: { folhas: [], legumes: [] } };
+  for (const dia of ["SEG", "TER"] as const) {
+    const rotasDia = sem.rotas.filter((r) => r.dia === dia);
+    const numeradas = rotasDia.filter((r) => /-\d+$/.test(r.id));
+    const escolasDia = [...new Set(rotasDia.flatMap((r) => r.paradas.map((pa) => pa.codigo)))];
+    for (const produto of ordemColunas) {
+      if (pedidoTotal[produto] <= 0) continue;
+      const e = entregaProduto[produto];
+      const folha = e.planejado2 > 0.004;
+      const repolho = !folha && produto === "Repolho";
+      const sobraSemana = Math.max(0, e.entregue1 + e.entregue2 - e.pedidoSeg * e.fator1 - e.pedidoTer * e.fator2);
+      const metade = arred(sobraSemana / 2);
+      const total = folha
+        ? arred(Math.max(0, dia === "SEG" ? e.entregue1 - e.pedidoSeg * e.fator1 : e.entregue2 - e.pedidoTer * e.fator2))
+        : dia === "SEG"
+          ? metade
+          : arred(sobraSemana - metade);
+      const item: ExcedenteProduto = { produto, tipo: folha ? "folha" : repolho ? "repolho" : "legume", total, porRota: {}, porEscola: null, escolas: 0 };
+      if (folha || repolho) {
+        const totais = numeradas.map((r) => soma(r.paradas.map((pa) => n(enviado[pa.codigo]?.[produto]))));
+        const somaTotais = soma(totais);
+        if (somaTotais > 0) numeradas.forEach((r, i) => (item.porRota[r.id] = arred((total * totais[i]) / somaTotais)));
+        excedente[dia].folhas.push(item);
+      } else {
+        item.escolas = escolasDia.filter((c) => n(enviado[c]?.[produto]) > 0).length;
+        item.porEscola = item.escolas > 0 ? arred(total / item.escolas) : null;
+        excedente[dia].legumes.push(item);
+      }
     }
   }
 
@@ -418,6 +464,8 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
     entregaProduto,
     enviado,
     extraEscola,
+    excedente,
+    ordemMapa: ordemColunas,
     fichas,
     produtores: resultadoProdutores,
     pagarProdutor,
