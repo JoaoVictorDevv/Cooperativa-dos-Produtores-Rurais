@@ -117,7 +117,7 @@ export default async function Mapa({ params, searchParams }: PageProps<"/coop/se
         );
       })}
       <Reentregas cad={cad} sem={sem} r={r} dia={dia} />
-      <Excedente dia={dia} ex={r.excedente[dia]} rotas={sem.rotas} unidade={unidade} />
+      <Excedente dia={dia} ex={r.excedente[dia]} rotas={sem.rotas} unidade={unidade} comLegumes={cad.excedenteLegumes} />
     </>
   );
 }

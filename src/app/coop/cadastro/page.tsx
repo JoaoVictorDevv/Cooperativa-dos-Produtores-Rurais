@@ -17,7 +17,7 @@ export default async function Cadastro() {
         <code>{pastaDados()}</code>.
       </p>
       <div className="card">
-        <h2 style={{ marginTop: 0 }}>1. Trazer a planilha MODELO (v100 de 09/11)</h2>
+        <h2 style={{ marginTop: 0 }}>1. Trazer a planilha MODELO (v101)</h2>
         <ImportarModelo />
       </div>
       <div className="card">

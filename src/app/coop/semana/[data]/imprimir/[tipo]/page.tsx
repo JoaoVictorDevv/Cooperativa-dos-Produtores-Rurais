@@ -350,7 +350,7 @@ function MapaImpresso({ cad, sem, r, dia, rota }: P & { dia: DiaRota; rota?: str
           </div>
         );
       })}
-      {!rota && <Excedente dia={dia} ex={r.excedente[dia]} rotas={sem.rotas} unidade={(p) => cad.produtos.find((x) => x.nome === p)?.unidade ?? "kg"} impresso />}
+      {!rota && <Excedente dia={dia} ex={r.excedente[dia]} rotas={sem.rotas} unidade={(p) => cad.produtos.find((x) => x.nome === p)?.unidade ?? "kg"} impresso comLegumes={cad.excedenteLegumes} />}
     </>
   );
 }

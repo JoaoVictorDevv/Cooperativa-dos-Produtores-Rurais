@@ -99,7 +99,7 @@ async function main() {
           if (typeof v === "number") conf(`12 excedente ${dia}`, `${nome} ${rt.id}`, item.porRota[rt.id] ?? 0, v);
         });
       }
-      for (let k = 0; k < 19; k++) {
+      for (let k = 0; k < 19 && cadastro.excedenteLegumes; k++) {
         const nome = String(bruto("MAPA DE MONTAGEM", l0 + 21 + k, 4) ?? "");
         if (!nome) continue;
         const item = ex.legumes.find((x) => x.produto === nome);

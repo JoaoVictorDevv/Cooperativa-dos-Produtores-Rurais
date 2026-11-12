@@ -1,6 +1,6 @@
 # App da Cooperativa (modo local)
 
-Uma planilha mais limpa: mesmas contas da MODELO v100 (09/11/2026), em telas.
+Uma planilha mais limpa: mesmas contas da MODELO v101 (11/11/2026), em telas.
 
 ## Abrir
 
@@ -40,6 +40,6 @@ Impressão: os botões 🖨 abrem a folha pronta; no navegador, Imprimir ou
 - Trouxe a mais: a sobra não é paga. Extra (complemento) segue a regra do `_EXTRA`.
 - v100 (04/11): folha não dorme no galpão — rotas de terça usam só o que chegou
   no 2º dia. EXCEDENTE: folhas e repolho por rota (1 a 4), legumes por escola
-  (metade segunda, metade terça); menos de 0,1 kg por escola vira "—".
+  (v101: legume não vai a mais; brócolis vem todo no 1º dia).
 - Ajustes feitos no app (nome, equipe, escolas que não recebem) ficam guardados
   quando o MODELO é trazido de novo.

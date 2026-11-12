@@ -198,6 +198,7 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
     motivos,
     pesoCaixa: { grande: 4, pequena: 2 },
     ordemMapa: ordemMapa.length === produtos.length ? ordemMapa : produtos.map((p) => p.nome),
+    excedenteLegumes: /LEGUMES/.test(texto(wb.getWorksheet("MAPA DE MONTAGEM")?.getCell(303, 4) ?? ent.getCell(1, 1))),
   };
 
   // ---- O que foi digitado na semana ----

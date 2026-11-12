@@ -70,6 +70,8 @@ export interface Cadastro {
   pesoCaixa: { grande: number; pequena: number };
   // Ordem das colunas do MAPA DE MONTAGEM (_MAPA linha 256; v100: chuchu primeiro, espinafre por último).
   ordemMapa?: string[];
+  // v101 (11/11): legume não vai a mais (só o que está no mapa); o EXCEDENTE lista só folhas e repolho.
+  excedenteLegumes?: boolean;
   // Ajustes feitos no app (não vêm do MODELO; são mantidos quando o MODELO é trazido de novo).
   nomeCooperativa?: string;
   cidade?: string;
