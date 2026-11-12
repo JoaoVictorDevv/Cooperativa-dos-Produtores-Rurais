@@ -145,6 +145,8 @@ export interface Semana {
   folhaSoNoDia?: boolean;
   atualizadoEm?: string;
   mensagensEnviadas?: Record<string, string>; // produtor → data/hora em que o botão foi usado
+  // BALANÇO, coluna E (09/11): desconto por produtor, ex.: folha estragada. Sai do pagamento.
+  descontos?: Record<string, number>;
   recebimento?: { "1": Record<string, Recebimento>; "2": Record<string, Recebimento> }; // dia → produtor
   reentregas?: Record<string, Reentrega>; // código da escola
 }

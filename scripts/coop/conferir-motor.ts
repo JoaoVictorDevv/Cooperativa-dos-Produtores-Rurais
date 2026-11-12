@@ -50,7 +50,7 @@ async function main() {
       conf("8 pagamento produtor (kg)", `${prod.curto}/${p.nome}`, x.pagoKg, val(prod.id, [6 + i, 11]));
       conf("9 pagamento produtor (R$)", `${prod.curto}/${p.nome}`, x.valor, val(prod.id, [6 + i, 7]));
     });
-    conf("9 pagamento produtor (R$)", `${prod.curto} TOTAL`, r.pagarProdutor[prod.id], val(prod.id, "G25"));
+    conf("9 pagamento produtor (R$)", `${prod.curto} TOTAL`, r.pagarProdutor[prod.id] + r.descontoProdutor[prod.id], val(prod.id, "G25"));
   });
 
   P.forEach((p, i) => {
@@ -121,6 +121,13 @@ async function main() {
     }
     const nossa = r.ordemMapa.filter((p) => r.resumo.produtos.find((x) => x.produto === p)!.pedido > 0);
     conf("13 ordem das colunas do mapa", colunas.join(" > ") + " × " + nossa.join(" > "), colunas.join("|") === nossa.join("|") ? 1 : 0, 1);
+  }
+
+  // BALANÇO: líquido a pagar por produtor (F26:F47, com desconto) e D7.
+  if (/DESCONTO/i.test(String(bruto("BALANÇO FINANCEIRO", 25, 5) ?? ""))) {
+    cadastro.produtores.forEach((p, j) => conf("14 balanço: líquido a pagar", p.curto, r.pagarProdutor[p.id], val("BALANÇO FINANCEIRO", [26 + j, 6])));
+    conf("14 balanço: líquido a pagar", "D7 total", r.balanco.pago, val("BALANÇO FINANCEIRO", "D7"));
+    conf("14 balanço: líquido a pagar", "D21 saldo", r.balanco.saldo, val("BALANÇO FINANCEIRO", "D21"));
   }
 
   for (const esc of cadastro.escolas) {

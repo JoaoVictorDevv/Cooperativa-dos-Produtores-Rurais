@@ -2,12 +2,30 @@
 
 Uma planilha mais limpa: mesmas contas da MODELO v101 (11/11/2026), em telas.
 
-## Abrir
+## Como começar (uma vez só)
+
+1. Instale o **Node.js** (versão LTS) em nodejs.org. Só "avançar, avançar".
+2. Baixe o projeto (botão **Code → Download ZIP** no GitHub, ou `git clone`) e
+   descompacte numa pasta, ex.: `C:\Cooperativa\app`.
+3. Abra o **Prompt de Comando** dentro dessa pasta (na barra de endereço do
+   Explorador, digite `cmd` e Enter) e rode:
+
+   ```
+   npm install
+   ```
+
+4. Copie a pasta `dados-cooperativa` (com cadastro e semanas) para dentro da
+   pasta do projeto. Sem ela, o app começa vazio: aí é só trazer o MODELO na
+   tela Cadastro.
+
+## Abrir no dia a dia
 
 ```
-npm install        # só na primeira vez
-npm run coop       # abre em http://localhost:3000/coop
+npm run coop
 ```
+
+Deixe a janela preta aberta e entre em **http://localhost:3000/coop** no
+navegador. Para fechar, feche a janela (ou Ctrl+C).
 
 Os dados ficam na pasta `dados-cooperativa/` (fora do Git): `cadastro.json`,
 `semanas/aaaa-mm-dd.json`, `previsoes/` e `historico/` (versão anterior de
@@ -41,5 +59,7 @@ Impressão: os botões 🖨 abrem a folha pronta; no navegador, Imprimir ou
 - v100 (04/11): folha não dorme no galpão — rotas de terça usam só o que chegou
   no 2º dia. EXCEDENTE: folhas e repolho por rota (1 a 4), legumes por escola
   (v101: legume não vai a mais; brócolis vem todo no 1º dia).
+- Desconto por produtor (BALANÇO, coluna "DESCONTO", ex.: folha estragada):
+  digita no Fechamento; sai do pagamento e do saldo, igual à planilha.
 - Ajustes feitos no app (nome, equipe, escolas que não recebem) ficam guardados
   quando o MODELO é trazido de novo.

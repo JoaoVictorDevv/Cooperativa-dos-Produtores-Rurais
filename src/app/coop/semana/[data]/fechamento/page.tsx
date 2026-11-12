@@ -19,7 +19,13 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
   const b = r.balanco;
   return (
     <>
-      <Fechamento data={data} produtos={produtos} custos={sem.custos} conferidos={sem.romaneiosConferidos} />
+      <Fechamento
+        data={data}
+        produtos={produtos}
+        custos={sem.custos}
+        conferidos={sem.romaneiosConferidos}
+        produtores={cad.produtores.filter((p) => r.pagarProdutor[p.id] > 0 || (sem.descontos?.[p.id] ?? 0) > 0).map((p) => ({ id: p.id, nome: p.nome, aPagar: r.pagarProdutor[p.id] + (sem.descontos?.[p.id] ?? 0), desconto: sem.descontos?.[p.id] ?? 0 }))}
+      />
       <h2>Resultado</h2>
       <div className="grade">
         <div className="numero">
@@ -60,6 +66,7 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
               <th className="n">Pedido (kg)</th>
               <th className="n">Entregou (kg)</th>
               <th className="n">Pago (kg)</th>
+              <th className="n">Desconto</th>
               <th className="n">A pagar</th>
               <th />
             </tr>
@@ -75,6 +82,7 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
                     <td className="n">{kg(x.reduce((s, i) => s + i.pedido, 0))}</td>
                     <td className="n">{kg(x.reduce((s, i) => s + i.entregue, 0))}</td>
                     <td className="n">{kg(x.reduce((s, i) => s + i.pagoKg, 0))}</td>
+                    <td className="n">{r.descontoProdutor[p.id] > 0 ? <span className="etiqueta vermelha">− {reais(r.descontoProdutor[p.id])}</span> : "—"}</td>
                     <td className="n">
                       <strong>{reais(r.pagarProdutor[p.id])}</strong>
                     </td>
@@ -89,7 +97,7 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan={4}>Total</td>
+              <td colSpan={5}>Total</td>
               <td className="n">{reais(b.pago)}</td>
               <td />
             </tr>

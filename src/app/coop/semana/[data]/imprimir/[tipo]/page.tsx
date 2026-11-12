@@ -403,6 +403,12 @@ function Extratos({ cad, sem, r, produtor, vendidoAno }: P & { produtor?: string
                     <td className="n">{reais(x.valor)}</td>
                   </tr>
                 ))}
+                {r.descontoProdutor[p.id] > 0 && (
+                  <tr>
+                    <td colSpan={5}>Desconto (folha estragada)</td>
+                    <td className="n">− {reais(r.descontoProdutor[p.id])}</td>
+                  </tr>
+                )}
                 <tr>
                   <td colSpan={5}>
                     <strong>TOTAL A RECEBER</strong>

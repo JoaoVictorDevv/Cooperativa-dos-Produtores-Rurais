@@ -394,6 +394,7 @@ const esquemaFechamento = z.object({
     conselho: z.number().min(0),
   }),
   romaneiosConferidos: z.boolean(),
+  descontos: z.record(z.string().max(80), z.number().min(0).max(100000)).optional(),
 });
 
 export async function salvarFechamento(data: string, entrada: z.infer<typeof esquemaFechamento>): Promise<Resposta> {
@@ -404,6 +405,7 @@ export async function salvarFechamento(data: string, entrada: z.infer<typeof esq
     s.conferidoPrefeitura = f.conferido;
     s.custos = f.custos;
     s.romaneiosConferidos = f.romaneiosConferidos;
+    if (f.descontos) s.descontos = Object.fromEntries(Object.entries(f.descontos).filter(([, v]) => v > 0));
     await gravarSemana(s);
     revalidatePath(`/coop/semana/${data}`, "layout");
     return { ok: true };

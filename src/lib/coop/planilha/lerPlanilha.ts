@@ -265,6 +265,16 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
     conselho: custo("D18"),
   };
 
+  // Descontos por produtor (BALANÇO E26:E47, quando existe a coluna "DESCONTO").
+  const descontos: Record<string, number> = {};
+  if (/DESCONTO/i.test(texto(bal.getCell("E25")))) {
+    for (let r = 26; r <= 47; r++) {
+      const id = /^'?(PROD - .+?)'?!/.exec(formula(bal.getCell(r, 1)) ?? "")?.[1] ?? null;
+      const v = numero(bal.getCell(r, 5));
+      if (id && v !== undefined && v !== 0) descontos[id] = v;
+    }
+  }
+
   const dRaw = indice.getCell("D2").value;
   const referencia =
     dRaw instanceof Date
@@ -293,6 +303,7 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
     conferidoPrefeitura,
     romaneiosConferidos: texto(indice.getCell("E7")).toUpperCase() === "SIM",
     custos,
+    descontos,
     rotas,
     regraPrimeiroDia: f11.includes("MAX(0") ? "corrigida" : "modelo",
     folhaSoNoDia: /IF\(C6>0\.004,C8,/.test(f13.replace(/\s/g, "")),

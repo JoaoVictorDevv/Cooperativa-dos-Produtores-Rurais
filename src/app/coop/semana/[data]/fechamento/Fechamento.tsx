@@ -15,13 +15,21 @@ interface LinhaConf {
   preco: number;
 }
 
-export function Fechamento({ data, produtos, custos, conferidos }: { data: string; produtos: LinhaConf[]; custos: Custos; conferidos: boolean }) {
+interface ProdutorPag {
+  id: string;
+  nome: string;
+  aPagar: number; // antes do desconto
+  desconto: number;
+}
+
+export function Fechamento({ data, produtos, custos, conferidos, produtores }: { data: string; produtos: LinhaConf[]; custos: Custos; conferidos: boolean; produtores: ProdutorPag[] }) {
+  const [desc, setDesc] = useState<Record<string, string>>(() => Object.fromEntries(produtores.map((p) => [p.id, p.desconto > 0 ? mostrarNumero(p.desconto) : ""])));
   const [conf, setConf] = useState<Record<string, string>>(() => Object.fromEntries(produtos.map((p) => [p.produto, mostrarNumero(p.conferido)])));
   const [c, setC] = useState<Record<string, string>>(() => Object.fromEntries(Object.entries(custos).map(([k, v]) => [k, mostrarNumero(v)])));
   const [rom, setRom] = useState(conferidos);
   const leitura = useAcao();
   const { pendente, aviso, rodar } = useAcao();
-  const todosNumeros = [...Object.values(conf), ...Object.values(c)].every((t) => !Number.isNaN(lerNumero(t)));
+  const todosNumeros = [...Object.values(conf), ...Object.values(c), ...Object.values(desc)].every((t) => !Number.isNaN(lerNumero(t)));
 
   function salvar() {
     const conferido: Record<string, number> = {};
@@ -30,7 +38,12 @@ export function Fechamento({ data, produtos, custos, conferidos }: { data: strin
       if (v !== null) conferido[p.produto] = v;
     }
     const custosNum = Object.fromEntries(Object.keys(custos).map((k) => [k, lerNumero(c[k]) ?? 0])) as unknown as Custos;
-    rodar(() => salvarFechamento(data, { conferido, custos: custosNum, romaneiosConferidos: rom }), "Fechamento salvo.");
+    const descontos: Record<string, number> = {};
+    for (const p of produtores) {
+      const v = lerNumero(desc[p.id]);
+      if (v !== null && !Number.isNaN(v) && v > 0) descontos[p.id] = v;
+    }
+    rodar(() => salvarFechamento(data, { conferido, custos: custosNum, romaneiosConferidos: rom, descontos }), "Fechamento salvo.");
   }
 
   return (
@@ -111,6 +124,39 @@ export function Fechamento({ data, produtos, custos, conferidos }: { data: strin
             Administrativo — falta pagar (só informação)
             <CampoNumero rotulo="Administrativo falta pagar" valor={c.administrativoFalta} aoMudar={(t) => setC({ ...c, administrativoFalta: t })} largura={140} />
           </label>
+        </div>
+        <h3>Descontos aos produtores (ex.: folha estragada)</h3>
+        <p className="discreto" style={{ marginTop: 0 }}>
+          Igual à coluna DESCONTO do BALANÇO: sai do que o produtor recebe. Em branco = sem desconto.
+        </p>
+        <div className="rolar">
+          <table className="tabela">
+            <thead>
+              <tr>
+                <th>Produtor</th>
+                <th className="n">A pagar</th>
+                <th className="n">Desconto (R$)</th>
+                <th className="n">Líquido</th>
+              </tr>
+            </thead>
+            <tbody>
+              {produtores.map((p) => {
+                const d = lerNumero(desc[p.id]);
+                return (
+                  <tr key={p.id}>
+                    <td>{p.nome}</td>
+                    <td className="n">{reais(p.aPagar)}</td>
+                    <td className="n">
+                      <CampoNumero rotulo={`Desconto ${p.nome}`} valor={desc[p.id]} aoMudar={(t) => setDesc({ ...desc, [p.id]: t })} />
+                    </td>
+                    <td className="n">
+                      <strong>{reais(p.aPagar - (d && !Number.isNaN(d) ? d : 0))}</strong>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
         <label style={{ display: "block", marginTop: 14 }}>
           <input type="checkbox" checked={rom} onChange={(e) => setRom(e.target.checked)} /> Romaneios das escolas conferidos (todos voltaram e foram lançados)

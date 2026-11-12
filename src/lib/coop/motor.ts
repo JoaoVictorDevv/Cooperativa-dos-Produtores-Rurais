@@ -81,7 +81,8 @@ export interface ResultadoSemana {
   ordemMapa: string[]; // produtos na ordem das colunas do mapa
   fichas: Record<string, Record<string, FichaProduto>>;
   produtores: Record<string, Record<string, ProdutorProduto>>;
-  pagarProdutor: Record<string, number>;
+  pagarProdutor: Record<string, number>; // já com o desconto
+  descontoProdutor: Record<string, number>;
   resumo: Resumo;
   balanco: Balanco;
 }
@@ -413,8 +414,11 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
           d1 === undefined && d2 === undefined ? 0 : Math.max(b - ((d1 ?? plan1[p][produto]) + (d2 ?? plan2[p][produto])), 0),
       };
     }
-    pagarProdutor[p] = total;
+    // BALANÇO coluna E: desconto (ex.: folha estragada) sai do que o produtor recebe.
+    pagarProdutor[p] = total - n(sem.descontos?.[p]);
   }
+  const descontoProdutor: Record<string, number> = Object.fromEntries(produtores.map((p) => [p, n(sem.descontos?.[p])]));
+  const totalDescontos = soma(Object.values(descontoProdutor));
 
   // 7. RESUMO e BALANÇO.
   const produtosResumo: ResumoProduto[] = produtos.map((produto) => {
@@ -446,7 +450,8 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
     r.naoCobradoValor = entregasLancadasKg === 0 ? 0 : arred(r.pedido * preco[r.produto]) - r.valorCobrado;
   }
   const cobrar = soma(produtosResumo.map((r) => r.valorCobrado));
-  const pagar = soma(produtosResumo.map((r) => r.valorPago));
+  const pagar = soma(produtosResumo.map((r) => r.valorPago)); // RESUMO E4 (antes dos descontos)
+  const pago = pagar - totalDescontos; // BALANÇO D7 = RESUMO!E12 − descontos
   const perdasDepoisGalpao = sem.romaneiosConferidos
     ? soma(produtosResumo.map((r) => arred((r.aceitoGalpao - r.cobradoKg) * preco[r.produto])))
     : null;
@@ -469,6 +474,7 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
     fichas,
     produtores: resultadoProdutores,
     pagarProdutor,
+    descontoProdutor,
     resumo: {
       cobrar,
       pagar,
@@ -491,6 +497,6 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
         valorPago: pagar,
       },
     },
-    balanco: { cobrado: cobrar, pago: pagar, perdas, margem: cobrar - pagar, custos, saldo: cobrar - pagar - custos },
+    balanco: { cobrado: cobrar, pago, perdas, margem: cobrar - pago, custos, saldo: cobrar - pago - custos },
   };
 }
