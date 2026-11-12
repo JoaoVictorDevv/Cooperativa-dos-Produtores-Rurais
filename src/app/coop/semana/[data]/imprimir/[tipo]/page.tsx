@@ -491,7 +491,7 @@ function ResumoPaulo({ cad, sem, r }: P) {
           ))}
           {sem.custos.administrativoFalta > 0 && (
             <tr>
-              <td>Administrativo — falta pagar (só informação)</td>
+              <td>Administrativo — ficou faltando (dívida da cooperativa)</td>
               <td className="n">{reais(sem.custos.administrativoFalta)}</td>
             </tr>
           )}

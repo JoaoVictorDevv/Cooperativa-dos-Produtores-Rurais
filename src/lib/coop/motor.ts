@@ -122,8 +122,9 @@ export interface Balanco {
   pago: number;
   perdas: number | null;
   margem: number;
-  custos: number;
+  custos: number; // inclui o administrativo que falta pagar
   saldo: number;
+  administrativoFalta: number; // dívida da cooperativa com o administrativo nesta semana
 }
 
 const n = (v: number | undefined | null) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
@@ -458,7 +459,9 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
   const perdas =
     perdasDepoisGalpao === null ? null : soma(produtosResumo.map((r) => arred((r.aceitoGalpao - r.pagoKg) * preco[r.produto]))) - perdasDepoisGalpao;
   const c = sem.custos;
-  const custos = c.transporte + c.montagem + c.administrativo + c.embalagens + c.escritorio + c.impostos + c.contabilidade + c.conselho;
+  // Administrativo: o custo certo é o combinado (pago + o que ficou faltando); o que falta
+  // é dívida da cooperativa, não deixa de ser custo. (A planilha BALANÇO D19 conta só o pago.)
+  const custos = c.transporte + c.montagem + c.administrativo + c.administrativoFalta + c.embalagens + c.escritorio + c.impostos + c.contabilidade + c.conselho;
 
   return {
     mesIndice: mes,
@@ -497,6 +500,6 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
         valorPago: pagar,
       },
     },
-    balanco: { cobrado: cobrar, pago, perdas, margem: cobrar - pago, custos, saldo: cobrar - pago - custos },
+    balanco: { cobrado: cobrar, pago, perdas, margem: cobrar - pago, custos, saldo: cobrar - pago - custos, administrativoFalta: c.administrativoFalta },
   };
 }

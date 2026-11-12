@@ -18,7 +18,7 @@ export const CUSTOS_ZERADOS: Custos = {
 export const NOMES_CUSTOS: [keyof Custos, string][] = [
   ["transporte", "Transporte (frete)"],
   ["montagem", "Montagem"],
-  ["administrativo", "Administrativo (valor já pago)"],
+  ["administrativo", "Administrativo (pago na semana)"],
   ["embalagens", "Embalagens + material de limpeza"],
   ["escritorio", "Material de escritório"],
   ["impostos", "Impostos"],

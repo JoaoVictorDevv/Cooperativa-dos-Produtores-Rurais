@@ -121,7 +121,7 @@ export function Fechamento({ data, produtos, custos, conferidos, produtores }: {
             </label>
           ))}
           <label className="campo">
-            Administrativo — falta pagar (só informação)
+            Administrativo — ficou faltando (entra no custo; é dívida)
             <CampoNumero rotulo="Administrativo falta pagar" valor={c.administrativoFalta} aoMudar={(t) => setC({ ...c, administrativoFalta: t })} largura={140} />
           </label>
         </div>

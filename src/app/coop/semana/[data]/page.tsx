@@ -65,6 +65,12 @@ export default async function ResumoSemana({ params }: PageProps<"/coop/semana/[
           <small>Saldo (balanço)</small>
           <strong>{reais(r.balanco.saldo)}</strong>
         </div>
+        {r.balanco.administrativoFalta > 0 && (
+          <div className="numero ruim">
+            <small>Administrativo que ficou faltando (já contado no custo)</small>
+            <strong>{reais(r.balanco.administrativoFalta)}</strong>
+          </div>
+        )}
       </div>
       <h2>Por produto</h2>
       <div className="card rolar">

@@ -127,7 +127,7 @@ async function main() {
   if (/DESCONTO/i.test(String(bruto("BALANÇO FINANCEIRO", 25, 5) ?? ""))) {
     cadastro.produtores.forEach((p, j) => conf("14 balanço: líquido a pagar", p.curto, r.pagarProdutor[p.id], val("BALANÇO FINANCEIRO", [26 + j, 6])));
     conf("14 balanço: líquido a pagar", "D7 total", r.balanco.pago, val("BALANÇO FINANCEIRO", "D7"));
-    conf("14 balanço: líquido a pagar", "D21 saldo", r.balanco.saldo, val("BALANÇO FINANCEIRO", "D21"));
+    conf("14 balanço: líquido a pagar", "D21 saldo (+ administrativo que falta)", r.balanco.saldo + r.balanco.administrativoFalta, val("BALANÇO FINANCEIRO", "D21"));
   }
 
   for (const esc of cadastro.escolas) {
@@ -156,8 +156,9 @@ async function main() {
   conf("11 totais", "Perdas (E22)", r.resumo.perdas ?? NaN, val("RESUMO", "E22"));
   conf("11 totais", "Perdas depois do galpão (E23)", r.resumo.perdasDepoisGalpao ?? NaN, val("RESUMO", "E23"));
   conf("11 totais", "Extras pagos (E11)", r.resumo.extrasPagos, val("RESUMO", "E11"));
-  conf("11 totais", "Custos (BALANÇO D19)", r.balanco.custos, val("BALANÇO FINANCEIRO", "D19"));
-  conf("11 totais", "Saldo (BALANÇO D21)", r.balanco.saldo, val("BALANÇO FINANCEIRO", "D21"));
+  // O app conta o administrativo que ficou faltando (E13) como custo; a planilha D19 não.
+  conf("11 totais", "Custos (BALANÇO D19 + E13)", r.balanco.custos, val("BALANÇO FINANCEIRO", "D19") + val("BALANÇO FINANCEIRO", "E13"));
+  conf("11 totais", "Saldo (BALANÇO D21 − E13)", r.balanco.saldo, val("BALANÇO FINANCEIRO", "D21") - val("BALANÇO FINANCEIRO", "E13"));
 
   let falhas = 0;
   for (const [g, { total, erros }] of Object.entries(grupos).sort()) {

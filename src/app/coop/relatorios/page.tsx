@@ -21,10 +21,12 @@ export default async function Relatorios() {
     const prev = await lerPrevisao(d);
     linhas.push({ s, r, previsto: prev ? prev.itens.reduce((t, i) => t + i.kg, 0) : null });
   }
-  const meses = new Map<string, { cobrar: number; pagar: number; custos: number; perdas: number; saldo: number; kg: number; semanas: number }>();
+  const meses = new Map<string, { cobrar: number; pagar: number; custos: number; perdas: number; saldo: number; kg: number; semanas: number; divida: number }>();
+  const dividaTotal = linhas.reduce((s, { r }) => s + r.balanco.administrativoFalta, 0);
   for (const { s, r } of linhas) {
     const k = s.data.slice(0, 7);
-    const m = meses.get(k) ?? { cobrar: 0, pagar: 0, custos: 0, perdas: 0, saldo: 0, kg: 0, semanas: 0 };
+    const m = meses.get(k) ?? { cobrar: 0, pagar: 0, custos: 0, perdas: 0, saldo: 0, kg: 0, semanas: 0, divida: 0 };
+    m.divida += r.balanco.administrativoFalta;
     m.cobrar += r.balanco.cobrado;
     m.pagar += r.balanco.pago;
     m.custos += r.balanco.custos;
@@ -44,6 +46,11 @@ export default async function Relatorios() {
       <h1>Relatórios</h1>
       <p className="sub">Somando todas as semanas que estão no app.</p>
       {!linhas.length && <p className="aviso">Ainda não há semanas.</p>}
+      {dividaTotal > 0 && (
+        <p className="aviso">
+          <strong>Administrativo que ficou faltando:</strong> {reais(dividaTotal)} no total ({linhas.filter(({ r }) => r.balanco.administrativoFalta > 0).map(({ s, r }) => `${s.referencia.slice(0, 5)}: ${reais(r.balanco.administrativoFalta)}`).join(" · ")}). Já está dentro dos custos; é o que a cooperativa deve.
+        </p>
+      )}
       <h2>Por mês</h2>
       <div className="card rolar">
         <table className="tabela">

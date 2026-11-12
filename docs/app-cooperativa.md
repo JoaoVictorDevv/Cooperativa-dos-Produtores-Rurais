@@ -59,6 +59,10 @@ Impressão: os botões 🖨 abrem a folha pronta; no navegador, Imprimir ou
 - v100 (04/11): folha não dorme no galpão — rotas de terça usam só o que chegou
   no 2º dia. EXCEDENTE: folhas e repolho por rota (1 a 4), legumes por escola
   (v101: legume não vai a mais; brócolis vem todo no 1º dia).
+- Administrativo: o custo da semana é o combinado (pago + o que ficou
+  faltando). O que falta é dívida da cooperativa e aparece somado em
+  Relatórios. A planilha (BALANÇO D19) conta só o pago; por isso o saldo do
+  app fica menor que o D21 pelo valor que falta.
 - Desconto por produtor (BALANÇO, coluna "DESCONTO", ex.: folha estragada):
   digita no Fechamento; sai do pagamento e do saldo, igual à planilha.
 - Ajustes feitos no app (nome, equipe, escolas que não recebem) ficam guardados
