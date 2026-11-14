@@ -18,6 +18,7 @@ export default async function Pedido({ params }: PageProps<"/coop/semana/[data]/
       return {
         produto: p.nome,
         unidade: p.unidade,
+        doisDias: p.doisDias,
         pedido,
         falta: r.faltaNaDivisao[p.nome] ?? 0,
         produtores: cad.produtores
@@ -29,6 +30,9 @@ export default async function Pedido({ params }: PageProps<"/coop/semana/[data]/
             calculado: r.divisaoCalculada[pr.id][p.nome] ?? 0,
             manual: sem.pedidoProdutorManual[pr.id]?.[p.nome] ?? null,
             final: r.pedidoProdutor[pr.id][p.nome] ?? 0,
+            dia1Manual: sem.planejado1Manual?.[pr.id]?.[p.nome] ?? null,
+            dia1: r.produtores[pr.id][p.nome].planejado1,
+            dia2: r.produtores[pr.id][p.nome].planejado2,
           }))
           .filter((x) => x.capacidadeMes > 0 || x.capacidadeSemana !== null || x.final > 0 || x.manual !== null),
       };
@@ -49,7 +53,8 @@ export default async function Pedido({ params }: PageProps<"/coop/semana/[data]/
       <h2 style={{ marginTop: 0 }}>Divisão entre os produtores</h2>
       <p className="discreto">
         Igual à planilha: divide pelo Mapa de Produção do mês ({referenciaDeData(sem.data).slice(3)}). Para mudar, digite no amarelo: <strong>Só esta semana</strong> (o
-        produtor avisou que tem outra quantidade) ou <strong>Ajuste</strong> (o pedido dele fica fixo nesse número). Apagar = volta ao automático.
+        produtor avisou que tem outra quantidade), <strong>Ajuste</strong> (o pedido dele fica fixo nesse número) ou <strong>1º dia</strong> (quanto traz no
+        primeiro dia; o resto vai no segundo). Apagar = volta ao automático.
       </p>
       <Divisao data={sem.data} linhas={linhas} />
       <h2>Mensagens para os produtores</h2>

@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { lerCadastro, modoLocal } from "@/lib/coop/armazem";
+import { MenuTopo } from "./MenuTopo";
 import "./coop.css";
 
-export const metadata: Metadata = { title: { default: "Cooperativa", template: "%s · Cooperativa" } };
+export const metadata: Metadata = { title: { default: "Cooperativa", template: "%s · Cooperativa" }, icons: { icon: "/coop/logo.jpg" } };
 export const dynamic = "force-dynamic";
 
 export default async function CoopLayout({ children }: LayoutProps<"/coop">) {
-  const nome = modoLocal() ? ((await lerCadastro())?.nomeCooperativa ?? "Cooperativa") : "Cooperativa";
+  const cad = modoLocal() ? await lerCadastro() : null;
+  const nome = cad?.nomeCooperativa ?? "Cooperativa";
   if (!modoLocal()) {
     return (
       <div className="coop">
@@ -19,17 +21,17 @@ export default async function CoopLayout({ children }: LayoutProps<"/coop">) {
     );
   }
   return (
-    <div className="coop">
+    <div className="coop" style={{ "--nome": JSON.stringify(nome) } as React.CSSProperties}>
       <header className="coop-top nao-imprimir">
         <Link href="/coop" className="marca">
-          🌱 {nome}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/coop/logo.jpg" alt="" />
+          <span>
+            {nome}
+            <small>{cad?.cidade ? `${cad.cidade} · ` : ""}PNAE · merenda escolar</small>
+          </span>
         </Link>
-        <nav>
-          <Link href="/coop">Semanas</Link>
-          <Link href="/coop/previsao">Previsão</Link>
-          <Link href="/coop/relatorios">Relatórios</Link>
-          <Link href="/coop/cadastro">Cadastro</Link>
-        </nav>
+        <MenuTopo />
       </header>
       <main className="coop-main">{children}</main>
     </div>

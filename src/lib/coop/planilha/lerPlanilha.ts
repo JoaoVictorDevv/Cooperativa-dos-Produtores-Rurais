@@ -68,13 +68,15 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
   const indice = aba("ÍNDICE");
 
   // Produtos (Entrada de Dados, linha 5 e preços na linha 2).
-  const primeiraProd = wb.worksheets.find((w) => w.name.startsWith("PROD - "));
-  if (!primeiraProd) throw new Error("A planilha não tem as abas dos produtores (PROD - …).");
+  const abasProd = wb.worksheets.filter((w) => w.name.startsWith("PROD - "));
+  if (!abasProd.length) throw new Error("A planilha não tem as abas dos produtores (PROD - …).");
   const produtos: Produto[] = [];
   for (let c = 3; c <= 21; c++) {
     const nome = texto(ent.getCell(5, c)) || String(ent.getCell(5, c).value ?? "");
     const precoV = ent.getCell(2, c).value;
-    const t = formula(primeiraProd.getCell(6 + (c - 3), 20)) ?? "";
+    // Coluna T da aba PROD: fórmula com _AUX_DIVISAO = produto de 2 dias. Alguém pode ter
+    // digitado um número por cima (16/11), então procura a fórmula em qualquer produtor.
+    const t = abasProd.map((w) => formula(w.getCell(6 + (c - 3), 20)) ?? "").find((f) => f) ?? "";
     produtos.push({
       nome,
       preco: typeof precoV === "number" ? precoV : Number(precoV),
@@ -265,6 +267,16 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
     conselho: custo("D18"),
   };
 
+  // Coluna T digitada por cima (quanto traz no 1º dia).
+  const planejado1Manual: PorProdutorProduto = {};
+  for (const prod of produtores) {
+    const ws = aba(prod.id);
+    produtos.forEach((p, i) => {
+      const v = numero(ws.getCell(6 + i, 20));
+      if (v !== undefined) (planejado1Manual[prod.id] ??= {})[p.nome] = v;
+    });
+  }
+
   // Descontos por produtor (BALANÇO E26:E47, quando existe a coluna "DESCONTO").
   const descontos: Record<string, number> = {};
   if (/DESCONTO/i.test(texto(bal.getCell("E25")))) {
@@ -281,7 +293,7 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
       ? `${String(dRaw.getUTCDate()).padStart(2, "0")}/${String(dRaw.getUTCMonth() + 1).padStart(2, "0")}/${dRaw.getUTCFullYear()}`
       : texto(indice.getCell("D2"));
   const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(referencia);
-  const msg = formula(primeiraProd.getCell("A28")) ?? "";
+  const msg = formula(abasProd[0].getCell("A28")) ?? "";
   const dias = [...msg.matchAll(/Entregar n[oa] ([^:*]+):/g)].map((x) => x[1].trim());
   const f11 = formula(aba("_ENTREGA").getCell("C11")) ?? "";
   const f13 = formula(aba("_ENTREGA").getCell("C13")) ?? "";
@@ -296,6 +308,7 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
     pedidoEscolas,
     capacidadeSemana,
     pedidoProdutorManual: bloco(210, true),
+    planejado1Manual,
     entrega1: bloco(236, false),
     entrega2: bloco(261, false),
     extra: bloco(293, false),

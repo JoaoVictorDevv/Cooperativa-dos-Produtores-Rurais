@@ -24,6 +24,7 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
         produtos={produtos}
         custos={sem.custos}
         conferidos={sem.romaneiosConferidos}
+        observacao={sem.observacao ?? ""}
         produtores={cad.produtores.filter((p) => r.pagarProdutor[p.id] > 0 || (sem.descontos?.[p.id] ?? 0) > 0).map((p) => ({ id: p.id, nome: p.nome, aPagar: r.pagarProdutor[p.id] + (sem.descontos?.[p.id] ?? 0), desconto: sem.descontos?.[p.id] ?? 0 }))}
       />
       <h2>Resultado</h2>

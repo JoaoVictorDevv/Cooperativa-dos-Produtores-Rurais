@@ -1,6 +1,6 @@
 # App da Cooperativa (modo local)
 
-Uma planilha mais limpa: mesmas contas da MODELO v101 (11/11/2026), em telas.
+Uma planilha mais limpa: mesmas contas da MODELO v102 (14/11/2026), em telas.
 
 ## Como começar (uma vez só)
 
@@ -43,6 +43,7 @@ Sem login: só abre no próprio computador.
 | Mapa de montagem (colunas na ordem da planilha), EXCEDENTE do dia, reentregas e romaneios; botão **Tudo do dia** imprime mapa + excedente + romaneios de uma vez | 4. Mapa e romaneios |
 | Faltas e recusas das escolas (busca por código/nome, tela ou texto: `1005 não veio cheiro verde`); escola fechada → **reentrega** outro dia/rota com o mesmo romaneio | 5. Retornos |
 | Conferência da Prefeitura, custos, extratos, resumo do Paulo | 6. Fechamento |
+| Todas as semanas lado a lado (saldo, custos, perdas), para o Paulo; imprime em 1 página | Resumo |
 | Mês a mês, perdas, vendido por produtor (R$ 40 mil só informação) | Relatórios |
 | Nome da cooperativa, equipe do galpão, escolas que não recebem (ex.: não faz almoço) | Cadastro |
 
@@ -63,6 +64,10 @@ Impressão: os botões 🖨 abrem a folha pronta; no navegador, Imprimir ou
   faltando). O que falta é dívida da cooperativa e aparece somado em
   Relatórios. A planilha (BALANÇO D19) conta só o pago; por isso o saldo do
   app fica menor que o D21 pelo valor que falta.
+- Cobrança sem conferência (RESUMO C29): o que as escolas aceitaram, mas
+  nunca mais do que chegou no galpão menos o que as escolas recusaram.
+  Semana sem entrega lançada = nada a cobrar ainda.
+- "1º dia" digitado por cima (aba PROD coluna T): em Pedido → Mexer.
 - Desconto por produtor (BALANÇO, coluna "DESCONTO", ex.: folha estragada):
   digita no Fechamento; sai do pagamento e do saldo, igual à planilha.
 - Ajustes feitos no app (nome, equipe, escolas que não recebem) ficam guardados

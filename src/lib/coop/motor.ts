@@ -217,7 +217,8 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
     const parteSeg = pedidoTotal[produto] <= 0 ? 0 : pedidoSeg / pedidoTotal[produto]; // _AUX_DIVISAO U
     for (const p of produtores) {
       const b = pedidoProdutor[p][produto];
-      const t = b <= 0 ? 0 : doisDias[produto] ? arred(b * parteSeg) : b;
+      const manual1 = digitado(sem.planejado1Manual ?? {}, p, produto);
+      const t = b <= 0 ? 0 : manual1 !== undefined ? manual1 : doisDias[produto] ? arred(b * parteSeg) : b;
       plan1[p][produto] = t;
       plan2[p][produto] = b <= 0 ? 0 : b - t;
     }
@@ -426,8 +427,11 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
     const pedido = pedidoTotal[produto];
     const somaCobrado = soma(escolasCodigos.map((c) => fichas[c][produto].cobrado));
     const conferido = typeof sem.conferidoPrefeitura[produto] === "number" ? sem.conferidoPrefeitura[produto] : null;
-    const cobradoKg = conferido !== null ? Math.min(pedido, conferido) : Math.min(pedido, somaCobrado);
     const entregueGalpao = soma(produtores.map((p) => resultadoProdutores[p][produto].entregue));
+    const rejeitadoEscola = soma(escolasCodigos.map((c) => fichas[c][produto].rejeitado));
+    // RESUMO C29: sem conferência, cobra o que as escolas aceitaram, mas nunca mais do que
+    // chegou no galpão menos o que as escolas recusaram (nada lançado = nada a cobrar ainda).
+    const cobradoKg = conferido !== null ? Math.min(pedido, conferido) : Math.min(somaCobrado, Math.max(entregueGalpao - rejeitadoEscola, 0));
     const pagoKg = soma(produtores.map((p) => resultadoProdutores[p][produto].pagoKg));
     return {
       produto,
@@ -437,7 +441,7 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
       valorCobrado: arred(cobradoKg * preco[produto]),
       naoCobradoValor: 0,
       conferido,
-      rejeitadoEscola: soma(escolasCodigos.map((c) => fichas[c][produto].rejeitado)),
+      rejeitadoEscola,
       entregueGalpao,
       pagoKg,
       sobraGalpao: entregueGalpao - pagoKg,

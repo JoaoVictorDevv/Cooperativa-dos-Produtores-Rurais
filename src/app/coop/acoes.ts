@@ -195,6 +195,28 @@ export async function criarSemana(entrada: z.infer<typeof esquemaCriar>): Promis
 const kgOpcional = z.number().min(0).max(100000).nullable();
 const mapaProdutos = z.record(z.string().max(60), kgOpcional);
 
+// Coluna T da aba PROD digitada: quanto o produtor traz no 1º dia (o resto no 2º).
+export async function salvarPrimeiroDia(data: string, valores: Record<string, Record<string, number | null>>): Promise<Resposta> {
+  try {
+    garantirLocal();
+    const a = z.record(z.string().max(80), mapaProdutos).parse(valores);
+    const s = await exigirSemana(data);
+    s.planejado1Manual ??= {};
+    for (const [prod, itens] of Object.entries(a)) {
+      for (const [produto, v] of Object.entries(itens)) {
+        if (v === null) delete s.planejado1Manual[prod]?.[produto];
+        else (s.planejado1Manual[prod] ??= {})[produto] = v;
+      }
+      if (s.planejado1Manual[prod] && !Object.keys(s.planejado1Manual[prod]).length) delete s.planejado1Manual[prod];
+    }
+    await gravarSemana(s);
+    revalidatePath(`/coop/semana/${data}`, "layout");
+    return { ok: true };
+  } catch (e) {
+    return erro(e);
+  }
+}
+
 export async function salvarAjustesDivisao(data: string, ajustes: Record<string, Record<string, number | null>>): Promise<Resposta> {
   try {
     garantirLocal();
@@ -394,6 +416,7 @@ const esquemaFechamento = z.object({
     conselho: z.number().min(0),
   }),
   romaneiosConferidos: z.boolean(),
+  observacao: z.string().max(300).optional(),
   descontos: z.record(z.string().max(80), z.number().min(0).max(100000)).optional(),
 });
 
@@ -406,6 +429,7 @@ export async function salvarFechamento(data: string, entrada: z.infer<typeof esq
     s.custos = f.custos;
     s.romaneiosConferidos = f.romaneiosConferidos;
     if (f.descontos) s.descontos = Object.fromEntries(Object.entries(f.descontos).filter(([, v]) => v > 0));
+    if (f.observacao !== undefined) s.observacao = f.observacao.trim() || undefined;
     await gravarSemana(s);
     revalidatePath(`/coop/semana/${data}`, "layout");
     return { ok: true };

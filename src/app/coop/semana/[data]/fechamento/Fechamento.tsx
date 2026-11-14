@@ -22,7 +22,8 @@ interface ProdutorPag {
   desconto: number;
 }
 
-export function Fechamento({ data, produtos, custos, conferidos, produtores }: { data: string; produtos: LinhaConf[]; custos: Custos; conferidos: boolean; produtores: ProdutorPag[] }) {
+export function Fechamento({ data, produtos, custos, conferidos, produtores, observacao }: { data: string; produtos: LinhaConf[]; custos: Custos; conferidos: boolean; produtores: ProdutorPag[]; observacao: string }) {
+  const [obs, setObs] = useState(observacao);
   const [desc, setDesc] = useState<Record<string, string>>(() => Object.fromEntries(produtores.map((p) => [p.id, p.desconto > 0 ? mostrarNumero(p.desconto) : ""])));
   const [conf, setConf] = useState<Record<string, string>>(() => Object.fromEntries(produtos.map((p) => [p.produto, mostrarNumero(p.conferido)])));
   const [c, setC] = useState<Record<string, string>>(() => Object.fromEntries(Object.entries(custos).map(([k, v]) => [k, mostrarNumero(v)])));
@@ -43,7 +44,7 @@ export function Fechamento({ data, produtos, custos, conferidos, produtores }: {
       const v = lerNumero(desc[p.id]);
       if (v !== null && !Number.isNaN(v) && v > 0) descontos[p.id] = v;
     }
-    rodar(() => salvarFechamento(data, { conferido, custos: custosNum, romaneiosConferidos: rom, descontos }), "Fechamento salvo.");
+    rodar(() => salvarFechamento(data, { conferido, custos: custosNum, romaneiosConferidos: rom, descontos, observacao: obs }), "Fechamento salvo.");
   }
 
   return (
@@ -158,6 +159,10 @@ export function Fechamento({ data, produtos, custos, conferidos, produtores }: {
             </tbody>
           </table>
         </div>
+        <label className="campo" style={{ marginTop: 14 }}>
+          Uma linha sobre a semana (aparece no Resumo das entregas)
+          <input type="text" value={obs} onChange={(e) => setObs(e.target.value)} placeholder="ex.: van quebrou na segunda: 9 escolas sem entrega" style={{ maxWidth: 520 }} />
+        </label>
         <label style={{ display: "block", marginTop: 14 }}>
           <input type="checkbox" checked={rom} onChange={(e) => setRom(e.target.checked)} /> Romaneios das escolas conferidos (todos voltaram e foram lançados)
         </label>

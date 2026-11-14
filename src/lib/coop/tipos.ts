@@ -129,6 +129,8 @@ export interface Semana {
   pedidoPrefeituraOriginal?: Record<string, Record<string, number>>; // como veio, antes do corte
   capacidadeSemana: Record<string, Record<string, number>>; // "SÓ ESTA SEMANA" do Mapa de Produção
   pedidoProdutorManual: PorProdutorProduto; // ajustes do Paulo (por cima da divisão)
+  // Aba PROD coluna T digitada por cima: quanto o produtor traz no 1º dia (o resto vai no 2º).
+  planejado1Manual?: PorProdutorProduto;
   entrega1: PorProdutorProduto; // ausente = ainda não lançado (vale o planejado)
   entrega2: PorProdutorProduto;
   extra: PorProdutorProduto;
@@ -147,6 +149,7 @@ export interface Semana {
   mensagensEnviadas?: Record<string, string>; // produtor → data/hora em que o botão foi usado
   // BALANÇO, coluna E (09/11): desconto por produtor, ex.: folha estragada. Sai do pagamento.
   descontos?: Record<string, number>;
+  observacao?: string; // uma linha sobre a semana ("van quebrou: 9 escolas sem entrega")
   recebimento?: { "1": Record<string, Recebimento>; "2": Record<string, Recebimento> }; // dia → produtor
   reentregas?: Record<string, Reentrega>; // código da escola
 }

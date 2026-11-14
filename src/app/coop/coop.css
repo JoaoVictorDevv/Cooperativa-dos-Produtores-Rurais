@@ -1,25 +1,35 @@
-/* App da Cooperativa — visual simples, letra grande, funciona no celular. */
+/* App da Cooperativa — visual com as cores da logo (marrom da terra, creme,
+   verde das folhas, laranja da cenoura). Letra grande, funciona no celular. */
 .coop {
-  --c-bg: #f4f2ea;
-  --c-card: #ffffff;
-  --c-ink: #1f261d;
-  --c-soft: #5b6455;
-  --c-line: #dfe3d6;
-  --c-verde: #1d5c3a;
-  --c-verde-2: #2e7d4f;
-  --c-verde-claro: #e3efe5;
-  --c-amarelo: #fff6cf;
-  --c-amarelo-borda: #e8cf63;
-  --c-vermelho: #a3362a;
-  --c-vermelho-claro: #f8e1dc;
+  --c-bg: #f4eee2;
+  --c-card: #fffdf8;
+  --c-ink: #2b1b0e;
+  --c-soft: #6e5a48;
+  --c-line: #e3d7c3;
+  --c-marrom: #4a2b14;
+  --c-marrom-2: #6a3f1f;
+  --c-creme: #e9dcc3;
+  --c-verde: #2e7d32;
+  --c-verde-2: #43a047;
+  --c-verde-claro: #e4f0e2;
+  --c-laranja: #e8741e;
+  --c-laranja-claro: #fdebd9;
+  --c-amarelo: #fff3c4;
+  --c-amarelo-borda: #e6c75a;
+  --c-vermelho: #b9311f;
+  --c-vermelho-claro: #f9e2dd;
   --c-azul: #24527a;
+  --sombra: 0 1px 2px rgba(43, 27, 14, 0.06), 0 6px 18px -12px rgba(43, 27, 14, 0.25);
   min-height: 100vh;
   background: var(--c-bg);
   color: var(--c-ink);
   font-size: 15px;
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 .coop * { box-sizing: border-box; }
 .coop a { color: var(--c-verde); }
+
+/* Cabeçalho */
 .coop-top {
   position: sticky;
   top: 0;
@@ -28,33 +38,40 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 18px;
-  padding: 10px 18px;
-  background: var(--c-verde);
+  padding: 8px 18px;
+  background: var(--c-marrom);
   color: #fff;
+  border-bottom: 4px solid var(--c-verde);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
-.coop-top .marca { font-weight: 700; font-size: 17px; color: #fff; text-decoration: none; margin-right: auto; }
-.coop-top nav { display: flex; gap: 4px; flex-wrap: wrap; }
-.coop-top nav a { color: #e9f3ec; text-decoration: none; padding: 6px 10px; border-radius: 8px; font-size: 14px; }
-.coop-top nav a:hover { background: rgba(255, 255, 255, 0.14); }
+.coop-top .marca { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; color: #fff; text-decoration: none; margin-right: auto; letter-spacing: 0.01em; }
+.coop-top .marca img { width: 40px; height: 40px; border-radius: 50%; background: var(--c-creme); box-shadow: 0 0 0 2px var(--c-creme); }
+.coop-top .marca small { display: block; font-weight: 400; font-size: 11.5px; color: var(--c-creme); letter-spacing: 0.08em; text-transform: uppercase; }
+.coop-top nav { display: flex; gap: 2px; flex-wrap: wrap; }
+.coop-top nav a { color: var(--c-creme); text-decoration: none; padding: 7px 11px; border-radius: 8px; font-size: 14px; font-weight: 600; }
+.coop-top nav a:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+.coop-top nav a.ativa { background: var(--c-verde); color: #fff; }
+
 .coop-main { max-width: 1180px; margin: 0 auto; padding: 18px 16px 60px; }
-.coop h1 { font-size: 24px; margin: 4px 0 4px; }
-.coop h2 { font-size: 18px; margin: 22px 0 10px; }
-.coop h3 { font-size: 15px; margin: 14px 0 8px; }
+.coop h1 { font-size: 25px; margin: 4px 0 4px; color: var(--c-marrom); letter-spacing: -0.01em; }
+.coop h2 { font-size: 18px; margin: 22px 0 10px; color: var(--c-marrom); }
+.coop h3 { font-size: 15px; margin: 14px 0 8px; color: var(--c-marrom); }
 .coop .sub { color: var(--c-soft); margin: 0 0 14px; }
 .coop .voltar { display: inline-block; margin-bottom: 8px; font-size: 14px; text-decoration: none; }
-.coop .card {
-  background: var(--c-card);
-  border: 1px solid var(--c-line);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 14px;
-}
+.coop code { background: var(--c-creme); padding: 1px 6px; border-radius: 6px; font-size: 13px; }
+
+/* Cartões e números */
+.coop .card { background: var(--c-card); border: 1px solid var(--c-line); border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: var(--sombra); }
 .coop .grade { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-.coop .numero { background: var(--c-card); border: 1px solid var(--c-line); border-radius: 12px; padding: 12px 14px; }
+.coop .numero { background: var(--c-card); border: 1px solid var(--c-line); border-left: 5px solid var(--c-creme); border-radius: 12px; padding: 12px 14px; box-shadow: var(--sombra); }
 .coop .numero small { display: block; color: var(--c-soft); font-size: 12.5px; }
-.coop .numero strong { display: block; font-size: 21px; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.coop .numero strong { display: block; font-size: 22px; margin-top: 2px; font-variant-numeric: tabular-nums; color: var(--c-marrom); }
+.coop .numero.bom { border-left-color: var(--c-verde); }
 .coop .numero.bom strong { color: var(--c-verde); }
+.coop .numero.ruim { border-left-color: var(--c-vermelho); }
 .coop .numero.ruim strong { color: var(--c-vermelho); }
+
+/* Botões */
 .coop .botoes { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .coop .botao {
   display: inline-flex;
@@ -62,8 +79,8 @@
   justify-content: center;
   gap: 6px;
   min-height: 40px;
-  padding: 8px 14px;
-  border-radius: 9px;
+  padding: 8px 15px;
+  border-radius: 10px;
   border: 1px solid var(--c-verde);
   background: var(--c-verde);
   color: #fff !important;
@@ -71,134 +88,135 @@
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
 }
+.coop .botao:hover { filter: brightness(1.07); }
 .coop .botao:disabled { opacity: 0.55; cursor: not-allowed; }
 .coop .botao.claro { background: #fff; color: var(--c-verde) !important; }
 .coop .botao.zap { background: #1f8a4c; border-color: #1f8a4c; }
+.coop .botao.laranja { background: var(--c-laranja); border-color: var(--c-laranja); }
 .coop .botao.pequeno { min-height: 32px; padding: 4px 10px; font-size: 13.5px; }
 .coop .botao.perigo { background: #fff; color: var(--c-vermelho) !important; border-color: var(--c-vermelho); }
+
+/* Passos (listinha) */
 .coop .passos { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
 .coop .passo {
   display: flex;
   gap: 12px;
   align-items: flex-start;
   padding: 14px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--c-line);
-  background: #fff;
+  background: var(--c-card);
   text-decoration: none;
   color: inherit;
+  box-shadow: var(--sombra);
 }
-.coop .passo:hover { border-color: var(--c-verde-2); }
+.coop .passo:hover { border-color: var(--c-verde-2); transform: translateY(-1px); }
 .coop .passo .bola {
   flex: none;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: grid;
   place-items: center;
-  background: #eceee6;
-  color: var(--c-soft);
+  background: var(--c-creme);
+  color: var(--c-marrom);
   font-weight: 700;
 }
 .coop .passo.feito .bola { background: var(--c-verde); color: #fff; }
-.coop .passo strong { display: block; }
+.coop .passo strong { display: block; color: var(--c-marrom); }
 .coop .passo span { color: var(--c-soft); font-size: 13.5px; }
+
+/* Tabelas */
 .coop .rolar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .coop table.tabela { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
 .coop .tabela th,
-.coop .tabela td { padding: 6px 8px; border-bottom: 1px solid var(--c-line); text-align: left; vertical-align: top; }
-.coop .tabela th { font-size: 12.5px; color: var(--c-soft); font-weight: 600; background: #fafaf6; position: sticky; top: 0; }
+.coop .tabela td { padding: 7px 8px; border-bottom: 1px solid var(--c-line); text-align: left; vertical-align: top; }
+.coop .tabela th { font-size: 12px; color: var(--c-marrom); font-weight: 700; background: var(--c-creme); position: sticky; top: 0; text-transform: uppercase; letter-spacing: 0.04em; }
 .coop .tabela td.n,
 .coop .tabela th.n { text-align: right; white-space: nowrap; }
-.coop .tabela tfoot td { font-weight: 700; border-top: 2px solid var(--c-ink); }
+.coop .tabela tfoot td { font-weight: 700; border-top: 2px solid var(--c-marrom); background: #faf6ee; }
 .coop .tabela tr.marcada td { background: var(--c-amarelo); }
-.coop .tabela tr.cinza td { color: #9aa093; }
+.coop .tabela tr.cinza td { color: #a0917f; }
+.coop .tabela tbody tr:hover td { background: #fbf7ef; }
+
+/* Campos */
 .coop input[type="number"],
 .coop input[type="text"],
 .coop input[type="date"],
+.coop input[type="time"],
 .coop select,
 .coop textarea {
   font: inherit;
   padding: 7px 9px;
-  border: 1px solid #c9cfbf;
-  border-radius: 8px;
+  border: 1px solid #cdbfa8;
+  border-radius: 9px;
   background: #fff;
   min-height: 38px;
+  color: var(--c-ink);
 }
+.coop input:focus,
+.coop select:focus,
+.coop textarea:focus { outline: 2px solid var(--c-verde-2); outline-offset: 1px; }
 .coop input.digita { background: var(--c-amarelo); border-color: var(--c-amarelo-borda); width: 92px; text-align: right; }
-.coop input.digita:focus { outline: 2px solid var(--c-verde-2); }
 .coop textarea { width: 100%; min-height: 90px; }
 .coop label.campo,
 .coop div.campo { display: grid; gap: 4px; font-size: 13.5px; color: var(--c-soft); }
-.coop .aviso { background: var(--c-amarelo); border: 1px solid var(--c-amarelo-borda); border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
-.coop .erro { background: var(--c-vermelho-claro); border: 1px solid #e3a99e; color: #6e1f16; border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
-.coop .ok { background: var(--c-verde-claro); border: 1px solid #b8d6bf; border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
-.coop .etiqueta { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 99px; background: #eceee6; color: var(--c-soft); }
+
+/* Avisos e etiquetas */
+.coop .aviso { background: var(--c-laranja-claro); border: 1px solid #f0c39a; border-left: 5px solid var(--c-laranja); border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+.coop .erro { background: var(--c-vermelho-claro); border: 1px solid #e3a99e; border-left: 5px solid var(--c-vermelho); color: #6e1f16; border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+.coop .ok { background: var(--c-verde-claro); border: 1px solid #b8d6bf; border-left: 5px solid var(--c-verde); border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+.coop .etiqueta { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 99px; background: var(--c-creme); color: var(--c-marrom); font-weight: 600; }
 .coop .etiqueta.verde { background: var(--c-verde-claro); color: var(--c-verde); }
 .coop .etiqueta.vermelha { background: var(--c-vermelho-claro); color: var(--c-vermelho); }
 .coop .etiqueta.amarela { background: var(--c-amarelo); color: #6b5800; }
 .coop pre.msg {
   white-space: pre-wrap;
   font: 14px/1.45 inherit;
-  background: #f6f8f3;
-  border-radius: 8px;
+  background: #f7f3ea;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
   padding: 10px;
   margin: 8px 0;
 }
+
+/* Abas da semana */
 .coop .abas { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 14px; }
-.coop .abas a { padding: 7px 12px; border-radius: 99px; border: 1px solid var(--c-line); background: #fff; text-decoration: none; color: var(--c-ink); font-size: 14px; }
-.coop .abas a.ativa { background: var(--c-verde); border-color: var(--c-verde); color: #fff; }
-.coop .rota-titulo { background: var(--c-verde); color: #fff; padding: 8px 12px; border-radius: 10px 10px 0 0; font-weight: 700; }
-.coop .rota-corpo { border: 1px solid var(--c-line); border-top: 0; border-radius: 0 0 10px 10px; background: #fff; margin-bottom: 16px; }
+.coop .abas a { padding: 7px 13px; border-radius: 99px; border: 1px solid var(--c-line); background: var(--c-card); text-decoration: none; color: var(--c-marrom); font-size: 14px; font-weight: 600; }
+.coop .abas a:hover { border-color: var(--c-verde-2); }
+.coop .abas a.ativa { background: var(--c-marrom); border-color: var(--c-marrom); color: #fff; }
+
+/* Rotas */
+.coop .rota-titulo { background: var(--c-marrom); color: #fff; padding: 9px 12px; border-radius: 12px 12px 0 0; font-weight: 700; }
+.coop .rota-titulo .botao.claro { color: var(--c-marrom) !important; border-color: #fff; }
+.coop .rota-corpo { border: 1px solid var(--c-line); border-top: 0; border-radius: 0 0 12px 12px; background: var(--c-card); margin-bottom: 16px; box-shadow: var(--sombra); }
 .coop .escola-linha { cursor: pointer; }
 .coop .escola-linha:hover td { background: #f3f7f1; }
 .coop .discreto { color: var(--c-soft); font-size: 13px; }
 .coop .direita { text-align: right; }
-@media (max-width: 640px) {
-  .coop-main { padding: 12px 12px 60px; }
-  .coop h1 { font-size: 21px; }
-  .coop .tabela th,
-  .coop .tabela td { padding: 6px 5px; }
-}
-@media print {
-  .coop-top,
-  .nao-imprimir { display: none !important; }
-  .coop { background: #fff; }
-}
-
-/* Impressão: cada folha numa página, como na planilha. */
-.coop .folha { background: #fff; border: 1px solid var(--c-line); border-radius: 10px; padding: 18px 20px; margin-bottom: 16px; color: #000; }
-.coop .folha h3 { margin: 0 0 6px; font-size: 15px; text-transform: uppercase; letter-spacing: 0.02em; }
-.coop .folha .linha-cab { margin: 2px 0; font-size: 13.5px; }
-.coop .folha table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13.5px; font-variant-numeric: tabular-nums; }
-.coop .folha th,
-.coop .folha td { border: 1px solid #555; padding: 5px 7px; text-align: left; }
-.coop .folha th { background: #ececec; font-size: 12px; }
-.coop .folha td.n,
-.coop .folha th.n { text-align: right; }
-.coop .folha td.escrever { min-width: 90px; }
-.coop .folha .assina { margin-top: 18px; font-size: 13px; }
-.coop .folha .assina p { margin: 14px 0 0; }
-.coop .mapa-tab { font-size: 12.5px; }
-.coop .mapa-tab th { writing-mode: initial; }
-@media print {
-  .coop-main { max-width: none; padding: 0; }
-  .coop .folha { border: 0; border-radius: 0; padding: 0; margin: 0; break-after: page; }
-  .coop .folha:last-child { break-after: auto; }
-  .coop .card { border: 0; padding: 0; }
-}
-.coop .folha td.n { white-space: nowrap; }
-.coop .folha.mapa table { font-size: 11px; }
-.coop .folha.mapa th,
-.coop .folha.mapa td { padding: 2px 4px; }
-.coop .folha.mapa th { font-size: 9.5px; }
-.coop .folha.excedente table { font-size: 15px; }
-.coop .folha.excedente th,
-.coop .folha.excedente td { padding: 7px 9px; }
 
 /* Recebimento no galpão */
-.coop .recebimento { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; margin: 10px 0 6px; padding: 10px 12px; background: #f6f8f3; border-radius: 10px; }
+.coop .recebimento { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; margin: 10px 0 6px; padding: 10px 12px; background: #f7f3ea; border: 1px dashed var(--c-line); border-radius: 10px; }
+
+/* Resumo das entregas (todas as semanas) */
+.coop .cartoes-semana { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin: 12px 0 18px; }
+.coop .cartao-semana { border-radius: 14px; padding: 14px 16px; color: #fff; background: var(--c-verde); box-shadow: var(--sombra); }
+.coop .cartao-semana.negativo { background: var(--c-vermelho); }
+.coop .cartao-semana.total { background: var(--c-marrom); }
+.coop .cartao-semana small { display: block; font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.9; }
+.coop .cartao-semana strong { display: block; font-size: 26px; margin: 4px 0 2px; font-variant-numeric: tabular-nums; }
+.coop .cartao-semana span { font-size: 13px; opacity: 0.92; }
+.coop .tabela tr.secao td { background: #f7f3ea; color: var(--c-verde); font-weight: 700; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+.coop .tabela tr.destaque td { background: var(--c-verde-claro); font-weight: 700; }
+.coop .tabela tr.saldo td { background: var(--c-marrom); color: #fff; font-weight: 700; font-size: 17px; }
+.coop .tabela tr.saldo td.negativo { color: #ffd3cb; }
+.coop .tabela tr.perda td { background: var(--c-vermelho-claro); color: var(--c-vermelho); }
+.coop .notas { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.coop .nota { background: #f7f3ea; border-left: 5px solid var(--c-verde); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+.coop .nota p { margin: 3px 0; }
+
 /* Celular: cada linha da tabela do galpão vira um cartão. */
 @media (max-width: 720px) {
   .coop .galpao-tab thead { display: none; }
@@ -211,7 +229,54 @@
   .coop .galpao-tab td::before { content: attr(data-r); color: var(--c-soft); font-size: 12.5px; text-align: left; }
   .coop .galpao-tab td[data-r="Produto"] { font-weight: 700; font-size: 16px; justify-content: flex-start; }
   .coop .galpao-tab td[data-r="Produto"]::before { display: none; }
-  .coop .galpao-tab tr.cinza td { color: #9aa093; }
+  .coop .galpao-tab tr.cinza td { color: #a0917f; }
   .coop input.digita { min-width: 96px; font-size: 17px; }
   .coop .botao { min-height: 44px; }
+}
+@media (max-width: 640px) {
+  .coop-main { padding: 12px 12px 60px; }
+  .coop h1 { font-size: 21px; }
+  .coop .tabela th,
+  .coop .tabela td { padding: 6px 5px; }
+  .coop-top .marca { font-size: 15px; }
+}
+
+/* Impressão: cada folha numa página, como na planilha, com a logo no alto. */
+.coop .folha { position: relative; background: #fff; border: 1px solid var(--c-line); border-radius: 10px; padding: 40px 20px 18px 86px; margin-bottom: 16px; color: #000; }
+.coop .folha::before { content: ""; position: absolute; left: 18px; top: 16px; width: 54px; height: 54px; border-radius: 50%; background: url("/coop/logo.jpg") center / cover no-repeat; }
+.coop .folha::after { content: var(--nome, ""); position: absolute; right: 20px; top: 12px; font-size: 10.5px; color: #555; text-transform: uppercase; letter-spacing: 0.08em; max-width: 45%; text-align: right; }
+.coop .folha h3 { margin: 0 0 6px; font-size: 15px; text-transform: uppercase; letter-spacing: 0.02em; color: var(--c-marrom); }
+.coop .folha .linha-cab { margin: 2px 0; font-size: 13.5px; }
+.coop .folha table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.coop .folha th,
+.coop .folha td { border: 1px solid #555; padding: 5px 7px; text-align: left; }
+.coop .folha th { background: #ece6da; font-size: 12px; }
+.coop .folha td.n,
+.coop .folha th.n { text-align: right; white-space: nowrap; }
+.coop .folha td.escrever { min-width: 90px; }
+.coop .folha .assina { margin-top: 18px; font-size: 13px; }
+.coop .folha .assina p { margin: 14px 0 0; }
+.coop .folha.mapa table { font-size: 11px; }
+.coop .folha.mapa th,
+.coop .folha.mapa td { padding: 2px 4px; }
+.coop .folha.mapa th { font-size: 9.5px; }
+.coop .folha.excedente table { font-size: 15px; }
+.coop .folha.excedente th,
+.coop .folha.excedente td { padding: 7px 9px; }
+@media print {
+  .coop-top,
+  .nao-imprimir { display: none !important; }
+  .coop { background: #fff; }
+  .coop-main { max-width: none; padding: 0; }
+  .coop .folha { border: 0; border-radius: 0; padding: 26px 0 0 70px; margin: 0; break-after: page; }
+  .coop .folha::before { left: 0; top: 0; }
+  .coop .folha::after { right: 0; top: 0; }
+  .coop .folha:last-child { break-after: auto; }
+  .coop .card { border: 0; padding: 0; box-shadow: none; }
+  .coop .cartao-semana,
+  .coop .tabela tr.saldo td,
+  .coop .tabela tr.secao td,
+  .coop .tabela tr.destaque td,
+  .coop .tabela tr.perda td,
+  .coop .tabela th { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
