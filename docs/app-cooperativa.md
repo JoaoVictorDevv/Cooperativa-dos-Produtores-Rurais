@@ -20,12 +20,17 @@ Uma planilha mais limpa: mesmas contas da MODELO v102 (14/11/2026), em telas.
 
 ## Abrir no dia a dia
 
-```
-npm run coop
-```
+Dois cliques em **`abrir-app.bat`** (na primeira vez ele instala e prepara o
+app; depois abre em segundos). Deixe a janela preta aberta e entre em
+**http://localhost:3000/coop**. Para fechar, feche a janela.
 
-Deixe a janela preta aberta e entre em **http://localhost:3000/coop** no
-navegador. Para fechar, feche a janela (ou Ctrl+C).
+Baixou uma versão nova do app? Dois cliques em **`atualizar-app.bat`**.
+
+Backup: Cadastro → "Baixar backup de hoje" (um zip com tudo). Guarde no
+pendrive ou no Drive toda semana.
+
+Quem prefere a linha de comando: `npm run coop` (modo desenvolvimento) ou
+`npm run coop:build` + `npm run coop:producao`.
 
 Os dados ficam na pasta `dados-cooperativa/` (fora do Git): `cadastro.json`,
 `semanas/aaaa-mm-dd.json`, `previsoes/` e `historico/` (versão anterior de

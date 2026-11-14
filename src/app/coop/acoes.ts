@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { garantirLocal, gravarCadastro, gravarPrevisao, gravarSemana, lerCadastro, lerPrevisao, lerSemana, listarSemanas } from "@/lib/coop/armazem";
+import { apagarSemana as apagarArquivoSemana, garantirLocal, gravarCadastro, gravarPrevisao, gravarSemana, lerCadastro, lerPrevisao, lerSemana, listarSemanas } from "@/lib/coop/armazem";
 import { lerConferencia, lerPedidoPrefeitura, type LinhaPedido } from "@/lib/coop/planilha/pedidoPrefeitura";
 import { lerPlanilha } from "@/lib/coop/planilha/lerPlanilha";
 import { novaSemana } from "@/lib/coop/semana";
@@ -185,6 +185,20 @@ export async function criarSemana(entrada: z.infer<typeof esquemaCriar>): Promis
     await gravarSemana(s);
     revalidatePath("/coop", "layout");
     return { ok: true, data: s.data };
+  } catch (e) {
+    return erro(e);
+  }
+}
+
+// Apagar uma semana criada errada. Pede confirmação na tela; fica cópia em historico/.
+export async function apagarSemana(data: string, confirmacao: string): Promise<Resposta> {
+  try {
+    garantirLocal();
+    const s = await exigirSemana(data);
+    if (confirmacao.trim() !== s.referencia) throw new Error(`Para apagar, digite a data da semana: ${s.referencia}`);
+    await apagarArquivoSemana(data);
+    revalidatePath("/coop", "layout");
+    return { ok: true };
   } catch (e) {
     return erro(e);
   }

@@ -82,6 +82,17 @@ export async function gravarSemana(s: Semana) {
   await gravarJson(arquivo, { ...s, atualizadoEm: new Date().toISOString() });
 }
 
+// Apaga a semana (uma cópia fica em historico/, dá para recuperar à mão).
+export async function apagarSemana(data: string) {
+  garantirLocal();
+  if (!dataValida(data)) throw new Error("Data inválida.");
+  const arquivo = path.join(pastaDados(), "semanas", `${data}.json`);
+  const atual = await lerJson<Semana>(arquivo);
+  if (!atual) return;
+  await gravarJson(path.join(pastaDados(), "historico", `${data}-apagada-${Date.now()}.json`), atual);
+  await fs.unlink(arquivo);
+}
+
 export async function lerPrevisao(data: string): Promise<Previsao | null> {
   garantirLocal();
   if (!dataValida(data)) return null;

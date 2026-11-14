@@ -9,6 +9,10 @@ if not exist node_modules (
 if not exist dados-cooperativa (
   echo AVISO: a pasta dados-cooperativa nao esta aqui. O app vai comecar vazio.
 )
+if not exist .next\BUILD_ID (
+  echo Preparando o app (so na primeira vez ou depois de atualizar)... uns 2 minutos.
+  call npm run coop:build
+)
 start "" http://localhost:3000/coop
-call npm run coop
+call npm run coop:producao
 pause

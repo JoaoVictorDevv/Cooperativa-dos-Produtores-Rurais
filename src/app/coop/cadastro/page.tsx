@@ -16,6 +16,16 @@ export default async function Cadastro() {
         Produtos, preços, produtores, escolas, rotas e Mapa de Produção vêm da planilha MODELO. Mudou algo no MODELO? É só trazer de novo. Os dados ficam em{" "}
         <code>{pastaDados()}</code>.
       </p>
+      <div className="card" style={{ borderLeft: "5px solid var(--c-laranja)" }}>
+        <h2 style={{ marginTop: 0 }}>Backup</h2>
+        <p className="discreto" style={{ marginTop: 0 }}>
+          Baixa um zip com tudo que está no app (cadastro, semanas, previsões). Guarde no pendrive ou no Drive, toda semana. Para restaurar: descompacte por cima da
+          pasta <code>dados-cooperativa</code>.
+        </p>
+        <a className="botao laranja" href="/coop/backup">
+          ⬇ Baixar backup de hoje
+        </a>
+      </div>
       <div className="card">
         <h2 style={{ marginTop: 0 }}>1. Trazer a planilha MODELO (v102)</h2>
         <ImportarModelo />

@@ -44,7 +44,7 @@ function Cartao({ data, i, texto }: { data: string; i: Item; texto: string }) {
       <div className="botoes" style={{ justifyContent: "space-between" }}>
         <strong>{i.nome}</strong>
         {i.enviadaEm ? (
-          <span className="etiqueta verde">enviada {new Date(i.enviadaEm).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
+          <span className="etiqueta verde" suppressHydrationWarning>enviada {new Date(i.enviadaEm).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}</span>
         ) : i.pedido ? (
           <span className="etiqueta amarela">falta enviar</span>
         ) : (
