@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { connection } from "next/server";
-import { lerCadastro, lerSemana, listarSemanas } from "@/lib/coop/armazem";
+import { lerCadastro, lerMeta, lerSemana, listarPrevisoes, listarSemanas } from "@/lib/coop/armazem";
+import { lembretes } from "@/lib/coop/lembretes";
 import { calcularSemana } from "@/lib/coop/motor";
 import { reais, kg } from "@/lib/coop/numeros";
 import { listinha } from "@/lib/coop/semana";
@@ -23,6 +24,9 @@ export default async function Inicio() {
   }
   const datas = await listarSemanas();
   const semanas = (await Promise.all(datas.map((d) => lerSemana(d)))).filter((s) => s !== null);
+  const calculadas = semanas.map((s) => ({ s, r: calcularSemana(cad, s) }));
+  const hoje = new Date().toISOString().slice(0, 10);
+  const avisos = lembretes(cad, calculadas, await listarPrevisoes(), hoje, (await lerMeta()).ultimoBackup ?? null);
   return (
     <>
       <div className="botoes" style={{ justifyContent: "space-between" }}>
@@ -34,10 +38,22 @@ export default async function Inicio() {
           + Nova semana (pedido da Prefeitura)
         </Link>
       </div>
+      {avisos.length > 0 && (
+        <div className="card" style={{ borderLeft: "5px solid var(--c-laranja)" }}>
+          <h2 style={{ margin: "0 0 8px" }}>Lembretes</h2>
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
+            {avisos.map((a, i) => (
+              <li key={i} style={{ margin: "4px 0" }}>
+                {a.nivel === "atrasado" && <span className="etiqueta vermelha">atrasado</span>} {a.nivel === "hoje" && <span className="etiqueta amarela">hoje</span>}{" "}
+                <Link href={a.link}>{a.texto}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {semanas.length === 0 && <p className="aviso">Nenhuma semana ainda. Crie a primeira com o pedido da Prefeitura, ou traga uma semana antiga da planilha no Cadastro.</p>}
       <div className="passos">
-        {semanas.map((s) => {
-          const r = calcularSemana(cad, s);
+        {calculadas.map(({ s, r }) => {
           const itens = listinha(cad, s, r);
           const feitos = itens.filter((i) => i.feito).length;
           const proximo = itens.find((i) => !i.feito);

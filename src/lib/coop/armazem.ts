@@ -93,6 +93,17 @@ export async function apagarSemana(data: string) {
   await fs.unlink(arquivo);
 }
 
+// Pequenas anotações do app (ex.: quando foi o último backup).
+export async function lerMeta(): Promise<{ ultimoBackup?: string }> {
+  garantirLocal();
+  return (await lerJson<{ ultimoBackup?: string }>(path.join(pastaDados(), "meta.json"))) ?? {};
+}
+
+export async function gravarMeta(m: { ultimoBackup?: string }) {
+  garantirLocal();
+  await gravarJson(path.join(pastaDados(), "meta.json"), { ...(await lerMeta()), ...m });
+}
+
 export async function lerPrevisao(data: string): Promise<Previsao | null> {
   garantirLocal();
   if (!dataValida(data)) return null;

@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import JSZip from "jszip";
 import { NextResponse } from "next/server";
-import { modoLocal, pastaDados } from "@/lib/coop/armazem";
+import { gravarMeta, modoLocal, pastaDados } from "@/lib/coop/armazem";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +28,7 @@ export async function GET() {
   }
   const buf = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
   const hoje = new Date().toISOString().slice(0, 10);
+  await gravarMeta({ ultimoBackup: hoje });
   return new NextResponse(new Uint8Array(buf), {
     headers: { "Content-Type": "application/zip", "Content-Disposition": `attachment; filename="backup-cooperativa-${hoje}.zip"` },
   });
