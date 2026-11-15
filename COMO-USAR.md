@@ -15,7 +15,8 @@
 ## Todo dia
 
 - Dois cliques em **`abrir-app.bat`**. Deixe a janela preta aberta. Para fechar, feche a janela.
-- Baixou uma versão nova do app? Dois cliques em **`atualizar-app.bat`** antes.
+- Saiu versão nova? Dois cliques em **`atualizar-app.bat`**: ele baixa do GitHub sozinho, instala e prepara.
+  Seus dados não mudam. Depois, `abrir-app.bat` de novo.
 - Os seus dados ficam na pasta `dados-cooperativa`. Não apague.
 
 ## A semana, passo a passo
