@@ -4,6 +4,7 @@ import type { DiaRota } from "@/lib/coop/tipos";
 import { carregarSemana } from "../../../dados";
 import { Excedente } from "../Excedente";
 import { Reentregas } from "../Reentregas";
+import { AjusteMapa } from "./AjusteMapa";
 
 export const metadata = { title: "Mapa de montagem" };
 
@@ -45,6 +46,24 @@ export default async function Mapa({ params, searchParams }: PageProps<"/coop/se
       <p className="discreto">
         Monta com o que os produtores entregaram no {galpao.toLowerCase()}. Quando falta, cada escola recebe a mesma parte, na ordem da rota (igual à planilha).
       </p>
+      <AjusteMapa
+        data={data}
+        linhas={r.ordemMapa
+          .filter((p) => r.entregaProduto[p].pedidoSeg + r.entregaProduto[p].pedidoTer > 0)
+          .map((p) => {
+            const e = r.entregaProduto[p];
+            const aj = sem.ajusteEntrega?.[p] ?? {};
+            return {
+              produto: p,
+              doisDias: e.planejado2 > 0.004,
+              automatico1: e.fator1 * 100,
+              automatico2: e.fator2 * 100,
+              somarDias: Boolean(aj.somarDias),
+              fator1: aj.fator1 === undefined ? null : Math.round(aj.fator1 * 1000) / 10,
+              fator2: aj.fator2 === undefined ? null : Math.round(aj.fator2 * 1000) / 10,
+            };
+          })}
+      />
       {rotas.map((rota) => {
         const produtos = produtosMapa.filter((p) => rota.paradas.some((pa) => (r.enviado[pa.codigo]?.[p.nome] ?? 0) > 0.0001 || (sem.pedidoEscolas[pa.codigo]?.[p.nome] ?? 0) > 0));
         const totais = produtos.map((p) => rota.paradas.reduce((s, pa) => s + (r.enviado[pa.codigo]?.[p.nome] ?? 0), 0));
