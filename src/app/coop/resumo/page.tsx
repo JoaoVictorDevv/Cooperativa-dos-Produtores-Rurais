@@ -4,6 +4,7 @@ import { calcularSemana, type ResultadoSemana } from "@/lib/coop/motor";
 import type { Semana } from "@/lib/coop/tipos";
 import { kg, reais } from "@/lib/coop/numeros";
 import { NOMES_CUSTOS } from "@/lib/coop/semana";
+import { perdasDaSemana } from "@/lib/coop/perdas";
 import { carregarCadastro } from "../dados";
 import { BotaoImprimir } from "../ui";
 
@@ -140,11 +141,13 @@ export default async function Resumo({ searchParams }: PageProps<"/coop/resumo">
                 <td>Perdas (não pago pela Prefeitura)</td>
                 {semanas.map((x) => (
                   <td key={x.s.data} className="n">
-                    {x.r.balanco.perdas === null ? "aguardando" : reais(Math.abs(x.r.balanco.perdas))}
+                    <Link href={`/coop/semana/${x.s.data}/perdas`} style={{ color: "inherit" }}>
+                      {reais(perdasDaSemana(cad, x.s, x.r).total)}
+                    </Link>
                   </td>
                 ))}
                 <td className="n">
-                  <strong>{reais(total((x) => Math.abs(x.r.balanco.perdas ?? 0)))}</strong>
+                  <strong>{reais(total((x) => perdasDaSemana(cad, x.s, x.r).total))}</strong>
                 </td>
               </tr>
             </tbody>
@@ -174,7 +177,7 @@ export default async function Resumo({ searchParams }: PageProps<"/coop/resumo">
                 — pode mudar.
               </p>
             )}
-            <p>Perdas = o que saiu do galpão e a Prefeitura não pagou (faltas e recusas nas escolas).</p>
+            <p>Perdas = o que a Prefeitura não pagou (faltas, recusas e escolas sem receber). Clique no valor para ver de onde veio.</p>
           </div>
         </div>
       </div>

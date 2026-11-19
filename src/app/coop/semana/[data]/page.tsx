@@ -3,6 +3,7 @@ import { kg, reais } from "@/lib/coop/numeros";
 import type { ResultadoSemana } from "@/lib/coop/motor";
 import type { Cadastro, Semana } from "@/lib/coop/tipos";
 import { listinha } from "@/lib/coop/semana";
+import { perdasDaSemana } from "@/lib/coop/perdas";
 import { carregarSemana } from "../../dados";
 import { ApagarSemana } from "./ApagarSemana";
 
@@ -20,6 +21,7 @@ export default async function ResumoSemana({ params }: PageProps<"/coop/semana/[
   const { data } = await params;
   const { cad, sem, r } = await carregarSemana(data);
   const itens = listinha(cad, sem, r);
+  const perdas = perdasDaSemana(cad, sem, r);
   const base = `/coop/semana/${data}`;
   const faltas = Object.entries(r.faltaNaDivisao).filter(([, v]) => v >= 0.005);
   return (
@@ -60,10 +62,10 @@ export default async function ResumoSemana({ params }: PageProps<"/coop/semana/[
           <small>Taxa de logística (R$ {kg(cad.taxaLogistica)}/kg)</small>
           <strong>{reais(r.resumo.taxaLogistica)}</strong>
         </div>
-        <div className={`numero${Math.abs(r.balanco.perdas ?? 0) > 0.004 ? " ruim" : ""}`}>
-          <small>Perdas (balanço)</small>
-          <strong>{r.balanco.perdas === null ? "aguardando escolas" : reais(Math.abs(r.balanco.perdas))}</strong>
-        </div>
+        <Link href={`${base}/perdas`} className={`numero${perdas.total > 0.004 ? " ruim" : ""}`}>
+          <small>Perdas (Prefeitura não pagou) — ver de onde veio ›</small>
+          <strong>{r.resumo.entregasLancadasKg > 0 ? reais(perdas.total) : "sem entrega ainda"}</strong>
+        </Link>
         <div className={`numero ${r.balanco.saldo >= 0 ? "bom" : "ruim"}`}>
           <small>Saldo (balanço)</small>
           <strong>{reais(r.balanco.saldo)}</strong>
