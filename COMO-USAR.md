@@ -4,10 +4,10 @@
 
 1. **Node.js**: entre em nodejs.org, baixe a versão **LTS** e instale (só "Next" até o fim). Reinicie o PC.
 2. **Baixar o app** (escolha um):
-   - **GitHub Desktop** (o que você já usa): File → Clone repository → `Cooperativa-dos-Produtores-Rurais`.
-     Em cima, troque o branch para `claude/pnae-excel-structure-djoy3c`.
-   - **Sem GitHub Desktop**: no site do GitHub, branch `claude/pnae-excel-structure-djoy3c` →
-     botão verde **Code → Download ZIP** → descompacte em `C:\Cooperativa\app`.
+   - **GitHub Desktop** (o que você já usa): File → Clone repository → `Cooperativa-dos-Produtores-Rurais`
+     → escolha a pasta `C:\Cooperativa` → Clone.
+   - **Sem GitHub Desktop**: na página do projeto no GitHub, botão verde **Code → Download ZIP** →
+     descompacte em `C:\Cooperativa\app`.
 3. **Seus dados**: descompacte o `dados-cooperativa.zip` **dentro** da pasta do app
    (tem que ficar `...\dados-cooperativa\cadastro.json`).
    Não tem o zip? Sem problema: abra o app e, em **Cadastro**, traga o MODELO e as planilhas das semanas.

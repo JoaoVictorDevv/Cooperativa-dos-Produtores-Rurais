@@ -2,7 +2,7 @@
 title Atualizar o App da Cooperativa
 REM Pega a versao nova do app. Seus dados em dados-cooperativa nao mudam.
 cd /d "%~dp0"
-set RAMO=claude/pnae-excel-structure-djoy3c
+set RAMO=main
 set ZIP=https://github.com/JoaoVictorDevv/Cooperativa-dos-Produtores-Rurais/archive/refs/heads/%RAMO%.zip
 if exist .git goto comgit
 echo Baixando a versao nova do GitHub...
