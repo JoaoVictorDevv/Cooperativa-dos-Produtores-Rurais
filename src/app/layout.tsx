@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "Colheita — Gestão Cooperativa", template: "%s | Colheita" },
-  description: "Gestão integrada de pedidos, produtores, entregas e financeiro para cooperativas do PNAE.",
+  title: { default: "App da Cooperativa", template: "%s · Cooperativa" },
+  description: "Pedidos, galpão, mapa de montagem, romaneios e fechamento da merenda escolar (PNAE).",
+  icons: { icon: "/coop/logo.ico" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

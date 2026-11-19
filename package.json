@@ -1,58 +1,36 @@
 {
-  "name": "colheita",
-  "version": "0.1.0",
+  "name": "app-cooperativa",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
-    "postinstall": "prisma generate",
-    "dev": "next dev",
+    "coop": "node scripts/coop/iniciar.mjs producao",
+    "coop:dev": "node scripts/coop/iniciar.mjs",
     "build": "next build",
-    "start": "next start",
     "lint": "eslint",
-    "test": "vitest run --exclude **/*.integration.test.ts",
-    "test:integration": "node scripts/run-integration-tests.mjs",
-    "test:watch": "vitest",
-    "api:dev": "npm --prefix api run dev",
-    "api:test": "npm --prefix api test",
-    "api:build": "npm --prefix api run build",
-    "supabase:start": "npx supabase start",
-    "supabase:reset": "npx supabase db reset",
-    "supabase:push:dry": "npx supabase db push --dry-run",
-    "db:seed": "tsx prisma/seed.ts",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio",
-    "db:local:start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-local-db.ps1",
-    "db:local:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/stop-local-db.ps1"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "test": "vitest run",
+    "conferir": "tsx scripts/coop/conferir-motor.ts"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.3",
-    "@react-pdf/renderer": "^4.9.0",
-    "bcryptjs": "^3.0.3",
-    "date-fns": "^4.4.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "exceljs": "^4.4.0",
-    "jose": "^6.2.12",
     "jszip": "^3.10.2",
     "next": "16.3.8",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
-    "unpdf": "1.8.1",
+    "typescript": "^5",
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
-    "playwright": "^1.63.0",
-    "prisma": "6.19.3",
     "tsx": "^4.23.13",
-    "typescript": "^5",
     "vitest": "^3.2.7"
+  },
+  "description": "App da Cooperativa dos Produtores Rurais de Petrópolis (PNAE).",
+  "engines": {
+    "node": ">=20"
   }
 }

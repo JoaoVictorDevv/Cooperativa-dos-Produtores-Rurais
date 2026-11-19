@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
-export default function HomePage() {
-  redirect("/login");
+// O app fica em /coop.
+export default function Inicio() {
+  redirect("/coop");
 }

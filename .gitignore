@@ -1,57 +1,22 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# dependências e build
 /node_modules
-/api/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
-
-# next.js
 /.next/
 /out/
-
-# production
-/build
-/api/target/
-/api/dist/
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-!.env.example
-
-# vercel
-.vercel
-
-# agent/editor skill scaffolding (local tooling, not app code)
-.agents/
-.claude/
-.windsurf/
-skills-lock.json
-
-# typescript
 *.tsbuildinfo
 next-env.d.ts
 
-/src/generated/prisma
+# dados reais da cooperativa (ficam só no computador; use o backup do app)
+dados-cooperativa/
+backup-cooperativa-*.zip
 
-# banco PostgreSQL local de desenvolvimento
-/.local/
-/.tools/
+# atualização pelo zip
+/_nova/
+/_nova.zip
+
+# sistema
+.DS_Store
+Thumbs.db
+npm-debug.log*
+.env*
+__pycache__/
+*.pyc
