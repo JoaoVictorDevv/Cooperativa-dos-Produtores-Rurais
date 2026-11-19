@@ -2,6 +2,7 @@ import Link from "next/link";
 import { lerPrevisao, lerSemana, listarSemanas } from "@/lib/coop/armazem";
 import { calcularSemana } from "@/lib/coop/motor";
 import { kg, reais } from "@/lib/coop/numeros";
+import { perdasDaSemana } from "@/lib/coop/perdas";
 import { carregarCadastro } from "../dados";
 
 export const metadata = { title: "Relatórios" };
@@ -30,7 +31,7 @@ export default async function Relatorios() {
     m.cobrar += r.balanco.cobrado;
     m.pagar += r.balanco.pago;
     m.custos += r.balanco.custos;
-    m.perdas += Math.abs(r.balanco.perdas ?? 0);
+    m.perdas += perdasDaSemana(cad, s, r).total;
     m.saldo += r.balanco.saldo;
     m.kg += r.resumo.pedidoTotal;
     m.semanas += 1;
@@ -108,7 +109,9 @@ export default async function Relatorios() {
                 <td className="n">{previsto === null ? "—" : kg(previsto)}</td>
                 <td className="n">{kg(r.resumo.pedidoTotal)}</td>
                 <td className="n">{kg(r.resumo.totais.entregueGalpao)}</td>
-                <td className="n">{r.balanco.perdas === null ? "aguardando" : reais(Math.abs(r.balanco.perdas))}</td>
+                <td className="n">
+                  <Link href={`/coop/semana/${s.data}/perdas`}>{reais(perdasDaSemana(cad, s, r).total)}</Link>
+                </td>
                 <td className="n">{reais(r.balanco.saldo)}</td>
               </tr>
             ))}

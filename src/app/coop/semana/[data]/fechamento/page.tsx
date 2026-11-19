@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { kg, reais } from "@/lib/coop/numeros";
 import { carregarSemana } from "../../../dados";
+import { perdasDaSemana } from "@/lib/coop/perdas";
 import { Fechamento } from "./Fechamento";
 
 export const metadata = { title: "Fechamento" };
@@ -41,10 +42,10 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
           <small>Custos</small>
           <strong>{reais(b.custos)}</strong>
         </div>
-        <div className={`numero${Math.abs(b.perdas ?? 0) > 0.004 ? " ruim" : ""}`}>
-          <small>Perdas (balanço)</small>
-          <strong>{b.perdas === null ? "aguardando escolas" : reais(Math.abs(b.perdas))}</strong>
-        </div>
+        <Link href={`${base}/perdas`} className={`numero${perdasDaSemana(cad, sem, r).total > 0.004 ? " ruim" : ""}`}>
+          <small>Perdas (Prefeitura não pagou) ›</small>
+          <strong>{reais(perdasDaSemana(cad, sem, r).total)}</strong>
+        </Link>
         <div className={`numero ${b.saldo >= 0 ? "bom" : "ruim"}`}>
           <small>Saldo</small>
           <strong>{reais(b.saldo)}</strong>

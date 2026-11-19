@@ -4,6 +4,7 @@ import { lerSemana, listarSemanas } from "@/lib/coop/armazem";
 import { calcularSemana, type ResultadoSemana } from "@/lib/coop/motor";
 import { kg, kg2, reais } from "@/lib/coop/numeros";
 import { NOMES_CUSTOS } from "@/lib/coop/semana";
+import { perdasDaSemana } from "@/lib/coop/perdas";
 import type { Cadastro, DiaRota, Semana } from "@/lib/coop/tipos";
 import { carregarSemana } from "../../../../dados";
 import { BotaoImprimir } from "../../../../ui";
@@ -461,7 +462,7 @@ function ResumoPaulo({ cad, sem, r }: P) {
             <td>Custos da semana</td>
             <td className="n">{reais(b.custos)}</td>
             <td>Perdas</td>
-            <td className="n">{b.perdas === null ? "aguardando escolas" : reais(Math.abs(b.perdas))}</td>
+            <td className="n">{reais(perdasDaSemana(cad, sem, r).total)}</td>
           </tr>
           <tr>
             <td>

@@ -14,6 +14,7 @@ export function Abas({ data, dias }: { data: string; dias: [string, string] }) {
     [`${base}/mapa`, "4. Mapa e romaneios"],
     [`${base}/retornos`, "5. Retornos das escolas"],
     [`${base}/fechamento`, "6. Fechamento"],
+    [`${base}/perdas`, "Perdas"],
   ];
   return (
     <nav className="abas nao-imprimir">

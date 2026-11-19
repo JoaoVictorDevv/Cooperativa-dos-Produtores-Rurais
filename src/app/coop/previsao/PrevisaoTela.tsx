@@ -60,7 +60,6 @@ export function PrevisaoTela({ data, produtores, produtos, inicial }: { data: st
     .map((pr) => ({ produto: pr, total: itens.filter((i) => i.produto === pr).reduce((s, i) => s + i.kg, 0), quem: itens.filter((i) => i.produto === pr) }))
     .filter((x) => x.total > 0);
   const total = porProduto.reduce((s, x) => s + x.total, 0);
-  const curto = new Map(produtores.map((p) => [p.id, p.curto]));
   const dataBr = data.split("-").reverse().join("/");
 
   function salvar() {
@@ -178,14 +177,14 @@ export function PrevisaoTela({ data, produtores, produtos, inicial }: { data: st
       </div>
 
       <div className="folha">
-        <h3>Previsão de produção — entrega {dataBr}</h3>
-        <p className="linha-cab">Cooperativa · quantidades informadas pelos produtores (kg)</p>
-        <table>
+        <h3 style={{ fontSize: 20, color: "var(--c-verde)" }}>Previsão — entrega de {dataBr.slice(0, 5)}</h3>
+        <p className="linha-cab" style={{ color: "#555" }}>O que cada produtor disse que vai ter (kg).</p>
+        <h3 style={{ marginTop: 14, color: "var(--c-verde)" }}>Total por produto</h3>
+        <table style={{ maxWidth: 420 }}>
           <thead>
             <tr>
               <th>PRODUTO</th>
-              <th className="n">TOTAL (kg)</th>
-              <th>PRODUTORES</th>
+              <th className="n">QUANTIDADE</th>
             </tr>
           </thead>
           <tbody>
@@ -193,9 +192,8 @@ export function PrevisaoTela({ data, produtores, produtos, inicial }: { data: st
               <tr key={x.produto}>
                 <td>{x.produto}</td>
                 <td className="n">
-                  <strong>{kg(x.total)}</strong>
+                  <strong>{kg(x.total)} kg</strong>
                 </td>
-                <td>{x.quem.map((q) => `${curto.get(q.produtor)} ${kg(q.kg)}`).join(" · ")}</td>
               </tr>
             ))}
             <tr>
@@ -203,16 +201,37 @@ export function PrevisaoTela({ data, produtores, produtos, inicial }: { data: st
                 <strong>TOTAL</strong>
               </td>
               <td className="n">
-                <strong>{kg(total)}</strong>
+                <strong>{kg(total)} kg</strong>
               </td>
-              <td />
             </tr>
           </tbody>
         </table>
+        <h3 style={{ marginTop: 18, color: "var(--c-verde)" }}>Por produtor</h3>
+        <table style={{ maxWidth: 560 }}>
+          <thead>
+            <tr>
+              <th>PRODUTOR</th>
+              <th>PRODUTO</th>
+              <th className="n">QUANTIDADE</th>
+            </tr>
+          </thead>
+          <tbody>
+            {produtores.flatMap((pr) =>
+              itens
+                .filter((it) => it.produtor === pr.id)
+                .map((it, k) => (
+                  <tr key={`${pr.id}-${it.produto}`}>
+                    <td>{k === 0 ? pr.curto : ""}</td>
+                    <td>{it.produto}</td>
+                    <td className="n">{kg(it.kg)} kg</td>
+                  </tr>
+                )),
+            )}
+          </tbody>
+        </table>
         {obs.trim() && (
-          <div className="assina">
-            <strong>Observações:</strong>
-            <ul>
+          <div className="assina" style={{ fontStyle: "italic" }}>
+            <ul style={{ paddingLeft: 0, listStyle: "none" }}>
               {obs
                 .split("\n")
                 .filter((t) => t.trim())
