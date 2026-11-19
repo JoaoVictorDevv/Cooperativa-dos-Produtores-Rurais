@@ -83,11 +83,11 @@ export function PrevisaoTela({ data, produtores, produtos, inicial }: { data: st
         <div className="botoes" style={{ alignItems: "flex-end" }}>
           <label className="campo">
             Dias no galpão
-            <input type="text" value={dias} onChange={(ev) => setDias(ev.target.value)} style={{ width: 260 }} />
+            <input data-livre type="text" value={dias} onChange={(ev) => setDias(ev.target.value)} style={{ width: 260 }} />
           </label>
           <label className="campo">
             Prazo da nutrição
-            <input type="text" value={prazo} onChange={(ev) => setPrazo(ev.target.value)} style={{ width: 160 }} />
+            <input data-livre type="text" value={prazo} onChange={(ev) => setPrazo(ev.target.value)} style={{ width: 160 }} />
           </label>
         </div>
         <p className="discreto">Texto: “{perguntaPrevisao({ curto: "Fulano" }, dataBr.slice(0, 5), dias, prazo)}”</p>

@@ -46,9 +46,19 @@ Seus dados ficam na pasta `dados-cooperativa` e **não mudam** ao atualizar.
 6. **5. Retornos**: procure a escola pelo código, marque o que faltou ou foi recusado, ou escreva
    `1005 não veio cheiro verde`. Escola fechada → **marcar reentrega**. No fim: **Terminei: romaneios conferidos**.
 7. **6. Fechamento**: custos (já vêm da semana anterior), **Ler conferência** da Prefeitura quando chegar o e-mail,
-   descontos, uma linha sobre a semana → **Salvar** → imprima o resumo do Paulo e os extratos.
+   descontos, uma linha sobre a semana → **Salvar** → imprima o resumo do Paulo e os demonstrativos.
+   Em cada produtor tem **WhatsApp**: abre a conversa com o demonstrativo pronto, é só enviar.
 8. **Resumo** (menu): todas as semanas lado a lado, para o Paulo. **Relatórios**: mês a mês e vendido por produtor.
 9. **Cadastro**: trazer MODELO novo, nome, equipe do galpão, escolas que não recebem e **Baixar backup**.
+
+## Atalhos
+
+- **Procurar** (caixa no alto, ou aperte `/`): digite o código da escola, o nome do produtor ou a data da semana.
+  Escola abre direto nos Retornos; produtor abre a **ficha** dele (semanas, vendido no ano, descontos).
+- **✓ nas abas** = etapa terminada. No fim de cada etapa tem o botão **Próxima**.
+- Se você digitar e tentar sair sem salvar, o app pergunta antes.
+- **Adicionais** (no fim das telas, clique no ＋): previsão × entregue (resumo da semana),
+  gráfico semana a semana (Resumo) e perdas por produto (Relatórios).
 
 ## Toda semana
 

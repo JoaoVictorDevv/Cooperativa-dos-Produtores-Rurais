@@ -381,27 +381,39 @@ async function vendidoNoAno(cad: Cadastro, sem: Semana): Promise<Record<string, 
   return total;
 }
 
+// Demonstrativo de entrega do produtor (o modelo que o João manda).
 function Extratos({ cad, sem, r, produtor, vendidoAno }: P & { produtor?: string; vendidoAno: Record<string, number> }) {
   const lista = cad.produtores.filter((p) => (!produtor || p.id === produtor) && (r.pagarProdutor[p.id] > 0 || Object.values(r.produtores[p.id]).some((x) => x.pedido > 0)));
+  const titulo = (cad.nomeCooperativa ?? "Cooperativa").toUpperCase();
   return (
     <>
       {lista.map((p) => {
         const itens = cad.produtos.map((pr) => ({ pr, x: r.produtores[p.id][pr.nome] })).filter(({ x }) => x.pedido > 0 || x.entregue > 0);
+        const desconto = r.descontoProdutor[p.id] ?? 0;
         return (
-          <div className="folha" key={p.id}>
-            <h3>Extrato do produtor — semana {sem.referencia}</h3>
+          <div className="folha demonstrativo" key={p.id}>
+            <p className="titulo-coop">
+              <strong>{titulo}</strong>
+            </p>
+            <h3>Demonstrativo de entrega — produtor</h3>
             <p className="linha-cab">
-              <strong>PRODUTOR:</strong> {p.nome} &nbsp;|&nbsp; <strong>ENTREGA</strong> {sem.entrega}
+              <strong>PRODUTOR:</strong> {p.nome}
+            </p>
+            <p className="linha-cab">
+              <strong>TELEFONE:</strong> {p.telefone ?? "—"}
+            </p>
+            <p className="linha-cab">
+              <strong>SEMANA (REFERÊNCIA):</strong> {sem.referencia} &nbsp;|&nbsp; ENTREGA {sem.entrega} &nbsp;|&nbsp; Chamada Pública {sem.chamada} · {sem.processo}
             </p>
             <table>
               <thead>
                 <tr>
                   <th>PRODUTO</th>
-                  <th className="n">PEDIDO</th>
-                  <th className="n">ENTREGOU</th>
-                  <th className="n">PAGO (kg)</th>
-                  <th className="n">PREÇO LÍQUIDO</th>
-                  <th className="n">VALOR</th>
+                  <th>PEDIDO ({itens[0]?.pr.unidade ?? "kg"})</th>
+                  <th>ENTREGUE (kg)</th>
+                  <th>ACEITO / PAGO (kg)</th>
+                  <th>PREÇO LÍQUIDO (R$/kg)</th>
+                  <th>VALOR (R$)</th>
                 </tr>
               </thead>
               <tbody>
@@ -410,32 +422,34 @@ function Extratos({ cad, sem, r, produtor, vendidoAno }: P & { produtor?: string
                     <td>{pr.nome}</td>
                     <td className="n">{kg2(x.pedido)}</td>
                     <td className="n">{kg2(x.entregue)}</td>
-                    <td className="n">{kg2(x.pagoKg)}</td>
+                    <td className="n forte">{kg2(x.pagoKg)}</td>
                     <td className="n">{reais(x.precoLiquido)}</td>
-                    <td className="n">{reais(x.valor)}</td>
+                    <td className="n forte">{reais(x.valor)}</td>
                   </tr>
                 ))}
-                {r.descontoProdutor[p.id] > 0 && (
+                {desconto > 0 && (
                   <tr>
-                    <td colSpan={5}>Desconto (folha estragada)</td>
-                    <td className="n">− {reais(r.descontoProdutor[p.id])}</td>
+                    <td colSpan={5} style={{ textAlign: "right" }}>
+                      Desconto (ex.: folha estragada)
+                    </td>
+                    <td className="n forte" style={{ color: "var(--c-vermelho)" }}>
+                      − {reais(desconto)}
+                    </td>
                   </tr>
                 )}
-                <tr>
-                  <td colSpan={5}>
-                    <strong>TOTAL A RECEBER</strong>
+                <tr className="total">
+                  <td colSpan={5} style={{ textAlign: "right" }}>
+                    VALOR TOTAL A RECEBER
                   </td>
-                  <td className="n">
-                    <strong>{reais(r.pagarProdutor[p.id])}</strong>
-                  </td>
+                  <td className="n">{reais(r.pagarProdutor[p.id])}</td>
                 </tr>
               </tbody>
             </table>
-            <p className="linha-cab" style={{ marginTop: 10 }}>
-              Preço líquido = preço da Prefeitura menos R$ {kg(cad.taxaLogistica)}/kg de logística. Trouxe a mais que o pedido: a sobra não é paga.
+            <p className="rodape">
+              Pago = o que foi aceito no galpão, até o pedido de cada produto. Preço líquido = preço de venda − R$ {kg(cad.taxaLogistica)}/kg (taxa de logística da cooperativa).
             </p>
-            <p className="linha-cab">
-              Vendido no ano até esta semana: <strong>{reais(vendidoAno[p.id] ?? 0)}</strong> (referência: R$ 40.000,00 por produtor — só informação).
+            <p className="rodape nao-imprimir">
+              Só para você (não sai na impressão): vendido no ano até esta semana {reais(vendidoAno[p.id] ?? 0)} — referência R$ 40.000,00, só informação.
             </p>
           </div>
         );

@@ -23,7 +23,7 @@ export default async function PaginaPrevisao({ searchParams }: PageProps<"/coop/
         <form className="botoes" method="get">
           <label className="campo">
             Entrega de
-            <input type="date" name="data" defaultValue={data} />
+            <input data-livre type="date" name="data" defaultValue={data} />
           </label>
           <button className="botao claro">Abrir</button>
           {previsoes.length > 0 && (

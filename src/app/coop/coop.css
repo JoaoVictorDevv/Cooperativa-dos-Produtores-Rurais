@@ -294,3 +294,51 @@
 
 /* Anterior / próxima etapa, no fim de cada aba */
 .coop .proxima { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--c-line); }
+
+/* Busca do topo */
+.coop-top .busca { position: relative; flex: 0 1 300px; min-width: 180px; }
+.coop-top .busca input { width: 100%; padding: 7px 12px; border-radius: 99px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.12); color: #fff; font-size: 14px; }
+.coop-top .busca input::placeholder { color: var(--c-creme); opacity: 0.85; }
+.coop-top .busca input:focus { outline: none; background: #fff; color: var(--c-ink); border-color: var(--c-verde-2); }
+.coop-top .busca-lista { position: absolute; top: calc(100% + 6px); left: 0; right: 0; min-width: 300px; z-index: 50; list-style: none; margin: 0; padding: 6px; background: var(--c-card); border: 1px solid var(--c-line); border-radius: 12px; box-shadow: 0 12px 30px -10px rgba(43, 27, 14, 0.35); }
+.coop-top .busca-lista li.vazio { padding: 8px 10px; color: var(--c-soft); font-size: 14px; }
+.coop-top .busca-lista button { display: flex; gap: 8px; align-items: flex-start; width: 100%; text-align: left; padding: 7px 8px; border: 0; border-radius: 8px; background: none; color: var(--c-ink); font: inherit; font-size: 14px; cursor: pointer; }
+.coop-top .busca-lista button.marcado { background: var(--c-verde-claro); }
+.coop-top .busca-lista button small { display: block; color: var(--c-soft); font-size: 12px; }
+.coop-top .busca-lista .etiqueta { flex: none; font-size: 11px; }
+@media (max-width: 700px) { .coop-top .busca { flex-basis: 100%; order: 3; } }
+
+/* Adicionais: informação a mais no fim da tela, fechada até clicar */
+.coop details.adicional { margin-top: 26px; border: 1px dashed var(--c-line); border-radius: 12px; background: var(--c-card); }
+.coop details.adicional > summary { cursor: pointer; padding: 11px 14px; font-weight: 700; color: var(--c-marrom); list-style: none; }
+.coop details.adicional > summary::-webkit-details-marker { display: none; }
+.coop details.adicional > summary::before { content: "＋"; display: inline-block; width: 20px; color: var(--c-verde); }
+.coop details.adicional[open] > summary::before { content: "－"; }
+.coop details.adicional > summary small { font-weight: 400; color: var(--c-soft); margin-left: 6px; }
+.coop details.adicional > .dentro { padding: 0 14px 14px; }
+.coop .barra-pct { display: inline-block; height: 8px; border-radius: 4px; background: var(--c-verde-2); vertical-align: middle; }
+.coop .barra-pct.pouco { background: var(--c-laranja, #e07b24); }
+
+/* Demonstrativo de entrega do produtor (impressão) */
+.coop .folha.demonstrativo .titulo-coop { text-align: center; color: var(--c-verde); font-size: 20px; margin: 0 0 14px; letter-spacing: 0.01em; }
+.coop .folha.demonstrativo h3 { color: var(--c-verde); font-size: 17px; }
+.coop .folha.demonstrativo table th { background: var(--c-verde); color: #fff; text-align: center; }
+.coop .folha.demonstrativo table td.forte { font-weight: 700; }
+.coop .folha.demonstrativo tr.total td { background: var(--c-verde-claro); color: var(--c-azul); font-weight: 700; font-size: 15px; }
+.coop .folha.demonstrativo .rodape { font-size: 11.5px; font-style: italic; color: #555; margin-top: 8px; }
+@media print { .coop .folha.demonstrativo table th, .coop .folha.demonstrativo tr.total td { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+.coop .folha.demonstrativo::after { content: none; }
+
+/* Gráfico do Resumo */
+.coop .grafico svg { width: 100%; height: auto; display: block; }
+.coop .grafico .grade { stroke: var(--c-line); stroke-width: 1; }
+.coop .grafico .eixo { stroke: var(--c-marrom); stroke-width: 1.2; }
+.coop .grafico .rotulo { fill: var(--c-soft); font-size: 11px; }
+.coop .grafico .rotulo.semana { fill: var(--c-marrom); font-size: 12.5px; font-weight: 700; }
+.coop .grafico .valor { fill: var(--c-ink); font-size: 11px; font-weight: 600; }
+.coop .grafico .valor.perdas-t { fill: var(--c-vermelho); }
+.coop .grafico rect.saldo, .coop .grafico .ponto.saldo { fill: var(--c-verde); background: var(--c-verde); }
+.coop .grafico rect.negativo, .coop .grafico .ponto.negativo { fill: var(--c-vermelho); background: var(--c-vermelho); }
+.coop .grafico rect.perdas, .coop .grafico .ponto.perdas { fill: var(--c-laranja); background: var(--c-laranja); }
+.coop .grafico .legenda { font-size: 13px; color: var(--c-soft); margin: 6px 0 0; }
+.coop .grafico .ponto { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin: 0 4px 0 12px; vertical-align: -1px; }

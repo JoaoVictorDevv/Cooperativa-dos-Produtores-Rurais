@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { kg } from "@/lib/coop/numeros";
 import { lerRetornos, type MudancaRetorno } from "@/lib/coop/retornos";
 import type { Motivo, Reentrega, RetornoEscola } from "@/lib/coop/tipos";
@@ -30,8 +30,15 @@ export interface RotaRetorno {
   escolas: EscolaRetorno[];
 }
 
-export function Retornos({ data, rotas, produtos, motivos, conferidos }: { data: string; rotas: RotaRetorno[]; produtos: string[]; motivos: Motivo[]; conferidos: boolean }) {
-  const [aberta, setAberta] = useState<string | null>(null);
+export function Retornos({ data, rotas, produtos, motivos, conferidos, abrir }: { data: string; rotas: RotaRetorno[]; produtos: string[]; motivos: Motivo[]; conferidos: boolean; abrir?: string }) {
+  // Veio da busca do topo (?busca=1045): já abre a escola.
+  const [aberta, setAberta] = useState<string | null>(() => {
+    const e = abrir ? rotas.flatMap((r) => r.escolas).find((x) => x.codigo === abrir) : undefined;
+    return e ? `${e.rotaId}|${e.codigo}` : null;
+  });
+  useEffect(() => {
+    if (abrir) setTimeout(() => document.getElementById(`escola-${abrir}`)?.scrollIntoView({ block: "center" }), 100);
+  }, [abrir]);
   const [busca, setBusca] = useState("");
   const conferir = useAcao();
   const todas = useMemo(() => rotas.flatMap((r) => r.escolas), [rotas]);
@@ -44,7 +51,7 @@ export function Retornos({ data, rotas, produtos, motivos, conferidos }: { data:
     <>
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Escolher a escola</h3>
-        <input type="text" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Código ou nome da escola…" style={{ width: "100%", maxWidth: 420 }} aria-label="Procurar escola" />
+        <input data-livre type="text" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Código ou nome da escola…" style={{ width: "100%", maxWidth: 420 }} aria-label="Procurar escola" />
         {achadas.length > 0 && (
           <div className="botoes" style={{ marginTop: 8 }}>
             {achadas.map((e) => (

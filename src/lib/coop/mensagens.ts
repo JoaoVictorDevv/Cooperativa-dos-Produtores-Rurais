@@ -3,7 +3,7 @@
 // O que vai na mensagem é o que vale para pagar.
 
 import type { ResultadoSemana } from "./motor";
-import { kgMensagem } from "./numeros";
+import { kgMensagem, reais } from "./numeros";
 import type { Cadastro, Produtor, Semana } from "./tipos";
 
 export interface Mensagem {
@@ -55,4 +55,19 @@ export function mensagensDaSemana(cad: Cadastro, sem: Semana, r: ResultadoSemana
 
 export function perguntaPrevisao(produtor: Pick<Produtor, "curto">, entrega: string, dias: string, prazo: string): string {
   return `Bom dia, ${produtor.curto}! O que você vai ter pra entrega de ${entrega}${dias.trim() ? ` (${dias})` : ""}? Me fala o produto e quantos kg. Precisamos passar essa previsão pra nutrição${prazo.trim() ? ` até ${prazo}` : ""}. Obrigado!`;
+}
+
+// Demonstrativo de pagamento pelo WhatsApp (um produtor por vez), com os mesmos
+// números do demonstrativo impresso.
+export function textoDemonstrativo(cad: Cadastro, sem: Semana, r: ResultadoSemana, produtor: Produtor): string | null {
+  const itens = cad.produtos.map((p) => ({ p, x: r.produtores[produtor.id][p.nome] })).filter(({ x }) => x.pedido > 0 || x.entregue > 0);
+  if (!itens.length) return null;
+  const linhas = [`Olá, ${produtor.curto}! 🌱`, `*Demonstrativo da Cooperativa — semana ${sem.referencia}${sem.entrega ? ` (entrega ${sem.entrega})` : ""}*`, ""];
+  for (const { p, x } of itens) {
+    linhas.push(`• ${p.nome}: entregou ${kgMensagem(x.entregue)} ${p.unidade}, pago ${kgMensagem(x.pagoKg)} ${p.unidade} × ${reais(x.precoLiquido)} = *${reais(x.valor)}*`);
+  }
+  const desconto = r.descontoProdutor[produtor.id] ?? 0;
+  if (desconto > 0) linhas.push(`• Desconto (folha estragada): − ${reais(desconto)}`);
+  linhas.push("", `*Total a receber: ${reais(r.pagarProdutor[produtor.id])}*`, "Pago = o que foi aceito no galpão, até o pedido. Qualquer dúvida, me chame. Obrigado!");
+  return linhas.join("\n");
 }

@@ -3,8 +3,9 @@ import { Retornos, type RotaRetorno } from "./Retornos";
 
 export const metadata = { title: "Retornos das escolas" };
 
-export default async function PaginaRetornos({ params }: PageProps<"/coop/semana/[data]/retornos">) {
+export default async function PaginaRetornos({ params, searchParams }: PageProps<"/coop/semana/[data]/retornos">) {
   const { data } = await params;
+  const q = await searchParams;
   const { cad, sem, r } = await carregarSemana(data);
   const nomes = new Map(cad.escolas.map((e) => [e.codigo, e.nome]));
   const rotas: RotaRetorno[] = sem.rotas.map((ro) => ({
@@ -41,6 +42,7 @@ export default async function PaginaRetornos({ params }: PageProps<"/coop/semana
       produtos={cad.produtos.map((p) => p.nome)}
       motivos={cad.motivos}
       conferidos={sem.romaneiosConferidos}
+      abrir={typeof q.busca === "string" ? q.busca : undefined}
     />
   );
 }

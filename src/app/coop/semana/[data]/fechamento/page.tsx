@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { kg, reais } from "@/lib/coop/numeros";
+import { linkWhatsApp, textoDemonstrativo } from "@/lib/coop/mensagens";
 import { carregarSemana } from "../../../dados";
 import { perdasDaSemana } from "@/lib/coop/perdas";
 import { Fechamento } from "./Fechamento";
@@ -56,7 +57,7 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
           🖨 Resumo de 1 página (Paulo)
         </Link>
         <Link className="botao claro" href={`${base}/imprimir/extratos`}>
-          🖨 Extratos de todos os produtores
+          🖨 Demonstrativos de todos os produtores
         </Link>
       </div>
       <h2>Pagamento dos produtores</h2>
@@ -78,9 +79,13 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
               .filter((p) => r.pagarProdutor[p.id] > 0 || Object.values(r.produtores[p.id]).some((x) => x.pedido > 0))
               .map((p) => {
                 const x = Object.values(r.produtores[p.id]);
+                const texto = textoDemonstrativo(cad, sem, r, p);
+                const zap = texto ? linkWhatsApp(p.telefone, texto) : null;
                 return (
                   <tr key={p.id}>
-                    <td>{p.nome}</td>
+                    <td>
+                      <Link href={`/coop/produtor/${encodeURIComponent(p.id)}`}>{p.nome}</Link>
+                    </td>
                     <td className="n">{kg(x.reduce((s, i) => s + i.pedido, 0))}</td>
                     <td className="n">{kg(x.reduce((s, i) => s + i.entregue, 0))}</td>
                     <td className="n">{kg(x.reduce((s, i) => s + i.pagoKg, 0))}</td>
@@ -88,10 +93,17 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
                     <td className="n">
                       <strong>{reais(r.pagarProdutor[p.id])}</strong>
                     </td>
-                    <td className="direita">
+                    <td className="direita" style={{ whiteSpace: "nowrap" }}>
                       <Link className="botao pequeno claro" href={`${base}/imprimir/extratos?produtor=${encodeURIComponent(p.id)}`}>
-                        extrato
-                      </Link>
+                        🖨 demonstrativo
+                      </Link>{" "}
+                      {zap ? (
+                        <a className="botao pequeno" href={zap} target="_blank" rel="noreferrer" title="Abre a conversa com o texto pronto; é só enviar">
+                          WhatsApp
+                        </a>
+                      ) : (
+                        <span className="etiqueta vermelha" title="Cadastre o telefone no MODELO">sem número</span>
+                      )}
                     </td>
                   </tr>
                 );

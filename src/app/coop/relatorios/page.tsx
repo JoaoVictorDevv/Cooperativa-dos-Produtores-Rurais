@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { lerPrevisao, lerSemana, listarSemanas } from "@/lib/coop/armazem";
+import { lerSemana, listarSemanas, previsaoDaSemana } from "@/lib/coop/armazem";
 import { calcularSemana } from "@/lib/coop/motor";
 import { kg, reais } from "@/lib/coop/numeros";
-import { perdasDaSemana } from "@/lib/coop/perdas";
+import { NOME_CAUSA, perdasDaSemana, type ItemPerda } from "@/lib/coop/perdas";
 import { carregarCadastro } from "../dados";
 
 export const metadata = { title: "Relatórios" };
@@ -19,7 +19,7 @@ export default async function Relatorios() {
     const s = await lerSemana(d);
     if (!s) continue;
     const r = calcularSemana(cad, s);
-    const prev = await lerPrevisao(d);
+    const prev = await previsaoDaSemana(d);
     linhas.push({ s, r, previsto: prev ? prev.itens.reduce((t, i) => t + i.kg, 0) : null });
   }
   const meses = new Map<string, { cobrar: number; pagar: number; custos: number; perdas: number; saldo: number; kg: number; semanas: number; divida: number }>();
@@ -42,6 +42,22 @@ export default async function Relatorios() {
     if (s.data.slice(0, 4) !== (datas.at(-1) ?? "").slice(0, 4)) continue;
     for (const [p, v] of Object.entries(r.pagarProdutor)) ano.set(p, (ano.get(p) ?? 0) + v);
   }
+  // Perdas por produto, somando as semanas (escola por escola).
+  const porProduto = new Map<string, { kg: number; valor: number; semanas: Set<string>; motivos: Map<string, number> }>();
+  for (const { s, r } of linhas) {
+    const itens: ItemPerda[] = perdasDaSemana(cad, s, r).linhas.flatMap((l) => l.itens);
+    for (const i of itens) {
+      const x = porProduto.get(i.produto) ?? { kg: 0, valor: 0, semanas: new Set<string>(), motivos: new Map<string, number>() };
+      x.kg += i.kg;
+      x.valor += i.valor;
+      x.semanas.add(s.data);
+      const motivo = i.causa === "semReceber" ? NOME_CAUSA.semReceber.toLowerCase() : i.detalhe ? i.detalhe.toLowerCase() : NOME_CAUSA[i.causa].toLowerCase();
+      x.motivos.set(motivo, (x.motivos.get(motivo) ?? 0) + i.valor);
+      porProduto.set(i.produto, x);
+    }
+  }
+  const perdasProduto = [...porProduto.entries()].sort((a, b) => b[1].valor - a[1].valor);
+  const totalPerdasProduto = perdasProduto.reduce((t, [, x]) => t + x.valor, 0);
   return (
     <>
       <h1>Relatórios</h1>
@@ -137,7 +153,9 @@ export default async function Relatorios() {
                 const v = ano.get(p.id) ?? 0;
                 return (
                   <tr key={p.id}>
-                    <td>{p.nome}</td>
+                    <td>
+                      <Link href={`/coop/produtor/${encodeURIComponent(p.id)}`}>{p.nome}</Link>
+                    </td>
                     <td className="n">{reais(v)}</td>
                     <td className="n">{kg((v / LIMITE) * 100, 1)}%</td>
                   </tr>
@@ -146,6 +164,58 @@ export default async function Relatorios() {
           </tbody>
         </table>
       </div>
+      {perdasProduto.length > 0 && (
+        <details className="adicional">
+          <summary>
+            Adicional: perdas por produto
+            <small>
+              mais perdido: {perdasProduto[0][0].toLowerCase()} ({reais(perdasProduto[0][1].valor)} em {perdasProduto[0][1].semanas.size} semana{perdasProduto[0][1].semanas.size > 1 ? "s" : ""})
+            </small>
+          </summary>
+          <div className="dentro">
+            <p className="discreto">Soma de todas as semanas, escola por escola (sem o ajuste da conferência da Prefeitura). Mostra onde está o problema.</p>
+            <div className="rolar">
+              <table className="tabela">
+                <thead>
+                  <tr>
+                    <th>Produto</th>
+                    <th className="n">Perdido (kg)</th>
+                    <th className="n">Valor</th>
+                    <th className="n">% das perdas</th>
+                    <th className="n">Semanas</th>
+                    <th>Principal motivo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {perdasProduto.map(([produto, x]) => {
+                    const [motivo, valorMotivo] = [...x.motivos.entries()].sort((a, b) => b[1] - a[1])[0];
+                    return (
+                      <tr key={produto}>
+                        <td>{produto}</td>
+                        <td className="n">{kg(x.kg)}</td>
+                        <td className="n">{reais(x.valor)}</td>
+                        <td className="n">{kg((x.valor / totalPerdasProduto) * 100, 0)}%</td>
+                        <td className="n">{x.semanas.size}</td>
+                        <td>
+                          {motivo} <span className="discreto">({kg((valorMotivo / x.valor) * 100, 0)}%)</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td>Total</td>
+                    <td className="n">{kg(perdasProduto.reduce((t, [, x]) => t + x.kg, 0))}</td>
+                    <td className="n">{reais(totalPerdasProduto)}</td>
+                    <td colSpan={3} />
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </details>
+      )}
     </>
   );
 }

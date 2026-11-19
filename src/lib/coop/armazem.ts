@@ -126,3 +126,15 @@ export async function listarPrevisoes(): Promise<string[]> {
     throw e;
   }
 }
+
+// Previsão da semana: a gravada para a mesma data ou para os dias antes dela
+// (ex.: semana 23/11 usa a previsão da entrega de 22/11). Pega a mais perto.
+export async function previsaoDaSemana(data: string): Promise<Previsao | null> {
+  if (!dataValida(data)) return null;
+  const alvo = Date.parse(`${data}T12:00:00Z`);
+  const perto = (await listarPrevisoes())
+    .map((d) => ({ d, dif: Math.round((alvo - Date.parse(`${d}T12:00:00Z`)) / 86400000) }))
+    .filter((x) => x.dif >= -1 && x.dif <= 6)
+    .sort((a, b) => Math.abs(a.dif) - Math.abs(b.dif))[0];
+  return perto ? lerPrevisao(perto.d) : null;
+}

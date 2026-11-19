@@ -5,7 +5,9 @@ import type { Cadastro, Semana } from "@/lib/coop/tipos";
 import { listinha } from "@/lib/coop/semana";
 import { perdasDaSemana } from "@/lib/coop/perdas";
 import { carregarSemana } from "../../dados";
+import { previsaoDaSemana } from "@/lib/coop/armazem";
 import { ApagarSemana } from "./ApagarSemana";
+import { PrevisaoEntregue } from "./PrevisaoEntregue";
 
 const LINKS: Record<string, string> = {
   pedido: "",
@@ -23,6 +25,7 @@ export default async function ResumoSemana({ params }: PageProps<"/coop/semana/[
   const itens = listinha(cad, sem, r);
   const perdas = perdasDaSemana(cad, sem, r);
   const base = `/coop/semana/${data}`;
+  const prev = await previsaoDaSemana(data);
   const faltas = Object.entries(r.faltaNaDivisao).filter(([, v]) => v >= 0.005);
   return (
     <>
@@ -120,6 +123,7 @@ export default async function ResumoSemana({ params }: PageProps<"/coop/semana/[
           </tfoot>
         </table>
       </div>
+      {prev && <PrevisaoEntregue cad={cad} r={r} prev={prev} />}
       <div className="botoes nao-imprimir" style={{ marginTop: 18, justifyContent: "flex-end" }}>
         <ApagarSemana data={sem.data} referencia={sem.referencia} />
       </div>

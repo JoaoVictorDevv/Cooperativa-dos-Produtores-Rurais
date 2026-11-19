@@ -17,6 +17,16 @@ export function mostrarNumero(v: number | null | undefined): string {
   return String(Math.round(v * 1000) / 1000).replace(".", ",");
 }
 
+// Aviso de "você não salvou": qualquer campo digitado dentro do app marca
+// "sujo"; salvar com sucesso limpa. Busca e filtros têm data-livre (não contam).
+let sujo = false;
+export function temNaoSalvo() {
+  return sujo;
+}
+export function marcarSujo(v: boolean) {
+  sujo = v;
+}
+
 type Resultado = { ok: true } | { ok: false; erro: string };
 
 // Roda uma ação do servidor, mostra "Salvo" ou o erro, e atualiza a tela.
@@ -30,6 +40,7 @@ export function useAcao() {
       try {
         const r = await fn();
         if (r.ok) {
+          sujo = false;
           setAviso({ tipo: "ok", texto: okTexto });
           depois?.(r);
           router.refresh();

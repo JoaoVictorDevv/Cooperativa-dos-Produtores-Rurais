@@ -23,9 +23,9 @@ export function Galpao({ data, dia, cartoes, caixa, equipe }: { data: string; di
   return (
     <>
       <div className="botoes nao-imprimir" style={{ margin: "10px 0" }}>
-        <input type="text" placeholder="Procurar produtor…" value={busca} onChange={(e) => setBusca(e.target.value)} />
+        <input data-livre type="text" placeholder="Procurar produtor…" value={busca} onChange={(e) => setBusca(e.target.value)} />
         <label className="discreto">
-          <input type="checkbox" checked={soPendentes} onChange={(e) => setSoPendentes(e.target.checked)} /> só quem falta lançar
+          <input data-livre type="checkbox" checked={soPendentes} onChange={(e) => setSoPendentes(e.target.checked)} /> só quem falta lançar
         </label>
         <span className="etiqueta">
           {lancados} de {cartoes.length} lançados
@@ -118,10 +118,10 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
         </div>
         <div className="botoes nao-imprimir">
           <label className="discreto">
-            <input type="checkbox" checked={todos} onChange={(e) => setTodos(e.target.checked)} /> todos os produtos
+            <input data-livre type="checkbox" checked={todos} onChange={(e) => setTodos(e.target.checked)} /> todos os produtos
           </label>
           <label className="discreto">
-            <input type="checkbox" checked={comExtra} onChange={(e) => setComExtra(e.target.checked)} /> entrega extra (complemento)
+            <input data-livre type="checkbox" checked={comExtra} onChange={(e) => setComExtra(e.target.checked)} /> entrega extra (complemento)
           </label>
         </div>
       </div>
