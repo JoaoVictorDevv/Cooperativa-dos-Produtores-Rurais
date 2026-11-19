@@ -1,6 +1,6 @@
 // Abre o app da Cooperativa no computador.
-//   node scripts/coop/iniciar.mjs            -> modo desenvolvimento (npm run coop)
-//   node scripts/coop/iniciar.mjs producao   -> modo final (abrir-app.bat)
+//   node scripts/coop/iniciar.mjs            -> modo desenvolvimento (npm run coop:dev)
+//   node scripts/coop/iniciar.mjs producao   -> modo final (abrir-app.bat ou npm run coop)
 //
 // Liga o modo local (sem login, dados em ./dados-cooperativa) e inicia o Next.
 // Só escuta no próprio computador (127.0.0.1): sem login, não pode abrir na rede.

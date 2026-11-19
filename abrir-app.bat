@@ -9,7 +9,7 @@ goto atalho
 :instalar
 echo Primeira vez: instalando. Pode demorar uns 5 minutos, nao feche a janela...
 echo Os avisos amarelos "npm warn" sao normais.
-call npm install --no-audit --no-fund
+call npm install --omit=dev --no-audit --no-fund
 if errorlevel 1 goto erro
 :atalho
 if exist "%USERPROFILE%\Desktop\App Cooperativa.lnk" goto abrir

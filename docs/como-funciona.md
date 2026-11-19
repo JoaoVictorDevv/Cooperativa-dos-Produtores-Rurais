@@ -1,41 +1,20 @@
-# App da Cooperativa (modo local)
+# Como o app funciona por dentro
 
 Uma planilha mais limpa: mesmas contas da MODELO v102 (14/11/2026), em telas.
+Instalar e usar: [COMO-USAR.md](../COMO-USAR.md).
 
-## Como começar (uma vez só)
-
-1. Instale o **Node.js** (versão LTS) em nodejs.org. Só "avançar, avançar".
-2. Baixe o projeto (botão **Code → Download ZIP** no GitHub, ou `git clone`) e
-   descompacte numa pasta, ex.: `C:\Cooperativa\app`.
-3. Abra o **Prompt de Comando** dentro dessa pasta (na barra de endereço do
-   Explorador, digite `cmd` e Enter) e rode:
-
-   ```
-   npm install
-   ```
-
-4. Copie a pasta `dados-cooperativa` (com cadastro e semanas) para dentro da
-   pasta do projeto. Sem ela, o app começa vazio: aí é só trazer o MODELO na
-   tela Cadastro.
+Os dados ficam na pasta `dados-cooperativa/` (fora do Git): `cadastro.json`,
+`semanas/aaaa-mm-dd.json`, `previsoes/`, `historico/` (cópia anterior de cada
+semana a cada gravação) e `meta.json`. Outro lugar: variável `COOP_DADOS`.
 
 ## Abrir no dia a dia
 
-Dois cliques em **`abrir-app.bat`** (na primeira vez ele instala e prepara o
-app; depois abre em segundos). Deixe a janela preta aberta e entre em
-**http://localhost:3000/coop**. Para fechar, feche a janela.
+Dois cliques no atalho **App Cooperativa** (ou em `abrir-app.bat`). Detalhes
+em [COMO-USAR.md](../COMO-USAR.md).
 
-Baixou uma versão nova do app? Dois cliques em **`atualizar-app.bat`**.
-
-Backup: Cadastro → "Baixar backup de hoje" (um zip com tudo). Guarde no
-pendrive ou no Drive toda semana.
-
-Quem prefere a linha de comando: `npm run coop` (modo desenvolvimento) ou
-`npm run coop:build` + `npm run coop:producao`.
-
-Os dados ficam na pasta `dados-cooperativa/` (fora do Git): `cadastro.json`,
-`semanas/aaaa-mm-dd.json`, `previsoes/` e `historico/` (versão anterior de
-cada semana, a cada gravação). Para guardar em outro lugar: `COOP_DADOS=...`.
-Sem login: só abre no próprio computador.
+Linha de comando: `npm run coop` (modo final) ou `npm run coop:dev`
+(desenvolvimento). Conferir o motor com uma planilha recalculada:
+`npm run conferir -- <semana.xlsx> <recalculada.xlsx>`.
 
 ## A semana, na ordem
 

@@ -25,7 +25,7 @@ echo e clique em "Pull origin". Se ja fez isso, pode continuar.
 pause
 :instalar
 echo Instalando o que mudou...
-call npm install --no-audit --no-fund
+call npm install --omit=dev --no-audit --no-fund
 if errorlevel 1 goto erro
 if exist .next rmdir /s /q .next
 echo.
