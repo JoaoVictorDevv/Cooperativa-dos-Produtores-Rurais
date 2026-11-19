@@ -68,7 +68,7 @@ export default async function Mapa({ params, searchParams }: PageProps<"/coop/se
         const produtos = produtosMapa.filter((p) => rota.paradas.some((pa) => (r.enviado[pa.codigo]?.[p.nome] ?? 0) > 0.0001 || (sem.pedidoEscolas[pa.codigo]?.[p.nome] ?? 0) > 0));
         const totais = produtos.map((p) => rota.paradas.reduce((s, pa) => s + (r.enviado[pa.codigo]?.[p.nome] ?? 0), 0));
         return (
-          <section key={rota.id}>
+          <section key={rota.id} id={`rota-${rota.id}`}>
             <div className="rota-titulo botoes" style={{ justifyContent: "space-between" }}>
               <span>{rota.titulo}</span>
               <span className="botoes">

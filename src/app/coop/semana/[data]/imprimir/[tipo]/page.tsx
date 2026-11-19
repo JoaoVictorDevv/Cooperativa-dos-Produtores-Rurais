@@ -43,13 +43,24 @@ export default async function Imprimir({ params, searchParams }: PageProps<"/coo
   else if (tipo === "paulo") conteudo = <ResumoPaulo cad={cad} sem={sem} r={r} />;
   else notFound();
 
+  // Voltar = para a aba de onde veio (e para a mesma rota no mapa).
+  const base = `/coop/semana/${data}`;
+  const diaRota = um("dia") === "TER" ? "TER" : "SEG";
+  const rotaId = um("rota");
+  const [voltar, nomeVoltar] =
+    tipo === "produtores"
+      ? [`${base}/galpao/${um("dia") === "2" ? "2" : "1"}`, `Galpão ${(um("dia") === "2" ? sem.diasGalpao[1] : sem.diasGalpao[0]).toLowerCase()}`]
+      : tipo === "paulo" || tipo === "extratos"
+        ? [`${base}/fechamento`, "Fechamento"]
+        : [`${base}/mapa?dia=${diaRota}${rotaId ? `#rota-${encodeURIComponent(rotaId)}` : ""}`, "Mapa e Romaneios"];
+
   return (
     <>
       <style>{`@page { size: A4 ${paisagem ? "landscape" : "portrait"}; margin: 12mm; }`}</style>
       <div className="botoes nao-imprimir" style={{ marginBottom: 12 }}>
         <BotaoImprimir />
-        <Link className="botao claro" href={`/coop/semana/${data}`}>
-          Voltar
+        <Link className="botao claro" href={voltar}>
+          ← Voltar para {nomeVoltar}
         </Link>
         <span className="discreto">Na janela de impressão, escolha a impressora ou “Salvar como PDF”.</span>
       </div>

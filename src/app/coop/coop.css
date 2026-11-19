@@ -187,6 +187,10 @@
 .coop .abas a { padding: 7px 13px; border-radius: 99px; border: 1px solid var(--c-line); background: var(--c-card); text-decoration: none; color: var(--c-marrom); font-size: 14px; font-weight: 600; }
 .coop .abas a:hover { border-color: var(--c-verde-2); }
 .coop .abas a.ativa { background: var(--c-marrom); border-color: var(--c-marrom); color: #fff; }
+.coop .abas a .check { display: inline-grid; place-items: center; width: 18px; height: 18px; margin-right: 6px; border-radius: 50%; background: var(--c-verde); color: #fff; font-size: 11px; vertical-align: -3px; }
+.coop .abas a.feita:not(.ativa) { border-color: #b9d8b5; }
+.coop .abas a.ativa .check { background: #fff; color: var(--c-verde); }
+.coop section[id^="rota-"] { scroll-margin-top: 70px; }
 
 /* Rotas */
 .coop .rota-titulo { background: var(--c-marrom); color: #fff; padding: 9px 12px; border-radius: 12px 12px 0 0; font-weight: 700; }
@@ -287,3 +291,6 @@
 .coop .folha h3.vermelho { color: var(--c-vermelho); }
 .coop a.numero { text-decoration: none; color: inherit; display: block; }
 .coop a.numero:hover { border-color: var(--c-vermelho); }
+
+/* Anterior / próxima etapa, no fim de cada aba */
+.coop .proxima { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--c-line); }
