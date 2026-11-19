@@ -145,6 +145,10 @@ export interface Semana {
   // MODELO v100 (04/11/2026): folha não dorme no galpão. Nas rotas de terça a
   // folha usa só o que chegou no 2º dia (_ENTREGA linha 13). Ausente = regra antiga (v99).
   folhaSoNoDia?: boolean;
+  // Ajuste manual do mapa por produto (aba _ENTREGA digitada por cima, ex. 16/11):
+  // somarDias = o que chega no 2º dia soma com a sobra do 1º (legume, mesmo com entrega em 2 dias);
+  // fator1/fator2 = parte do pedido que vai para as escolas no dia (1 = o pedido todo).
+  ajusteEntrega?: Record<string, { somarDias?: boolean; fator1?: number; fator2?: number }>;
   atualizadoEm?: string;
   mensagensEnviadas?: Record<string, string>; // produtor → data/hora em que o botão foi usado
   // BALANÇO, coluna E (09/11): desconto por produtor, ex.: folha estragada. Sai do pagamento.

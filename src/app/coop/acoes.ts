@@ -284,6 +284,31 @@ export async function marcarMensagemEnviada(data: string, produtor: string): Pro
   }
 }
 
+// Ajuste manual do mapa por produto: somar os dois dias, ou forçar quanto do pedido vai.
+const esquemaAjusteEntrega = z.record(
+  z.string().max(60),
+  z.object({ somarDias: z.boolean().optional(), fator1: z.number().min(0).max(1).optional(), fator2: z.number().min(0).max(1).optional() }).nullable(),
+);
+
+export async function salvarAjusteEntrega(data: string, ajustes: z.infer<typeof esquemaAjusteEntrega>): Promise<Resposta> {
+  try {
+    garantirLocal();
+    const a = esquemaAjusteEntrega.parse(ajustes);
+    const s = await exigirSemana(data);
+    s.ajusteEntrega ??= {};
+    for (const [produto, v] of Object.entries(a)) {
+      const limpo = v ? Object.fromEntries(Object.entries(v).filter(([, x]) => x !== undefined && x !== false)) : {};
+      if (Object.keys(limpo).length) s.ajusteEntrega[produto] = limpo;
+      else delete s.ajusteEntrega[produto];
+    }
+    await gravarSemana(s);
+    revalidatePath(`/coop/semana/${data}`, "layout");
+    return { ok: true };
+  } catch (e) {
+    return erro(e);
+  }
+}
+
 // ---------- Galpão ----------
 
 export async function salvarEntrega(data: string, dia: "1" | "2" | "extra", produtor: string, valores: Record<string, number | null>): Promise<Resposta> {

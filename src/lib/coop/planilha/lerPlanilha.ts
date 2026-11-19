@@ -297,6 +297,20 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
   const dias = [...msg.matchAll(/Entregar n[oa] ([^:*]+):/g)].map((x) => x[1].trim());
   const f11 = formula(aba("_ENTREGA").getCell("C11")) ?? "";
   const f13 = formula(aba("_ENTREGA").getCell("C13")) ?? "";
+  // Ajuste manual por produto na _ENTREGA (linha 12/14 digitada; linha 13 sem o IF da folha).
+  const abaEntrega = aba("_ENTREGA");
+  const ajusteEntrega: NonNullable<Semana["ajusteEntrega"]> = {};
+  produtos.forEach((p, i) => {
+    const col = 3 + i;
+    const a: { somarDias?: boolean; fator1?: number; fator2?: number } = {};
+    const f1 = numero(abaEntrega.getCell(12, col));
+    const f2 = numero(abaEntrega.getCell(14, col));
+    if (f1 !== undefined) a.fator1 = f1;
+    if (f2 !== undefined) a.fator2 = f2;
+    const fl = (formula(abaEntrega.getCell(13, col)) ?? "").replace(/\s/g, "");
+    if (/IF\(C6>0\.004,C8,/.test(f13.replace(/\s/g, "")) && fl && !/^=?IF\(/i.test(fl)) a.somarDias = true;
+    if (Object.keys(a).length) ajusteEntrega[p.nome] = a;
+  });
 
   const semana: Semana = {
     data: m ? `${m[3]}-${m[2]}-${m[1]}` : "",
@@ -320,6 +334,7 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
     rotas,
     regraPrimeiroDia: f11.includes("MAX(0") ? "corrigida" : "modelo",
     folhaSoNoDia: /IF\(C6>0\.004,C8,/.test(f13.replace(/\s/g, "")),
+    ajusteEntrega,
   };
   return { cadastro, semana, avisos };
 }

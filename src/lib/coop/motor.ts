@@ -228,10 +228,12 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
     const planejado2 = soma(produtores.map((p) => n(plan2[p][produto])));
     const precisa1 =
       planejado2 > 0.004 ? pedidoSeg : sem.regraPrimeiroDia === "corrigida" ? pedidoSeg + Math.max(0, pedidoTer - entregue2) : pedidoSeg + pedidoTer;
-    const fator1 = precisa1 <= 0.0001 ? 1 : entregue1 >= precisa1 - 0.05 ? 1 : entregue1 / precisa1;
-    // v100: folha (tem 2º dia planejado) usa só o que chegou no 2º dia.
-    const disponivel2 = sem.folhaSoNoDia && planejado2 > 0.004 ? entregue2 : entregue1 + entregue2 - pedidoSeg * fator1;
-    const fator2 = pedidoTer <= 0.0001 ? 1 : disponivel2 >= pedidoTer - 0.05 ? 1 : Math.max(0, disponivel2) / pedidoTer;
+    const aj = sem.ajusteEntrega?.[produto] ?? {};
+    const fator1 = aj.fator1 ?? (precisa1 <= 0.0001 ? 1 : entregue1 >= precisa1 - 0.05 ? 1 : entregue1 / precisa1);
+    // v100: folha (tem 2º dia planejado) usa só o que chegou no 2º dia, a não ser que
+    // o produto esteja marcado para somar os dois dias (legume que veio em 2 dias).
+    const disponivel2 = sem.folhaSoNoDia && planejado2 > 0.004 && !aj.somarDias ? entregue2 : entregue1 + entregue2 - pedidoSeg * fator1;
+    const fator2 = aj.fator2 ?? (pedidoTer <= 0.0001 ? 1 : disponivel2 >= pedidoTer - 0.05 ? 1 : Math.max(0, disponivel2) / pedidoTer);
     const naoLancado = soma(
       produtores.map(
         (p) =>
@@ -300,7 +302,7 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
     for (const produto of ordemColunas) {
       if (pedidoTotal[produto] <= 0) continue;
       const e = entregaProduto[produto];
-      const folha = e.planejado2 > 0.004;
+      const folha = e.planejado2 > 0.004 && !sem.ajusteEntrega?.[produto]?.somarDias;
       const repolho = !folha && produto === "Repolho";
       const sobraSemana = Math.max(0, e.entregue1 + e.entregue2 - e.pedidoSeg * e.fator1 - e.pedidoTer * e.fator2);
       const metade = arred(sobraSemana / 2);
