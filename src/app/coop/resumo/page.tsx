@@ -7,6 +7,7 @@ import { NOMES_CUSTOS } from "@/lib/coop/semana";
 import { perdasDaSemana } from "@/lib/coop/perdas";
 import { carregarCadastro } from "../dados";
 import { BotaoImprimir } from "../ui";
+import { GraficoSemanas } from "./Grafico";
 
 export const metadata = { title: "Resumo das entregas" };
 
@@ -181,6 +182,16 @@ export default async function Resumo({ searchParams }: PageProps<"/coop/resumo">
           </div>
         </div>
       </div>
+      {semanas.length > 1 && (
+        <details className="adicional nao-imprimir">
+          <summary>
+            Adicional: gráfico semana a semana<small>saldo e perdas lado a lado, para ver se está melhorando</small>
+          </summary>
+          <div className="dentro">
+            <GraficoSemanas pontos={semanas.map(({ s, r }) => ({ ref: curta(s.referencia), saldo: r.balanco.saldo, perdas: perdasDaSemana(cad, s, r).total }))} />
+          </div>
+        </details>
+      )}
     </>
   );
 }

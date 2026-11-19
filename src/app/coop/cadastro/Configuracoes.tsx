@@ -93,7 +93,7 @@ export function ExcecoesEscolas({ escolas, produtos, excecoes }: { escolas: Esco
               </button>
             </span>
           ) : (
-            <input type="text" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="código ou nome" style={{ width: 240 }} />
+            <input data-livre type="text" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="código ou nome" style={{ width: 240 }} />
           )}
         </label>
         {!codigo && achadas.length > 0 && (

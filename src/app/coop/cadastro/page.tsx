@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { pastaDados } from "@/lib/coop/armazem";
 import { kg } from "@/lib/coop/numeros";
 import { telefoneWhatsApp } from "@/lib/coop/mensagens";
@@ -73,7 +74,9 @@ export default async function Cadastro() {
               <tbody>
                 {cad.produtores.map((p) => (
                   <tr key={p.id}>
-                    <td>{p.nome}</td>
+                    <td>
+                    <Link href={`/coop/produtor/${encodeURIComponent(p.id)}`}>{p.nome}</Link>
+                  </td>
                     <td>{p.curto}</td>
                     <td>{p.telefone ?? "—"}</td>
                     <td>{telefoneWhatsApp(p.telefone) ? <span className="etiqueta verde">ok</span> : <span className="etiqueta vermelha">sem número</span>}</td>
