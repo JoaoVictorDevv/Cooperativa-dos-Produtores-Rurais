@@ -413,3 +413,8 @@
 
 .coop .semana-paga { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 14px; color: var(--c-soft); cursor: pointer; }
 .coop .semana-paga input { width: 18px; height: 18px; accent-color: var(--c-verde); }
+.coop .folha.romaneio-prod table td.escrever { min-width: 90px; }
+.coop .folha.romaneio-prod .divisao { margin-top: 14px; font-size: 12.5px; }
+.coop .folha.romaneio-prod .divisao p { margin: 1px 0; }
+.coop .folha.romaneio-prod .divisao > div { margin-bottom: 8px; }
+.coop .folha.romaneio-prod .divisao-titulo { color: var(--c-verde); font-weight: 700; font-size: 13px; margin-bottom: 4px !important; }
