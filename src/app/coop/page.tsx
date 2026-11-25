@@ -68,20 +68,10 @@ export default async function Inicio() {
                   {kg(r.resumo.pedidoTotal)} kg · cobrar {reais(r.resumo.cobrar)} · saldo {reais(r.balanco.saldo)}
                 </span>
                 <br />
-                <span>{proximo ? `Falta: ${proximo.texto.toLowerCase()}` : "Semana fechada"}</span>
-                {r.resumo.entregasLancadasKg > 0 &&
-                  (() => {
-                    const devem = cad.produtores.filter((p) => (r.pagarProdutor[p.id] ?? 0) > 0.004);
-                    const pagos = devem.filter((p) => s.pagamentos?.[p.id]).length;
-                    return devem.length ? (
-                      <>
-                        <br />
-                        <span style={{ color: pagos === devem.length ? "var(--c-verde)" : "var(--c-laranja)", fontWeight: 600 }}>
-                          {pagos === devem.length ? "✓ Produtores pagos" : `Pagamento: ${pagos} de ${devem.length} produtores`}
-                        </span>
-                      </>
-                    ) : null;
-                  })()}
+                <span>
+                  {proximo ? `Falta: ${proximo.texto.toLowerCase()}` : "Semana fechada"}
+                  {s.produtoresPagos ? " · produtores pagos ✓" : ""}
+                </span>
               </div>
             </Link>
           );

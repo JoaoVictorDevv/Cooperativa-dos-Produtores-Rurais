@@ -55,13 +55,6 @@ export function lembretes(
     if (!item("custos").feito && passou >= 3) out.push({ texto: `Semana ${ref}: custos da semana não lançados.`, link: `${base}/fechamento`, nivel: "aviso" });
   }
 
-  // Pagamento aos produtores: semanas com entrega há mais de 7 dias e alguém sem ✓.
-  const semPagar = ordenadas.filter(({ s, r }) => diasEntre(s.data, hoje) >= 7 && r.resumo.entregasLancadasKg > 0 && cad.produtores.some((p) => (r.pagarProdutor[p.id] ?? 0) > 0.004 && !s.pagamentos?.[p.id]));
-  if (semPagar.length) {
-    const valor = semPagar.reduce((t, { s, r }) => t + cad.produtores.filter((p) => !s.pagamentos?.[p.id]).reduce((u, p) => u + (r.pagarProdutor[p.id] ?? 0), 0), 0);
-    out.push({ texto: `Pagamento aos produtores: falta pagar ${valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} (${semPagar.map(({ s }) => curta(s.referencia.split("/").reverse().join("-"))).join(", ")}).`, link: "/coop/relatorios#pagamentos", nivel: "aviso" });
-  }
-
   if (!ultimoBackup || diasEntre(ultimoBackup, hoje) >= 7) {
     out.push({ texto: ultimoBackup ? `Último backup foi em ${curta(ultimoBackup)}. Baixe um novo.` : "Nenhum backup ainda. Baixe um e guarde no pendrive.", link: "/coop/backup", nivel: "aviso" });
   }

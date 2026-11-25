@@ -49,7 +49,6 @@ export default async function FichaProdutor({ params }: PageProps<"/coop/produto
       pago: itens.reduce((t, [, x]) => t + x.pagoKg, 0),
       desconto: r.descontoProdutor[p.id] ?? 0,
       receber: r.pagarProdutor[p.id] ?? 0,
-      pagoEm: s.pagamentos?.[p.id] ?? null,
       prometido,
       produtos: itens.filter(([, x]) => x.pedido > 0.004).map(([n]) => n),
     });
@@ -58,7 +57,6 @@ export default async function FichaProdutor({ params }: PageProps<"/coop/produto
   // Limite de R$ 40 mil: pelo valor de venda (pago × preço da Prefeitura) + pedido das semanas sem entrega.
   const limite = (await limitePorProdutor(cad)).linhas.find((x) => x.id === p.id);
   const vendidoAno = limite?.total ?? 0;
-  const faltaReceber = comEntrega.filter((x) => !x.pagoEm).reduce((t, x) => t + x.receber, 0);
   const totalDesconto = semanas.reduce((t, x) => t + x.desconto, 0);
   const pedidoTotal = comEntrega.reduce((t, x) => t + x.pedido, 0);
   const pagoTotal = comEntrega.reduce((t, x) => t + x.pago, 0);
@@ -105,11 +103,6 @@ export default async function FichaProdutor({ params }: PageProps<"/coop/produto
             {kg(pagoTotal, 0)} de {kg(pedidoTotal, 0)} kg
           </span>
         </div>
-        <div className={`numero${faltaReceber > 0.004 ? " ruim" : " bom"}`}>
-          <small>Falta a cooperativa pagar</small>
-          <strong>{reais(faltaReceber)}</strong>
-          <span className="discreto">marque ✓ no Fechamento de cada semana</span>
-        </div>
         <div className={`numero${totalDesconto > 0 ? " ruim" : ""}`}>
           <small>Descontos (ex.: folha estragada)</small>
           <strong>{reais(totalDesconto)}</strong>
@@ -130,7 +123,6 @@ export default async function FichaProdutor({ params }: PageProps<"/coop/produto
                 <th className="n">Pago (kg)</th>
                 <th className="n">Desconto</th>
                 <th className="n">A receber</th>
-                <th>Pago?</th>
                 <th />
               </tr>
             </thead>
@@ -151,7 +143,6 @@ export default async function FichaProdutor({ params }: PageProps<"/coop/produto
                     <td className="n">
                       <strong>{x.lancou ? reais(x.receber) : "—"}</strong>
                     </td>
-                    <td>{x.lancou && x.receber > 0 ? x.pagoEm ? <span className="etiqueta verde">pago {x.pagoEm.split("-").reverse().slice(0, 2).join("/")}</span> : <span className="etiqueta amarela">falta pagar</span> : "—"}</td>
                     <td className="direita">
                       {x.lancou && (
                         <Link className="botao pequeno claro" href={`/coop/semana/${x.s.data}/imprimir/extratos?produtor=${encodeURIComponent(p.id)}`}>

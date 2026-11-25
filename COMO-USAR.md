@@ -81,9 +81,7 @@ A semana nova já vem com o custo de montagem pela escala (ex.: 7 diárias × R$
 
 ## Pagamento dos produtores
 
-No **Fechamento** de cada semana, marque o ✓ de cada produtor quando pagar (ou **✓ Paguei todos**).
-O app guarda o dia. Em **Relatórios → Pagamento aos produtores** tem o quadro de todas as semanas
-(✓ verde = pago, laranja = falta pagar) e o total que falta para cada um. A tela inicial também avisa.
+No fim do **Fechamento** tem um ✓ só: "Produtores desta semana já foram pagos". Marque quando a semana for paga.
 
 ## Limite de R$ 40 mil
 

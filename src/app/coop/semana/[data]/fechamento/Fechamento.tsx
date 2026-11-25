@@ -155,11 +155,15 @@ export function Fechamento({
             <CampoNumero rotulo="Administrativo falta pagar" valor={c.administrativoFalta} aoMudar={(t) => setC({ ...c, administrativoFalta: t })} largura={140} />
           </label>
         </div>
-        <h3>Descontos aos produtores (ex.: folha estragada)</h3>
-        <p className="discreto" style={{ marginTop: 0 }}>
-          Igual à coluna DESCONTO do BALANÇO: sai do que o produtor recebe. Em branco = sem desconto.
-        </p>
-        <div className="rolar">
+        <details className="adicional" open={produtores.some((p) => p.desconto > 0)} style={{ marginTop: 14 }}>
+          <summary>
+            Descontar de algum produtor?<small>ex.: entregou folha estragada e a escola devolveu — só se precisar</small>
+          </summary>
+          <div className="dentro">
+            <p className="discreto" style={{ marginTop: 0 }}>
+              Digite o valor em R$ no amarelo do produtor: ele sai do que o produtor recebe (coluna Líquido). Em branco = sem desconto.
+            </p>
+            <div className="rolar">
           <table className="tabela">
             <thead>
               <tr>
@@ -187,7 +191,9 @@ export function Fechamento({
               })}
             </tbody>
           </table>
-        </div>
+            </div>
+          </div>
+        </details>
         <label className="campo" style={{ marginTop: 14 }}>
           Uma linha sobre a semana (aparece no Resumo das entregas)
           <input type="text" value={obs} onChange={(e) => setObs(e.target.value)} placeholder="ex.: van quebrou na segunda: 9 escolas sem entrega" style={{ maxWidth: 520 }} />
