@@ -13,7 +13,7 @@ import type { Cadastro, Semana } from "./tipos";
 import type { Previsao } from "./previsao";
 
 export function pastaDados(): string {
-  return path.resolve(process.env.COOP_DADOS || path.join(process.cwd(), "dados-cooperativa"));
+  return path.resolve(/*turbopackIgnore: true*/ process.env.COOP_DADOS || path.join(process.cwd(), "dados-cooperativa"));
 }
 
 // O app da Cooperativa ainda não tem login: só funciona no próprio

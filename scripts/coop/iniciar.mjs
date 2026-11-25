@@ -92,6 +92,20 @@ function versaoDosArquivos() {
   return `${Math.round(maior)}-${quantos}`;
 }
 
+// Depois de atualizar (Pull), pode ter peça nova no package.json: instala o que faltar.
+function instalarSeFaltar() {
+  const pkg = JSON.parse(readFileSync(path.join(raiz, "package.json"), "utf8"));
+  const faltam = Object.keys(pkg.dependencies ?? {}).filter((d) => !existsSync(path.join(raiz, "node_modules", d, "package.json")));
+  if (!faltam.length) return true;
+  console.log(`\nInstalando peça nova da atualização (${faltam.join(", ")}). Leva 1 ou 2 minutos, não feche a janela...\n`);
+  const r = spawnSync("npm", ["install", "--omit=dev", "--no-audit", "--no-fund"], { stdio: "inherit", cwd: raiz, shell: true });
+  if (r.status !== 0) {
+    console.log("\nNão deu para instalar. Confira a internet e abra o app de novo.\n");
+    return false;
+  }
+  return true;
+}
+
 function preparar() {
   const marca = path.join(raiz, ".next", "coop-versao.txt");
   const versao = versaoDosArquivos();
@@ -119,6 +133,7 @@ async function main() {
     abrirNavegador();
     return;
   }
+  instalarSeFaltar();
   let modo = producao ? "start" : "dev";
   if (producao && !preparar()) {
     console.log("\nNão deu para preparar o app no modo final. Vou abrir no modo simples (funciona igual, só um pouco mais lento).\n");
