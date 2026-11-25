@@ -154,6 +154,8 @@ export interface Semana {
   ajusteEntrega?: Record<string, { somarDias?: boolean; fator1?: number; fator2?: number }>;
   atualizadoEm?: string;
   mensagensEnviadas?: Record<string, string>; // produtor → data/hora em que o botão foi usado
+  // Recado só desta semana na mensagem do produtor (ex.: "identifica a carga com seu nome").
+  recados?: Record<string, string>;
   // BALANÇO, coluna E (09/11): desconto por produtor, ex.: folha estragada. Sai do pagamento.
   descontos?: Record<string, number>;
   observacao?: string; // uma linha sobre a semana ("van quebrou: 9 escolas sem entrega")

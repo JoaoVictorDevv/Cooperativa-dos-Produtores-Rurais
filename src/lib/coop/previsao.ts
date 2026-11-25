@@ -102,3 +102,94 @@ export function totaisPrevisao(p: Previsao, ordemProdutos: string[]) {
   const lista = [...porProduto.entries()].sort((a, b) => b[1] - a[1] || ordemProdutos.indexOf(a[0]) - ordemProdutos.indexOf(b[0]));
   return { porProduto: lista, total: lista.reduce((s, [, kg]) => s + kg, 0) };
 }
+
+// ---------- Documento inteiro (anexo ou colado) ----------
+// Lê de uma vez: a conversa exportada do WhatsApp ("[23/11 10:15] Ana: 150kg couve"),
+// a tabela da previsão ("Ana  Couve manteiga  150 kg", nome só na 1ª linha) ou
+// um texto solto ("Jorge: 120 couve, 100 alface"). Linha com 2 produtores ou sem
+// quantidade vira sugestão de observação; o João confere antes de gravar.
+
+export interface ProdutorNome {
+  id: string;
+  nome: string;
+  curto: string;
+}
+
+export interface DocumentoLido {
+  porProdutor: Record<string, ItemEntendido[]>;
+  observacoes: string[]; // sugestões (linhas com texto que não viraram quantidade)
+  ignoradas: number;
+}
+
+const CABECALHO = /^(previsao|total por produto|por produtor|produtor|produto|quantidade|total)\b/;
+
+function produtoresNaLinha(linha: string, produtores: ProdutorNome[]): string[] {
+  const t = ` ${semAcento(linha).replace(/[^a-z0-9]+/g, " ")} `;
+  const achados: { id: string; pos: number }[] = [];
+  const contagem = new Map<string, number>();
+  for (const p of produtores) contagem.set(semAcento(p.curto), (contagem.get(semAcento(p.curto)) ?? 0) + 1);
+  for (const p of produtores) {
+    const curto = semAcento(p.curto);
+    const nome = semAcento(p.nome).replace(/[^a-z0-9]+/g, " ").trim();
+    let pos = t.indexOf(` ${nome} `);
+    // Apelido repetido (ex.: dois "Jose") só vale com o nome completo.
+    if (pos < 0 && (contagem.get(curto) ?? 0) === 1) pos = t.indexOf(` ${curto} `);
+    if (pos >= 0) achados.push({ id: p.id, pos });
+  }
+  return achados.sort((a, b) => a.pos - b.pos).map((a) => a.id);
+}
+
+export function lerDocumentoPrevisao(texto: string, produtores: ProdutorNome[], produtosValidos: string[]): DocumentoLido {
+  const porProdutor: Record<string, ItemEntendido[]> = {};
+  const observacoes: string[] = [];
+  let ignoradas = 0;
+  let atual: string | null = null;
+  let pularTotais = false;
+  for (const bruta of texto.split(/\r?\n/)) {
+    let linha = bruta.replace(/‎|‏/g, "").trim();
+    if (!linha) continue;
+    // WhatsApp exportado: "[23/11/2026 10:15] Ana Claudia: texto" ou "23/11/2026 10:15 - Ana: texto".
+    const zap = linha.match(/^\[?\d{1,2}\/\d{1,2}(?:\/\d{2,4})?,?\s+\d{1,2}:\d{2}(?::\d{2})?\]?\s*-?\s*([^:]{1,60}):\s*(.*)$/);
+    let remetente: string | null = null;
+    if (zap) {
+      const quem = produtoresNaLinha(zap[1], produtores);
+      remetente = quem.length === 1 ? quem[0] : null;
+      if (!remetente) {
+        ignoradas++; // mensagem da própria cooperativa ou de outra pessoa
+        continue;
+      }
+      linha = zap[2];
+    }
+    const t = semAcento(linha);
+    if (CABECALHO.test(t)) {
+      pularTotais = /^total por produto/.test(t) || (pularTotais && !/^por produtor/.test(t));
+      if (/^por produtor/.test(t)) pularTotais = false;
+      atual = null;
+      continue;
+    }
+    // "1.400 kg" = mil e quatrocentos.
+    const normal = linha.replace(/(\d)\.(\d{3})(?![\d,])/g, "$1$2");
+    const quem = remetente ? [remetente] : produtoresNaLinha(normal, produtores);
+    const itens = entenderResposta(normal, produtosValidos);
+    if (quem.length > 1) {
+      observacoes.push(linha);
+      continue;
+    }
+    if (quem.length === 1) atual = quem[0];
+    if (pularTotais && !quem.length) {
+      ignoradas++;
+      continue;
+    }
+    if (itens.length && atual) {
+      pularTotais = false;
+      const lista = (porProdutor[atual] ??= []);
+      for (const it of itens) {
+        const ja = lista.find((x) => x.produto === it.produto);
+        if (ja) ja.kg += it.kg;
+        else lista.push({ ...it });
+      }
+    } else if (!itens.length && !quem.length && /[a-z]{3}/.test(t) && linha.length > 12) observacoes.push(linha);
+    else if (!itens.length && !quem.length) ignoradas++;
+  }
+  return { porProdutor, observacoes, ignoradas };
+}

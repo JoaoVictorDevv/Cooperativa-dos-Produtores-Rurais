@@ -342,3 +342,11 @@
 .coop .grafico rect.perdas, .coop .grafico .ponto.perdas { fill: var(--c-laranja); background: var(--c-laranja); }
 .coop .grafico .legenda { font-size: 13px; color: var(--c-soft); margin: 6px 0 0; }
 .coop .grafico .ponto { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin: 0 4px 0 12px; vertical-align: -1px; }
+
+/* Mensagens: ✓ por produtor */
+.coop .msg-check { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 6px; }
+.coop .msg-check input { width: 22px; height: 22px; accent-color: var(--c-verde); }
+.coop .msg-cartao.enviada { border-color: #b9d8b5; }
+.coop .msg-cartao.enviada .msg { opacity: 0.75; }
+.coop .lista-lida { margin: 4px 0 8px; padding-left: 20px; font-size: 14px; }
+.coop .lista-lida li { margin: 2px 0; }

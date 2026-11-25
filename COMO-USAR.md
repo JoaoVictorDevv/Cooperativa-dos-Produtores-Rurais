@@ -35,10 +35,13 @@ Seus dados ficam na pasta `dados-cooperativa` e **não mudam** ao atualizar.
 ## A semana, passo a passo
 
 1. **Previsão** (menu): botão do WhatsApp por produtor → cole as respostas → **Gravar** → imprima para a nutrição.
+   Já tem tudo num documento? Em **Anexe ou cole aqui**, escolha o arquivo (conversa exportada do WhatsApp `.txt`,
+   `.xlsx`, `.docx`) ou cole o texto → **Preencher a previsão com isso** → confira → **Gravar**.
 2. **+ Nova semana**: escolha o arquivo do pedido da Prefeitura → **Ler pedido** → clique nos números que a
    nutricionista cortou → **Criar semana**.
 3. **1. Pedido e mensagens**: confira a divisão (**Mexer** para ajustar, inclusive o "1º dia") →
-   **Abrir no WhatsApp** em cada produtor → enviar.
+   **Abrir no WhatsApp** em cada produtor → enviar (o ✓ marca sozinho). Mandou por fora? Marque o ✓ ou **Já mandei para todos**.
+   **+ recado** põe uma linha só para aquele produtor naquela semana (ex.: "identifica a carga com seu nome").
 4. **2. Galpão domingo** e **3. Galpão segunda**: por produtor, balança + caixas (ou só o líquido), hora,
    quem conferiu, qualidade → **Salvar**. Em branco = veio o pedido. **Veio tudo certo** / **Não veio** = um clique.
 5. **4. Mapa e romaneios**: botão **Tudo de segunda** → Imprimir (mapa + excedente + reentregas + romaneios).
