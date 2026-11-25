@@ -310,6 +310,27 @@ export async function marcarMensagens(data: string, produtores: string[], enviad
   }
 }
 
+// ✓ de pagamento ao produtor (a cooperativa pagou a semana). Vários de uma vez.
+export async function marcarPagamentos(data: string, produtores: string[], pago: boolean, dia?: string): Promise<Resposta> {
+  try {
+    garantirLocal();
+    const ids = z.array(z.string().max(80)).max(100).parse(produtores);
+    const quando = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().parse(dia) ?? new Date().toISOString().slice(0, 10);
+    const s = await exigirSemana(data);
+    const m = { ...(s.pagamentos ?? {}) };
+    for (const id of ids) {
+      if (pago) m[id] ??= quando;
+      else delete m[id];
+    }
+    s.pagamentos = m;
+    await gravarSemana(s);
+    revalidatePath("/coop", "layout");
+    return { ok: true };
+  } catch (e) {
+    return erro(e);
+  }
+}
+
 // Ajuste manual do mapa por produto: somar os dois dias, ou forçar quanto do pedido vai.
 const esquemaAjusteEntrega = z.record(
   z.string().max(60),
