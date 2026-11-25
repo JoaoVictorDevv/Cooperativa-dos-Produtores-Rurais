@@ -310,19 +310,13 @@ export async function marcarMensagens(data: string, produtores: string[], enviad
   }
 }
 
-// ✓ de pagamento ao produtor (a cooperativa pagou a semana). Vários de uma vez.
-export async function marcarPagamentos(data: string, produtores: string[], pago: boolean, dia?: string): Promise<Resposta> {
+// Um ✓ por semana: "produtores pagos".
+export async function marcarSemanaPaga(data: string, pago: boolean): Promise<Resposta> {
   try {
     garantirLocal();
-    const ids = z.array(z.string().max(80)).max(100).parse(produtores);
-    const quando = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().parse(dia) ?? new Date().toISOString().slice(0, 10);
     const s = await exigirSemana(data);
-    const m = { ...(s.pagamentos ?? {}) };
-    for (const id of ids) {
-      if (pago) m[id] ??= quando;
-      else delete m[id];
-    }
-    s.pagamentos = m;
+    if (pago) s.produtoresPagos ??= new Date().toISOString().slice(0, 10);
+    else delete s.produtoresPagos;
     await gravarSemana(s);
     revalidatePath("/coop", "layout");
     return { ok: true };
