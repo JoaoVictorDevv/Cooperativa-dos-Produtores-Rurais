@@ -44,7 +44,7 @@ export default async function Inicio() {
           <ul style={{ margin: 0, paddingLeft: 18 }}>
             {avisos.map((a, i) => (
               <li key={i} style={{ margin: "4px 0" }}>
-                {a.nivel === "atrasado" && <span className="etiqueta vermelha">atrasado</span>} {a.nivel === "hoje" && <span className="etiqueta amarela">hoje</span>}{" "}
+                {a.nivel === "atrasado" && <span className="etiqueta vermelha">Atrasado</span>} {a.nivel === "hoje" && <span className="etiqueta amarela">Hoje</span>}{" "}
                 <Link href={a.link}>{a.texto}</Link>
               </li>
             ))}

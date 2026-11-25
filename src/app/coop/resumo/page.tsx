@@ -45,7 +45,7 @@ export default async function Resumo({ searchParams }: PageProps<"/coop/resumo">
         </div>
         <div className="botoes">
           <BotaoImprimir texto="Imprimir / PDF" />
-          {!ate && <Link className="botao claro" href="/coop/resumo?ate=tudo">incluir semanas sem entrega</Link>}
+          {!ate && <Link className="botao claro" href="/coop/resumo?ate=tudo">Incluir semanas sem entrega</Link>}
         </div>
       </div>
       <style>{`@page { size: A4 landscape; margin: 10mm; }`}</style>
@@ -67,7 +67,7 @@ export default async function Resumo({ searchParams }: PageProps<"/coop/resumo">
             <div className="cartao-semana total">
               <small>Total {semanas.length} semanas</small>
               <strong>{mais(saldoTotal)}</strong>
-              <span>{saldoTotal >= 0 ? "saldo positivo" : "saldo negativo"}</span>
+              <span>{saldoTotal >= 0 ? "Saldo positivo" : "Saldo negativo"}</span>
             </div>
           )}
         </div>

@@ -202,7 +202,7 @@ export function NovaSemana(p: { dataSugerida: string; entregaSugerida: number; d
                         </td>
                         <td className="n">{x.previsao === null ? "—" : kg(x.previsao)}</td>
                         <td>
-                          {falta && <span className="etiqueta vermelha">previsão menor</span>} {!confere && <span className="etiqueta amarela">TOTAL da Prefeitura: {kg(x.prefeitura ?? 0)}</span>}
+                          {falta && <span className="etiqueta vermelha">Previsão menor</span>} {!confere && <span className="etiqueta amarela">TOTAL da Prefeitura: {kg(x.prefeitura ?? 0)}</span>}
                         </td>
                       </tr>
                     );

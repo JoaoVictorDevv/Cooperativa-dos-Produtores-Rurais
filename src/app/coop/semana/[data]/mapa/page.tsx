@@ -36,10 +36,10 @@ export default async function Mapa({ params, searchParams }: PageProps<"/coop/se
             🖨 Tudo de {nomeDia(dia)}: mapa + excedente + romaneios
           </Link>
           <Link className="botao claro" href={`${base}/imprimir/mapa?dia=${dia}`}>
-            só o mapa
+            Só o mapa
           </Link>
           <Link className="botao claro" href={`${base}/imprimir/escolas?dia=${dia}`}>
-            só os romaneios
+            Só os romaneios
           </Link>
         </div>
       </div>
@@ -73,10 +73,10 @@ export default async function Mapa({ params, searchParams }: PageProps<"/coop/se
               <span>{rota.titulo}</span>
               <span className="botoes">
                 <Link className="botao pequeno claro" href={`${base}/imprimir/mapa?dia=${dia}&rota=${encodeURIComponent(rota.id)}`}>
-                  🖨 mapa
+                  🖨 Mapa
                 </Link>
                 <Link className="botao pequeno claro" href={`${base}/imprimir/escolas?dia=${dia}&rota=${encodeURIComponent(rota.id)}`}>
-                  🖨 romaneios
+                  🖨 Romaneios
                 </Link>
               </span>
             </div>

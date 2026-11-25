@@ -25,7 +25,7 @@ export function Galpao({ data, dia, cartoes, caixa, equipe }: { data: string; di
       <div className="botoes nao-imprimir" style={{ margin: "10px 0" }}>
         <input data-livre type="text" placeholder="Procurar produtor…" value={busca} onChange={(e) => setBusca(e.target.value)} />
         <label className="discreto">
-          <input data-livre type="checkbox" checked={soPendentes} onChange={(e) => setSoPendentes(e.target.checked)} /> só quem falta lançar
+          <input data-livre type="checkbox" checked={soPendentes} onChange={(e) => setSoPendentes(e.target.checked)} /> Só quem falta lançar
         </label>
         <span className="etiqueta">
           {lancados} de {cartoes.length} lançados
@@ -130,16 +130,16 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
     <div className="card">
       <div className="botoes" style={{ justifyContent: "space-between" }}>
         <div>
-          <strong style={{ fontSize: 17 }}>{c.nome}</strong> {c.lancado ? <span className="etiqueta verde">lançado</span> : <span className="etiqueta amarela">falta lançar</span>}{" "}
-          {c.recebimento?.hora && <span className="etiqueta">chegou {c.recebimento.hora}{c.recebimento.conferente ? ` · ${c.recebimento.conferente}` : ""}</span>}{" "}
-          {c.recebimento?.qualidade === "ruim" && <span className="etiqueta vermelha">qualidade ruim</span>}
+          <strong style={{ fontSize: 17 }}>{c.nome}</strong> {c.lancado ? <span className="etiqueta verde">Lançado</span> : <span className="etiqueta amarela">Falta lançar</span>}{" "}
+          {c.recebimento?.hora && <span className="etiqueta">Chegou {c.recebimento.hora}{c.recebimento.conferente ? ` · ${c.recebimento.conferente}` : ""}</span>}{" "}
+          {c.recebimento?.qualidade === "ruim" && <span className="etiqueta vermelha">Qualidade ruim</span>}
         </div>
         <div className="botoes nao-imprimir">
           <label className="discreto">
-            <input data-livre type="checkbox" checked={todos} onChange={(e) => setTodos(e.target.checked)} /> todos os produtos
+            <input data-livre type="checkbox" checked={todos} onChange={(e) => setTodos(e.target.checked)} /> Todos os produtos
           </label>
           <label className="discreto">
-            <input data-livre type="checkbox" checked={comExtra} onChange={(e) => setComExtra(e.target.checked)} /> entrega extra (complemento)
+            <input data-livre type="checkbox" checked={comExtra} onChange={(e) => setComExtra(e.target.checked)} /> Entrega extra (complemento)
           </label>
         </div>
       </div>
@@ -149,7 +149,7 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
           <span className="botoes" style={{ gap: 4 }}>
             <input type="time" value={rec.hora ?? ""} onChange={(e) => setRec({ ...rec, hora: e.target.value })} aria-label="Hora da chegada" style={{ width: 110 }} />
             <button type="button" className="botao pequeno claro" onClick={() => setRec({ ...rec, hora: agora() })}>
-              agora
+              Agora
             </button>
           </span>
         </div>

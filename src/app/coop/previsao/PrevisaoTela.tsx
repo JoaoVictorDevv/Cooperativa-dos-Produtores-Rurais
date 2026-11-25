@@ -137,7 +137,7 @@ export function PrevisaoTela({ data, produtores, produtos, inicial }: { data: st
                 <div className="botoes" style={{ justifyContent: "space-between" }}>
                   <strong style={{ fontSize: 15 }}>{p.nome}</strong>
                   <label className="discreto">
-                    <input type="checkbox" checked={x.sem} onChange={(ev) => set({ sem: ev.target.checked })} /> não vai ter
+                    <input type="checkbox" checked={x.sem} onChange={(ev) => set({ sem: ev.target.checked })} /> Não vai ter
                   </label>
                 </div>
                 <textarea
@@ -170,7 +170,7 @@ export function PrevisaoTela({ data, produtores, produtos, inicial }: { data: st
                   ))}
                 {!x.sem && (
                   <button type="button" className="botao pequeno claro" style={{ marginTop: 6 }} onClick={() => set({ itens: [...x.itens, { produto: produtos[0], kg: "" }] })}>
-                    + produto
+                    + Produto
                   </button>
                 )}
               </div>

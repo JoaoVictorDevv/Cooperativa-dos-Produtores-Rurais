@@ -33,7 +33,7 @@ export function Mensagens({ data, itens }: { data: string; itens: Item[] }) {
           </strong>
           {todas ? (
             <button type="button" className="botao claro pequeno" disabled={pendente} onClick={() => rodar(() => marcarMensagens(data, lista.map((i) => i.id), false), "Desmarcadas.")}>
-              desmarcar todas
+              Desmarcar todas
             </button>
           ) : (
             <button type="button" className="botao" disabled={pendente || !lista.length} onClick={() => rodar(() => marcarMensagens(data, lista.map((i) => i.id), true), "Pronto: todas marcadas como enviadas.")}>
@@ -83,7 +83,7 @@ function Cartao({ data, i, texto }: { data: string; i: Item; texto: string }) {
             Abrir no WhatsApp
           </a>
         ) : (
-          <span className="etiqueta vermelha">sem telefone no cadastro</span>
+          <span className="etiqueta vermelha">Sem telefone no cadastro</span>
         )}
         <button
           type="button"

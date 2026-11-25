@@ -72,7 +72,7 @@ export default async function PaginaGalpao({ params }: PageProps<"/coop/semana/[
             </span>
           ))}
           <Link href="/coop/escala" className="discreto">
-            ver folha
+            Ver folha
           </Link>
         </div>
       )}

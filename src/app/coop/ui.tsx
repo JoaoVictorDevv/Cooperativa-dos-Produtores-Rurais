@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 // Número como o João digita: "19,3", "19.3", "1.200,5". Vazio = null.
 export function lerNumero(t: string): number | null {
-  const s = t.trim().replace(/\s/g, "");
+  const s = t.trim().replace(/\s/g, "").replace(/(%|kg)$/i, ""); // "20%" e "19kg" também valem
   if (!s) return null;
   const normal = s.includes(",") ? s.replace(/\./g, "").replace(",", ".") : s;
   const v = Number(normal);

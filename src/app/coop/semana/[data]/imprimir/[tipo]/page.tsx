@@ -318,19 +318,32 @@ function RomaneiosReentrega({ cad, sem, r, dia }: P & { dia: DiaRota }) {
   );
 }
 
+// Mapa de montagem igual ao da planilha (MAPA DE MONTAGEM, uma folha por rota):
+// só as escolas que recebem, todas as colunas de produto da semana, amarelo = vai na
+// caixa da escola, laranja = a escola recebe menos que o pedido.
 function MapaImpresso({ cad, sem, r, dia, rota }: P & { dia: DiaRota; rota?: string }) {
   const rotas = sem.rotas.filter((x) => x.dia === dia && (!rota || x.id === rota));
+  const produtos = r.ordemMapa
+    .map((nome) => cad.produtos.find((p) => p.nome === nome)!)
+    .filter((p) => p && (r.entregaProduto[p.nome]?.pedidoSeg ?? 0) + (r.entregaProduto[p.nome]?.pedidoTer ?? 0) > 0.004);
+  const env = (codigo: string, produto: string) => r.enviado[codigo]?.[produto] ?? 0;
+  const ped = (codigo: string, produto: string) => sem.pedidoEscolas[codigo]?.[produto] ?? 0;
   return (
     <>
       {rotas.map((ro) => {
-        const produtos = r.ordemMapa.map((nome) => cad.produtos.find((p) => p.nome === nome)!).filter((p) => ro.paradas.some((pa) => (r.enviado[pa.codigo]?.[p.nome] ?? 0) > 0.0001));
+        const paradas = ro.paradas.filter((pa) => produtos.some((p) => env(pa.codigo, p.nome) > 0.0001));
+        const totais = produtos.map((p) => paradas.reduce((t, pa) => t + env(pa.codigo, p.nome), 0));
+        const peso = totais.reduce((a, b) => a + b, 0);
+        const nomeDia = ro.titulo.split(" — ")[0];
+        const veiculo = ro.titulo.match(/ROTA \d+\s*·\s*([^—·]+?)\s*—/i)?.[1] ?? "";
+        const motorista = ro.titulo.match(/MOTORISTA\s+([^·]+)/i)?.[1]?.trim() ?? "";
         return (
-          <div className="folha mapa" key={ro.id}>
-            <h3>Mapa de montagem — {sem.referencia}</h3>
-            <p className="linha-cab">
-              <strong>{ro.titulo}</strong>
-            </p>
-            {ro.saida && <p className="linha-cab">{ro.saida}</p>}
+          <div className="folha mapa-planilha" key={ro.id} data-arquivo={`mapa ${ro.id}`}>
+            <div className="mapa-faixa">
+              <p className="mapa-dia">{nomeDia}</p>
+              <p className="mapa-rota">{ro.titulo}</p>
+              {ro.saida && <p className="mapa-saida">{ro.saida}</p>}
+            </div>
             <table>
               <thead>
                 <tr>
@@ -339,52 +352,135 @@ function MapaImpresso({ cad, sem, r, dia, rota }: P & { dia: DiaRota; rota?: str
                   <th>ESCOLA</th>
                   <th>BAIRRO</th>
                   {produtos.map((p) => (
-                    <th key={p.nome} className="n">
-                      {p.nome}
+                    <th key={p.nome} className="vertical">
+                      <span>{p.nome}</span>
                     </th>
                   ))}
-                  <th>✓</th>
+                  <th className="check" />
                 </tr>
               </thead>
               <tbody>
-                {ro.paradas.map((pa) => (
+                {paradas.map((pa, k) => (
                   <tr key={pa.codigo}>
-                    <td>
-                      {pa.par}
-                      {pa.sub}
-                    </td>
-                    <td>{pa.codigo}</td>
+                    <td className="c">{k + 1}</td>
+                    <td className="c">{pa.codigo}</td>
                     <td>{pa.nomeMapa}</td>
-                    <td>{pa.bairro}</td>
+                    <td className="bairro">{pa.bairro}</td>
                     {produtos.map((p) => {
-                      const v = r.enviado[pa.codigo]?.[p.nome] ?? 0;
+                      const v = env(pa.codigo, p.nome);
+                      const falta = v > 0.0001 && ped(pa.codigo, p.nome) - v > 0.005;
                       return (
-                        <td key={p.nome} className="n">
+                        <td key={p.nome} className={`valor${v > 0.0001 ? (falta ? " falta" : " vai") : ""}`}>
                           {v > 0.0001 ? kg2(v) : ""}
                         </td>
                       );
                     })}
-                    <td />
+                    <td className="check" />
                   </tr>
                 ))}
-                <tr>
-                  <td colSpan={4}>
-                    <strong>TOTAL DA ROTA</strong>
-                  </td>
-                  {produtos.map((p) => (
-                    <td key={p.nome} className="n">
-                      <strong>{kg2(ro.paradas.reduce((s, pa) => s + (r.enviado[pa.codigo]?.[p.nome] ?? 0), 0))}</strong>
+              </tbody>
+              <tfoot>
+                <tr className="total">
+                  <td colSpan={4}>TOTAL DA ROTA (kg) →</td>
+                  {totais.map((t, k) => (
+                    <td key={produtos[k].nome} className="valor">
+                      {t > 0.0001 ? kg2(t) : ""}
                     </td>
                   ))}
                   <td />
                 </tr>
-              </tbody>
+              </tfoot>
             </table>
+            <div className="mapa-rodape">
+              <span>
+                <strong>Peso previsto:</strong> {kg2(peso)} kg
+              </span>
+              <span>
+                <strong>Veículo:</strong> {veiculo}
+              </span>
+              <span>
+                <strong>Motorista:</strong> {motorista}
+              </span>
+            </div>
+            <p className="mapa-legenda">Amarelo = vai na caixa da escola · Laranja = escola recebe MENOS que o pedido (falta)</p>
           </div>
         );
       })}
+      {!rota && <ConferenciaMapa cad={cad} sem={sem} r={r} />}
       {!rota && <Excedente dia={dia} ex={r.excedente[dia]} rotas={sem.rotas} unidade={(p) => cad.produtos.find((x) => x.nome === p)?.unidade ?? "kg"} impresso comLegumes={cad.excedenteLegumes} />}
     </>
+  );
+}
+
+// "Conferência do mapa": o que chegou no galpão × o que sai nos caminhões (semana toda).
+function ConferenciaMapa({ cad, sem, r }: P) {
+  const [d1, d2] = ["1º DIA", "2º DIA"];
+  const lancou2 = Object.values(sem.entrega2).some((x) => x && Object.keys(x).length);
+  const linhas = r.ordemMapa
+    .map((nome) => cad.produtos.find((p) => p.nome === nome)!)
+    .filter((p) => p && (r.entregaProduto[p.nome]?.pedidoSeg ?? 0) + (r.entregaProduto[p.nome]?.pedidoTer ?? 0) > 0.004)
+    .map((p) => {
+      const e = r.entregaProduto[p.nome];
+      const saiu = Object.values(r.enviado).reduce((t, x) => t + (x[p.nome] ?? 0), 0);
+      const tem2 = e.planejado2 > 0.004 || e.entregue2 > 0.004;
+      return { p, pedido: e.pedidoSeg + e.pedidoTer, c1: e.entregue1, c2: tem2 ? e.entregue2 : null, total: e.entregue1 + (tem2 ? e.entregue2 : 0), saiu };
+    });
+  const kgs = linhas.filter((l) => l.p.unidade === "kg");
+  const soma = (f: (l: (typeof linhas)[number]) => number) => kgs.reduce((t, l) => t + f(l), 0);
+  return (
+    <div className="folha mapa-planilha">
+      <div className="mapa-faixa">
+        <p className="mapa-rota" style={{ fontSize: 15 }}>CONFERÊNCIA DO MAPA — o que chegou no galpão × o que sai nos caminhões</p>
+      </div>
+      <p style={{ fontStyle: "italic", fontSize: 10.5, color: "#333", margin: "6px 0 10px" }}>
+        Chegou = 1º dia + 2º dia (entrega em branco conta o planejado). Saiu no mapa = soma de todas as rotas. SOBRA fica no galpão. FALTA = as escolas em laranja no mapa recebem
+        menos que o pedido.
+      </p>
+      <table className="conferencia">
+        <thead>
+          <tr>
+            <th>Nº</th>
+            <th>PRODUTO</th>
+            <th>PEDIDO DAS ESCOLAS</th>
+            <th>CHEGOU {d1}</th>
+            <th>
+              CHEGOU {d2}
+              {!lancou2 && <small>(previsto até lançar)</small>}
+            </th>
+            <th>CHEGOU TOTAL</th>
+            <th>SAIU NO MAPA</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr className="total">
+            <td colSpan={2} style={{ textAlign: "right" }}>
+              TOTAL em kg (sem ovos) →
+            </td>
+            <td>{kg2(soma((l) => l.pedido))}</td>
+            <td>{kg2(soma((l) => l.c1))}</td>
+            <td>{kg2(soma((l) => l.c2 ?? 0))}</td>
+            <td>{kg2(soma((l) => l.total))}</td>
+            <td>{kg2(soma((l) => l.saiu))}</td>
+          </tr>
+          {linhas.map((l, k) => (
+            <tr key={l.p.nome}>
+              <td style={{ textAlign: "center" }}>{k + 1}</td>
+              <td>
+                <strong>{l.p.nome}</strong>
+              </td>
+              <td>{kg2(l.pedido)}</td>
+              <td>{kg2(l.c1)}</td>
+              <td>{l.c2 === null ? "–" : kg2(l.c2)}</td>
+              <td>{kg2(l.total)}</td>
+              <td>
+                <strong>{kg2(l.saiu)}</strong>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="mapa-legenda">Amarelo = vai na caixa da escola · Laranja = escola recebe MENOS que o pedido (falta)</p>
+    </div>
   );
 }
 
