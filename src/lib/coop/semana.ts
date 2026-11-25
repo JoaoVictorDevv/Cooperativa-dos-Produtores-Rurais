@@ -27,6 +27,29 @@ export const NOMES_CUSTOS: [keyof Custos, string][] = [
   ["conselho", "Ajuda de custo do conselho"],
 ];
 
+const DIAS_SEMANA = ["domingo", "segunda", "terca", "quarta", "quinta", "sexta", "sabado"];
+const numDia = (nome: string) => DIAS_SEMANA.indexOf(nome.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/-feira.*/, "").trim().split(" ")[0]);
+const somarDiasData = (data: string, n: number) => new Date(Date.parse(`${data}T12:00:00Z`) + n * 86400000);
+const br = (d: Date) => `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")}/${d.getUTCFullYear()}`;
+
+// Datas dos dias do galpão da semana: ex. semana 30/11 (segunda), galpão domingo e segunda → 29/11 e 30/11.
+export function datasDoGalpao(sem: Pick<Semana, "data" | "diasGalpao">): [string, string] {
+  const [a, b] = sem.diasGalpao.map(numDia);
+  let d2 = 0;
+  while (d2 > -7 && somarDiasData(sem.data, d2).getUTCDay() !== b) d2--;
+  let d1 = d2 - 1;
+  while (d1 > d2 - 7 && somarDiasData(sem.data, d1).getUTCDay() !== a) d1--;
+  return [br(somarDiasData(sem.data, d1)), br(somarDiasData(sem.data, d2))];
+}
+
+// Data da entrega nas escolas de uma rota ("SEGUNDA-FEIRA — ROTA 1" → a segunda da semana).
+export function dataDaRota(sem: Pick<Semana, "data">, tituloRota: string): string | null {
+  const alvo = numDia(tituloRota);
+  if (alvo < 0) return null;
+  for (let n = 0; n < 7; n++) if (somarDiasData(sem.data, n).getUTCDay() === alvo) return br(somarDiasData(sem.data, n));
+  return null;
+}
+
 export function referenciaDeData(data: string): string {
   const [a, m, d] = data.split("-");
   return `${d}/${m}/${a}`;

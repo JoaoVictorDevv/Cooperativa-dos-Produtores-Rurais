@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ResultadoSemana } from "@/lib/coop/motor";
-import { kg, kg2, reais } from "@/lib/coop/numeros";
-import { NOMES_CUSTOS } from "@/lib/coop/semana";
+import { kg, kg2, kgMensagem, reais } from "@/lib/coop/numeros";
+import { NOMES_CUSTOS, dataDaRota, datasDoGalpao } from "@/lib/coop/semana";
 import { perdasDaSemana } from "@/lib/coop/perdas";
 import { recusadoNoGalpao } from "@/lib/coop/mensagens";
 import { limitePorProdutor } from "@/lib/coop/limite";
@@ -83,9 +83,12 @@ function Linhas({ n }: { n: number }) {
   );
 }
 
-// Igual à aba de cada produtor (área de impressão N1:R66).
+// Controle de entrega do produtor (igual ao modelo do João, 30/11): pedido, espaço para anotar
+// o que chegou em cada dia, datas já preenchidas e a divisão da entrega por dia.
 function RomaneiosProdutores({ cad, sem, r, dia, produtor }: P & { dia?: string; produtor?: string }) {
   const [d1, d2] = sem.diasGalpao;
+  const [data1, data2] = datasDoGalpao(sem);
+  const titulo = (cad.nomeCooperativa ?? "Cooperativa").toUpperCase();
   const lista = cad.produtores.filter((p) => {
     if (produtor && p.id !== produtor) return false;
     const itens = Object.values(r.produtores[p.id]);
@@ -98,26 +101,26 @@ function RomaneiosProdutores({ cad, sem, r, dia, produtor }: P & { dia?: string;
     <>
       {lista.map((p) => {
         const itens = cad.produtos.map((pr) => ({ pr, x: r.produtores[p.id][pr.nome] })).filter(({ x }) => x.pedido > 0.004);
+        const doDia = (campo: "planejado1" | "planejado2") => itens.filter(({ x }) => x[campo] > 0.004);
         return (
-          <div className="folha" key={p.id}>
+          <div className="folha demonstrativo romaneio-prod" key={p.id} data-arquivo={`romaneio ${p.curto} ${sem.referencia.slice(0, 5)}`}>
+            <p className="titulo-coop">
+              <strong>{titulo}</strong>
+            </p>
             <h3>Controle de entrega — produtor</h3>
             <p className="linha-cab">
-              <strong>PRODUTOR:</strong> {p.nome}
+              <strong>PRODUTOR: {p.nome}</strong>
             </p>
+            <p className="linha-cab">TELEFONE: {p.telefone ?? "—"}</p>
             <p className="linha-cab">
-              <strong>TELEFONE:</strong> {p.telefone ?? "—"}
+              <strong>SEMANA (REFERÊNCIA): {sem.referencia}</strong> &nbsp;&nbsp;|&nbsp;&nbsp; <strong>ENTREGA {sem.entrega}</strong>
             </p>
-            <p className="linha-cab">
-              <strong>SEMANA (REFERÊNCIA):</strong> {sem.referencia} &nbsp;|&nbsp; <strong>ENTREGA</strong> {sem.entrega}
-            </p>
-            <table>
+            <table style={{ maxWidth: 560 }}>
               <thead>
                 <tr>
                   <th>PRODUTO</th>
-                  <th className="n">PEDIDO</th>
-                  <th className="n">{d1} pedido</th>
+                  <th>PEDIDO</th>
                   <th>ENTREGA {d1}</th>
-                  <th className="n">{d2} pedido</th>
                   <th>ENTREGA {d2}</th>
                 </tr>
               </thead>
@@ -125,35 +128,51 @@ function RomaneiosProdutores({ cad, sem, r, dia, produtor }: P & { dia?: string;
                 {itens.map(({ pr, x }) => (
                   <tr key={pr.nome}>
                     <td>{pr.nome}</td>
-                    <td className="n">
+                    <td style={{ textAlign: "center" }}>
                       {kg2(x.pedido)} {pr.unidade}
                     </td>
-                    <td className="n">{x.planejado1 > 0.004 ? kg2(x.planejado1) : "—"}</td>
                     <td className="escrever" />
-                    <td className="n">{x.planejado2 > 0.004 ? kg2(x.planejado2) : "—"}</td>
                     <td className="escrever" />
-                  </tr>
-                ))}
-                {[0, 1].map((i) => (
-                  <tr key={`b${i}`}>
-                    <td style={{ height: 26 }} />
-                    <td />
-                    <td />
-                    <td />
-                    <td />
-                    <td />
                   </tr>
                 ))}
               </tbody>
             </table>
             <div className="assina">
               <strong>OBS:</strong>
-              <Linhas n={3} />
+              <Linhas n={2} />
               <p>
-                DATA DA ENTREGA: &nbsp; {d1.slice(0, 3)} ____/____ &nbsp;&nbsp;&nbsp; {d2.slice(0, 3)} ____/____
+                <strong>
+                  DATA DA ENTREGA: &nbsp; {d1} {data1} &nbsp;&nbsp;&nbsp;&nbsp; {d2} {data2}
+                </strong>
               </p>
-              <p>ASSINATURA DO PRODUTOR: ______________________________________________</p>
-              <p>ASSINATURA DO RESPONSÁVEL PELO RECEBIMENTO NO GALPÃO: ____________________________</p>
+              <p>
+                <strong>ASSINATURA DO PRODUTOR:</strong>
+              </p>
+              <Linhas n={1} />
+              <p>
+                <strong>ASSINATURA DO RESPONSÁVEL PELO RECEBIMENTO NO GALPÃO:</strong>
+              </p>
+              <Linhas n={1} />
+            </div>
+            <div className="divisao">
+              <p className="divisao-titulo">DIVISÃO DA ENTREGA</p>
+              {(
+                [
+                  [d1, doDia("planejado1"), "planejado1"],
+                  [d2, doDia("planejado2"), "planejado2"],
+                ] as const
+              )
+                .filter(([, l]) => l.length)
+                .map(([nome, l, campo]) => (
+                  <div key={nome}>
+                    <p>{nome}:</p>
+                    {l.map(({ pr, x }) => (
+                      <p key={pr.nome}>
+                        • {pr.nome}: {kgMensagem(x[campo])} {pr.unidade}
+                      </p>
+                    ))}
+                  </div>
+                ))}
             </div>
           </div>
         );
@@ -226,7 +245,7 @@ function RomaneiosEscolas({ cad, sem, r, dia, rota }: P & { dia: DiaRota; rota?:
               <div className="assina">
                 <strong>OBS:</strong>
                 <Linhas n={3} />
-                <p>DATA DA ENTREGA: ____/____/________</p>
+                <p>DATA DA ENTREGA: {dataDaRota(sem, ro.titulo) ?? "____/____/________"}</p>
                 <p>ASSINATURA RESPONSÁVEL: ______________________________________________</p>
                 <p>MATRÍCULA: ______________________________________</p>
               </div>
