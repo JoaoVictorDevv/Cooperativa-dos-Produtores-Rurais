@@ -5,10 +5,10 @@ import { linkWhatsApp, telefoneWhatsApp } from "@/lib/coop/mensagens";
 import { calcularSemana } from "@/lib/coop/motor";
 import { kg, reais } from "@/lib/coop/numeros";
 import { carregarCadastro } from "../../dados";
+import { LIMITE_ANO, limitePorProdutor } from "@/lib/coop/limite";
 
 export const metadata = { title: "Ficha do produtor" };
 
-const LIMITE = 40000; // só informação: não trava, não corta, não reduz
 
 export default async function FichaProdutor({ params }: PageProps<"/coop/produtor/[id]">) {
   const { id } = await params;
@@ -54,7 +54,9 @@ export default async function FichaProdutor({ params }: PageProps<"/coop/produto
     });
   }
   const comEntrega = semanas.filter((x) => x.lancou);
-  const vendidoAno = comEntrega.filter((x) => x.s.data.startsWith(anoAtual)).reduce((t, x) => t + x.receber, 0);
+  // Limite de R$ 40 mil: pelo valor de venda (pago × preço da Prefeitura) + pedido das semanas sem entrega.
+  const limite = (await limitePorProdutor(cad)).linhas.find((x) => x.id === p.id);
+  const vendidoAno = limite?.total ?? 0;
   const totalDesconto = semanas.reduce((t, x) => t + x.desconto, 0);
   const pedidoTotal = comEntrega.reduce((t, x) => t + x.pedido, 0);
   const pagoTotal = comEntrega.reduce((t, x) => t + x.pago, 0);
@@ -83,10 +85,11 @@ export default async function FichaProdutor({ params }: PageProps<"/coop/produto
 
       <div className="grade">
         <div className="numero">
-          <small>Vendido no ano {anoAtual}</small>
+          <small>Vendido no ano {anoAtual} (valor de venda)</small>
           <strong>{reais(vendidoAno)}</strong>
           <span className="discreto">
-            {kg((vendidoAno / LIMITE) * 100, 1)}% de R$ 40 mil (só informação)
+            {kg((vendidoAno / LIMITE_ANO) * 100, 1)}% de R$ 40 mil
+            {limite && limite.previsto > 0.004 ? ` · inclui ${reais(limite.previsto)} de pedido ainda sem entrega` : ""}
           </span>
         </div>
         <div className="numero">

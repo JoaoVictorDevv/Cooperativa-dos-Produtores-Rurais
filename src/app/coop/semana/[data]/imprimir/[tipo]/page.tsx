@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { lerSemana, listarSemanas } from "@/lib/coop/armazem";
-import { calcularSemana, type ResultadoSemana } from "@/lib/coop/motor";
+import type { ResultadoSemana } from "@/lib/coop/motor";
 import { kg, kg2, reais } from "@/lib/coop/numeros";
 import { NOMES_CUSTOS } from "@/lib/coop/semana";
 import { perdasDaSemana } from "@/lib/coop/perdas";
+import { limitePorProdutor } from "@/lib/coop/limite";
 import type { Cadastro, DiaRota, Semana } from "@/lib/coop/tipos";
 import { carregarSemana } from "../../../../dados";
 import { BotaoImprimir } from "../../../../ui";
@@ -368,18 +368,10 @@ function MapaImpresso({ cad, sem, r, dia, rota }: P & { dia: DiaRota; rota?: str
   );
 }
 
-// Quanto cada produtor já vendeu no ano (só informação: o limite de R$ 40 mil não trava nada).
+// Quanto cada produtor já vendeu no ano até esta semana, pelo valor de venda (só informação).
 async function vendidoNoAno(cad: Cadastro, sem: Semana): Promise<Record<string, number>> {
-  const ano = sem.data.slice(0, 4);
-  const total: Record<string, number> = {};
-  for (const d of await listarSemanas()) {
-    if (d.slice(0, 4) !== ano || d > sem.data) continue;
-    const s = d === sem.data ? sem : await lerSemana(d);
-    if (!s) continue;
-    const r = calcularSemana(cad, s);
-    for (const [p, v] of Object.entries(r.pagarProdutor)) total[p] = (total[p] ?? 0) + v;
-  }
-  return total;
+  const l = await limitePorProdutor(cad, sem.data);
+  return Object.fromEntries(l.linhas.map((x) => [x.id, x.total]));
 }
 
 // Demonstrativo de entrega do produtor (o modelo que o João manda).
@@ -450,7 +442,7 @@ function Extratos({ cad, sem, r, produtor, vendidoAno }: P & { produtor?: string
               Pago = o que foi aceito no galpão, até o pedido de cada produto. Preço líquido = preço de venda − R$ {kg(cad.taxaLogistica)}/kg (taxa de logística da cooperativa).
             </p>
             <p className="rodape nao-imprimir">
-              Só para você (não sai na impressão): vendido no ano até esta semana {reais(vendidoAno[p.id] ?? 0)} — referência R$ 40.000,00, só informação.
+              Só para você (não sai na impressão): vendido no ano até esta semana {reais(vendidoAno[p.id] ?? 0)} (valor de venda) — limite de R$ 40.000,00, só informação.
             </p>
           </div>
         );
