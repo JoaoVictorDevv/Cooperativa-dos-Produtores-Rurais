@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { kg, reais } from "@/lib/coop/numeros";
 import { linkWhatsApp, textoDemonstrativo } from "@/lib/coop/mensagens";
+import { custoDaEscala, diariasDaEscala, escalaDe } from "@/lib/coop/escala";
 import { carregarSemana } from "../../../dados";
 import { perdasDaSemana } from "@/lib/coop/perdas";
 import { Fechamento } from "./Fechamento";
@@ -27,6 +28,7 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
         custos={sem.custos}
         conferidos={sem.romaneiosConferidos}
         observacao={sem.observacao ?? ""}
+        escala={{ diarias: diariasDaEscala(escalaDe(cad)), diaria: escalaDe(cad).diaria, total: custoDaEscala(escalaDe(cad)) }}
         produtores={cad.produtores.filter((p) => r.pagarProdutor[p.id] > 0 || (sem.descontos?.[p.id] ?? 0) > 0).map((p) => ({ id: p.id, nome: p.nome, aPagar: r.pagarProdutor[p.id] + (sem.descontos?.[p.id] ?? 0), desconto: sem.descontos?.[p.id] ?? 0 }))}
       />
       <h2>Resultado</h2>

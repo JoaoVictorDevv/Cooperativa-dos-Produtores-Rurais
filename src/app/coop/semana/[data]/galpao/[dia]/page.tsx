@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { kg } from "@/lib/coop/numeros";
+import { diaDaEscala, escalaDe, gruposDoDia, juntarNomes } from "@/lib/coop/escala";
 import { carregarSemana } from "../../../../dados";
 import { Galpao, type CartaoProdutor } from "./Galpao";
 
@@ -14,6 +15,10 @@ export default async function PaginaGalpao({ params }: PageProps<"/coop/semana/[
   const digitado = dia === "1" ? sem.entrega1 : sem.entrega2;
   const nomeDia = sem.diasGalpao[dia === "1" ? 0 : 1];
   const rotasDoDia = dia === "1" ? "rotas de segunda" : "rotas de terça";
+  const escalaDia = diaDaEscala(escalaDe(cad), nomeDia);
+  const escalados = escalaDia?.pessoas.map((p) => p.nome.trim()).filter(Boolean) ?? [];
+  // "Quem conferiu": primeiro quem está na escala do dia.
+  const equipe = [...new Set([...escalados, ...(cad.equipe ?? [])])];
 
   const cartoes: CartaoProdutor[] = cad.produtores
     .map((p) => ({
@@ -56,6 +61,21 @@ export default async function PaginaGalpao({ params }: PageProps<"/coop/semana/[
           🖨 Romaneios dos produtores (papel)
         </Link>
       </div>
+      {escalaDia && escalaDia.pessoas.length > 0 && (
+        <div className="hoje-galpao">
+          <strong>Equipe de {nomeDia.toLowerCase()}:</strong>
+          {gruposDoDia(escalaDia.pessoas).map((g) => (
+            <span key={`${g.funcao}-${g.hora}`}>
+              {juntarNomes(g.nomes)}
+              {g.funcao === "chefe" ? " (chefe)" : ""}
+              {g.hora ? ` ${g.hora}` : ""}
+            </span>
+          ))}
+          <Link href="/coop/escala" className="discreto">
+            ver folha
+          </Link>
+        </div>
+      )}
       {faltas.length > 0 ? (
         <div className="erro">
           <strong>Vai faltar nas {rotasDoDia}:</strong>{" "}
@@ -65,7 +85,7 @@ export default async function PaginaGalpao({ params }: PageProps<"/coop/semana/[
       ) : (
         <p className="ok">Com o que foi lançado até agora, dá para atender todas as escolas das {rotasDoDia}.</p>
       )}
-      <Galpao data={data} dia={dia} cartoes={cartoes} caixa={cad.pesoCaixa} equipe={cad.equipe ?? []} />
+      <Galpao data={data} dia={dia} cartoes={cartoes} caixa={cad.pesoCaixa} equipe={equipe} />
     </>
   );
 }

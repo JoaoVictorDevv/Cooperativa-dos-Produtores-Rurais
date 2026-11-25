@@ -1,5 +1,6 @@
 // Criar uma semana nova e saber em que pé ela está (a "listinha").
 
+import { custoDaEscala, escalaDe } from "./escala";
 import type { ResultadoSemana } from "./motor";
 import type { Cadastro, Custos, Semana } from "./tipos";
 
@@ -71,7 +72,8 @@ export function novaSemana(
     conferidoPrefeitura: {},
     romaneiosConferidos: false,
     // Custos já vêm com os da semana anterior: só muda o que mudou.
-    custos: { ...(p.custosAnteriores ?? CUSTOS_ZERADOS) },
+    // Montagem = diárias da escala do galpão (ex.: 7 × R$ 150 = R$ 1.050).
+    custos: { ...(p.custosAnteriores ?? CUSTOS_ZERADOS), montagem: custoDaEscala(escalaDe(cad)) },
     rotas: structuredClone(cad.rotas),
     regraPrimeiroDia: "corrigida",
     folhaSoNoDia: true, // MODELO v100

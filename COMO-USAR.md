@@ -62,9 +62,25 @@ Seus dados ficam na pasta `dados-cooperativa` e **não mudam** ao atualizar.
 - **Adicionais** (no fim das telas, clique no ＋): previsão × entregue (resumo da semana),
   gráfico semana a semana (Resumo) e perdas por produto (Relatórios).
 
+## Celular
+
+1. Abra o app no PC (atalho). A janela preta mostra o endereço para o celular, ex.: `http://192.168.0.10:3000/coop`.
+2. No celular, **no mesmo Wi-Fi do PC**, abra esse endereço e digite o **PIN** (começa 1234; troque em Cadastro → Celular).
+   Ele lembra por 1 ano. Use "Adicionar à tela inicial" para ter o ícone da cooperativa.
+3. Na primeira vez o Windows pergunta sobre o acesso: clique em **Permitir** (redes privadas).
+4. Longe de casa (ex.: no galpão com o notebook)? Ligue o roteador do celular e conecte o notebook nele.
+
+No próprio PC o atalho entra direto, sem PIN.
+
+## Escala do galpão
+
+Em **Cadastro → Escala do galpão**: quem trabalha em cada dia, a hora e a diária (a diária só aparece no app).
+A semana nova já vem com o custo de montagem pela escala (ex.: 7 diárias × R$ 150 = R$ 1.050); no Fechamento dá para mudar.
+**Folha da equipe** para imprimir ou salvar imagem. Na aba Galpão aparece quem está escalado no dia.
+
 ## Imagens para o WhatsApp
 
-Nas folhas de **Resumo**, **Perdas**, **Previsão**, **resumo do Paulo** e **demonstrativos** tem o botão **🖼 Salvar imagem**:
+Nas folhas de **Resumo**, **Perdas** (escolha **Por motivo** ou **Por produto**), **Previsão**, **Equipe do galpão**, **resumo do Paulo** e **demonstrativos** tem o botão **🖼 Salvar imagem**:
 baixa a folha como foto (PNG, na pasta Downloads), pronta para mandar no WhatsApp.
 
 ## Toda semana

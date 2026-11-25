@@ -1,3 +1,7 @@
+import { escalaDe } from "@/lib/coop/escala";
+import { EditorEscala } from "./EditorEscala";
+import { networkInterfaces } from "node:os";
+import { Celular } from "./Celular";
 import Link from "next/link";
 import { pastaDados } from "@/lib/coop/armazem";
 import { kg } from "@/lib/coop/numeros";
@@ -28,7 +32,7 @@ export default async function Cadastro() {
         </a>
       </div>
       <div className="card">
-        <h2 style={{ marginTop: 0 }}>1. Trazer a planilha MODELO (v102)</h2>
+        <h2 style={{ marginTop: 0 }}>1. Trazer a planilha MODELO</h2>
         <ImportarModelo />
       </div>
       <div className="card">
@@ -38,6 +42,13 @@ export default async function Cadastro() {
       </div>
       {cad && (
         <>
+          <EditorEscala inicial={escalaDe(cad)} />
+          <Celular
+            enderecos={Object.values(networkInterfaces())
+              .flat()
+              .filter((i) => i && i.family === "IPv4" && !i.internal)
+              .map((i) => `http://${i!.address}:${process.env.PORT || "3000"}/coop`)}
+          />
           <Configuracoes nome={cad.nomeCooperativa ?? ""} cidade={cad.cidade ?? ""} equipe={cad.equipe ?? []} />
           <ExcecoesEscolas escolas={cad.escolas.map((e) => ({ codigo: e.codigo, nome: e.nome }))} produtos={cad.produtos.map((p) => p.nome)} excecoes={cad.excecoesEscolas ?? {}} />
           <div className="grade">
