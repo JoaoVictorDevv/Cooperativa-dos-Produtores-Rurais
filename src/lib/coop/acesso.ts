@@ -16,7 +16,7 @@ interface Acesso {
   segredo: string;
 }
 
-const arquivo = () => path.join(path.resolve(process.env.COOP_DADOS || path.join(process.cwd(), "dados-cooperativa")), "acesso.json");
+const arquivo = () => path.join(path.resolve(/*turbopackIgnore: true*/ process.env.COOP_DADOS || path.join(process.cwd(), "dados-cooperativa")), "acesso.json");
 
 export async function lerAcesso(criar = false): Promise<Acesso | null> {
   try {
