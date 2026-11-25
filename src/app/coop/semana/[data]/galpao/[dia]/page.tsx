@@ -54,7 +54,7 @@ export default async function PaginaGalpao({ params }: PageProps<"/coop/semana/[
           <h2 style={{ margin: 0 }}>Galpão: {nomeDia.toLowerCase()}</h2>
           <p className="discreto" style={{ margin: "4px 0 0" }}>
             Igual ao romaneio do produtor. Digite só o que foi diferente; o que ficar em branco conta como <strong>veio o pedido</strong>. Caixa grande desconta{" "}
-            {cad.pesoCaixa.grande} kg e pequena {cad.pesoCaixa.pequena} kg. Anote quem conferiu e a hora: mercadoria deixada sem conferência não tem como cobrar depois.
+            {cad.pesoCaixa.grande} kg e pequena {cad.pesoCaixa.pequena} kg. Veio produto ruim? Ponha os kg em <strong>Recusado</strong>: sai sozinho do que o produtor recebe. Anote quem conferiu e a hora.
           </p>
         </div>
         <Link className="botao claro" href={`/coop/semana/${data}/imprimir/produtores?dia=${dia}`}>

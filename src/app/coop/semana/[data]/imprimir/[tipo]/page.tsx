@@ -4,6 +4,7 @@ import type { ResultadoSemana } from "@/lib/coop/motor";
 import { kg, kg2, reais } from "@/lib/coop/numeros";
 import { NOMES_CUSTOS } from "@/lib/coop/semana";
 import { perdasDaSemana } from "@/lib/coop/perdas";
+import { recusadoNoGalpao } from "@/lib/coop/mensagens";
 import { limitePorProdutor } from "@/lib/coop/limite";
 import type { Cadastro, DiaRota, Semana } from "@/lib/coop/tipos";
 import { carregarSemana } from "../../../../dados";
@@ -414,7 +415,7 @@ function Extratos({ cad, sem, r, produtor, vendidoAno }: P & { produtor?: string
                   <tr key={pr.nome}>
                     <td>{pr.nome}</td>
                     <td className="n">{kg2(x.pedido)}</td>
-                    <td className="n">{kg2(x.entregue)}</td>
+                    <td className="n">{kg2(x.entregue + (recusadoNoGalpao(sem, p.id).find((y) => y.produto === pr.nome)?.kg ?? 0))}</td>
                     <td className="n forte">{kg2(x.pagoKg)}</td>
                     <td className="n">{reais(x.precoLiquido)}</td>
                     <td className="n forte">{reais(x.valor)}</td>
@@ -438,6 +439,11 @@ function Extratos({ cad, sem, r, produtor, vendidoAno }: P & { produtor?: string
                 </tr>
               </tbody>
             </table>
+            {recusadoNoGalpao(sem, p.id).length > 0 && (
+              <p className="linha-cab" style={{ marginTop: 8 }}>
+                <strong>Recusado no galpão (produto ruim, não pago):</strong> {recusadoNoGalpao(sem, p.id).map((x) => `${x.produto} ${kg2(x.kg)} kg`).join(" · ")}
+              </p>
+            )}
             <p className="rodape">
               Pago = o que foi aceito no galpão, até o pedido de cada produto. Preço líquido = preço de venda − R$ {kg(cad.taxaLogistica)}/kg (taxa de logística da cooperativa).
             </p>

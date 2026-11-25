@@ -57,6 +57,13 @@ export function perguntaPrevisao(produtor: Pick<Produtor, "curto">, entrega: str
   return `Bom dia, ${produtor.curto}! O que você vai ter pra entrega de ${entrega}${dias.trim() ? ` (${dias})` : ""}? Me fala o produto e quantos kg. Precisamos passar essa previsão pra nutrição${prazo.trim() ? ` até ${prazo}` : ""}. Obrigado!`;
 }
 
+// O que foi recusado no galpão (produto ruim), por produto, somando os dois dias.
+export function recusadoNoGalpao(sem: Semana, produtor: string): { produto: string; kg: number }[] {
+  const soma = new Map<string, number>();
+  for (const d of ["1", "2"] as const) for (const [pr, v] of Object.entries(sem.recebimento?.[d]?.[produtor]?.recusado ?? {})) soma.set(pr, (soma.get(pr) ?? 0) + v);
+  return [...soma.entries()].filter(([, v]) => v > 0.004).map(([produto, kg]) => ({ produto, kg }));
+}
+
 // Demonstrativo de pagamento pelo WhatsApp (um produtor por vez), com os mesmos
 // números do demonstrativo impresso.
 export function textoDemonstrativo(cad: Cadastro, sem: Semana, r: ResultadoSemana, produtor: Produtor): string | null {
@@ -66,6 +73,7 @@ export function textoDemonstrativo(cad: Cadastro, sem: Semana, r: ResultadoSeman
   for (const { p, x } of itens) {
     linhas.push(`• ${p.nome}: entregou ${kgMensagem(x.entregue)} ${p.unidade}, pago ${kgMensagem(x.pagoKg)} ${p.unidade} × ${reais(x.precoLiquido)} = *${reais(x.valor)}*`);
   }
+  for (const x of recusadoNoGalpao(sem, produtor.id)) linhas.push(`• ${x.produto}: ${kgMensagem(x.kg)} kg recusados no galpão (produto ruim), não pagos`);
   const desconto = r.descontoProdutor[produtor.id] ?? 0;
   if (desconto > 0) linhas.push(`• Desconto (folha estragada): − ${reais(desconto)}`);
   linhas.push("", `*Total a receber: ${reais(r.pagarProdutor[produtor.id])}*`, "Pago = o que foi aceito no galpão, até o pedido. Qualquer dúvida, me chame. Obrigado!");

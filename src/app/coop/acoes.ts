@@ -379,6 +379,7 @@ const esquemaRecebimento = z.object({
   conferente: z.string().max(60).optional(),
   qualidade: z.enum(["ok", "ruim"]).optional(),
   obs: z.string().max(300).optional(),
+  recusado: z.record(z.string().max(60), z.number().min(0).max(100000)).optional(),
 });
 
 // Conferência na chegada: quem recebeu, hora, qualidade (04/11: mercadoria deixada sem ninguém conferir estragou).
@@ -390,7 +391,7 @@ export async function salvarRecebimento(data: string, dia: "1" | "2", produtor: 
     const d = z.enum(["1", "2"]).parse(dia);
     s.recebimento ??= { "1": {}, "2": {} };
     const r = rec ? esquemaRecebimento.parse(rec) : null;
-    const limpo = r ? Object.fromEntries(Object.entries(r).filter(([, v]) => v !== undefined && v !== "")) : {};
+    const limpo = r ? Object.fromEntries(Object.entries(r).filter(([k, v]) => v !== undefined && v !== "" && !(k === "recusado" && !Object.keys(v as object).length))) : {};
     if (Object.keys(limpo).length) s.recebimento[d][id] = limpo;
     else delete s.recebimento[d][id];
     await gravarSemana(s);
