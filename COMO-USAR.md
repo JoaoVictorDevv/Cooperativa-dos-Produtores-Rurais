@@ -41,7 +41,6 @@ Seus dados ficam na pasta `dados-cooperativa` e **não mudam** ao atualizar.
    nutricionista cortou → **Criar semana**.
 3. **1. Pedido e mensagens**: confira a divisão (**Mexer** para ajustar, inclusive o "1º dia") →
    **Abrir no WhatsApp** em cada produtor → enviar (o ✓ marca sozinho). Mandou por fora? Marque o ✓ ou **Já mandei para todos**.
-   **+ recado** põe uma linha só para aquele produtor naquela semana (ex.: "identifica a carga com seu nome").
 4. **2. Galpão domingo** e **3. Galpão segunda**: por produtor, balança + caixas (ou só o líquido), hora,
    quem conferiu, qualidade → **Salvar**. Em branco = veio o pedido. **Veio tudo certo** / **Não veio** = um clique.
 5. **4. Mapa e romaneios**: botão **Tudo de segunda** → Imprimir (mapa + excedente + reentregas + romaneios).
@@ -62,6 +61,11 @@ Seus dados ficam na pasta `dados-cooperativa` e **não mudam** ao atualizar.
 - Se você digitar e tentar sair sem salvar, o app pergunta antes.
 - **Adicionais** (no fim das telas, clique no ＋): previsão × entregue (resumo da semana),
   gráfico semana a semana (Resumo) e perdas por produto (Relatórios).
+
+## Imagens para o WhatsApp
+
+Nas folhas de **Resumo**, **Perdas**, **Previsão**, **resumo do Paulo** e **demonstrativos** tem o botão **🖼 Salvar imagem**:
+baixa a folha como foto (PNG, na pasta Downloads), pronta para mandar no WhatsApp.
 
 ## Toda semana
 

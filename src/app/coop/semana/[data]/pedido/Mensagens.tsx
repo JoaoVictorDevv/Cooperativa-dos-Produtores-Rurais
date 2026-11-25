@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { linkWhatsApp } from "@/lib/coop/mensagens";
-import { marcarMensagens, salvarRecado } from "../../../acoes";
+import { marcarMensagens } from "../../../acoes";
 import { Aviso, useAcao } from "../../../ui";
 
 interface Item {
@@ -13,7 +13,6 @@ interface Item {
   telefone: string | null;
   pedido: string | null;
   enviadaEm: string | null;
-  recado: string;
 }
 
 export function Mensagens({ data, itens }: { data: string; itens: Item[] }) {
@@ -56,8 +55,6 @@ export function Mensagens({ data, itens }: { data: string; itens: Item[] }) {
 function Cartao({ data, i, texto }: { data: string; i: Item; texto: string }) {
   const { pendente, aviso, rodar } = useAcao();
   const [copiado, setCopiado] = useState(false);
-  const [recado, setRecado] = useState(i.recado);
-  const [abrirRecado, setAbrirRecado] = useState(Boolean(i.recado));
   const link = linkWhatsApp(i.telefone, texto);
   // O ✓ muda na hora; o servidor confirma em seguida.
   const [marcada, setMarcada] = useState<{ de: string | null; v: boolean }>({ de: i.enviadaEm, v: Boolean(i.enviadaEm) });
@@ -80,14 +77,6 @@ function Cartao({ data, i, texto }: { data: string; i: Item; texto: string }) {
         )}
       </label>
       <pre className="msg">{texto}</pre>
-      {abrirRecado ? (
-        <div className="botoes" style={{ marginBottom: 8 }}>
-          <input type="text" value={recado} maxLength={300} onChange={(e) => setRecado(e.target.value)} placeholder="ex.: Quando deixar no galpão, identifica a carga com seu nome, por favor." style={{ flex: "1 1 220px" }} aria-label={`Recado para ${i.curto}`} />
-          <button type="button" className="botao claro pequeno" disabled={pendente || recado.trim() === i.recado} onClick={() => rodar(() => salvarRecado(data, i.id, recado), recado.trim() ? "Recado posto na mensagem." : "Recado tirado.")}>
-            salvar recado
-          </button>
-        </div>
-      ) : null}
       <div className="botoes">
         {link ? (
           <a className="botao zap" href={link} target="_blank" rel="noreferrer" onClick={() => !enviada && rodar(() => marcarMensagens(data, [i.id], true), "Marcada como enviada.")}>
@@ -111,11 +100,6 @@ function Cartao({ data, i, texto }: { data: string; i: Item; texto: string }) {
         >
           {copiado ? "Copiado!" : "Copiar texto"}
         </button>
-        {!abrirRecado && (
-          <button type="button" className="botao claro pequeno" onClick={() => setAbrirRecado(true)}>
-            + recado
-          </button>
-        )}
       </div>
       <Aviso aviso={aviso} />
     </div>

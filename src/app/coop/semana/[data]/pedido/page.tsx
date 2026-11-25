@@ -46,7 +46,6 @@ export default async function Pedido({ params }: PageProps<"/coop/semana/[data]/
     telefone: p.telefone,
     pedido: textoPedido(cad, sem, r, p),
     enviadaEm: sem.mensagensEnviadas?.[p.id] ?? null,
-    recado: sem.recados?.[p.id] ?? "",
   }));
 
   return (

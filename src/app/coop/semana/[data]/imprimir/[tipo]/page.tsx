@@ -58,7 +58,8 @@ export default async function Imprimir({ params, searchParams }: PageProps<"/coo
     <>
       <style>{`@page { size: A4 ${paisagem ? "landscape" : "portrait"}; margin: 12mm; }`}</style>
       <div className="botoes nao-imprimir" style={{ marginBottom: 12 }}>
-        <BotaoImprimir />
+        {/* Imagem só onde é folha de mandar (romaneio e mapa são muitos: só PDF). */}
+        <BotaoImprimir imagem={tipo === "paulo" || tipo === "extratos"} />
         <Link className="botao claro" href={voltar}>
           ← Voltar para {nomeVoltar}
         </Link>
@@ -391,7 +392,7 @@ function Extratos({ cad, sem, r, produtor, vendidoAno }: P & { produtor?: string
         const itens = cad.produtos.map((pr) => ({ pr, x: r.produtores[p.id][pr.nome] })).filter(({ x }) => x.pedido > 0 || x.entregue > 0);
         const desconto = r.descontoProdutor[p.id] ?? 0;
         return (
-          <div className="folha demonstrativo" key={p.id}>
+          <div className="folha demonstrativo" key={p.id} data-arquivo={`demonstrativo ${p.curto} ${sem.referencia.slice(0, 5)}`}>
             <p className="titulo-coop">
               <strong>{titulo}</strong>
             </p>
