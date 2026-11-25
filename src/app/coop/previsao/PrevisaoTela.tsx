@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import { linkWhatsApp, perguntaPrevisao } from "@/lib/coop/mensagens";
 import { kg } from "@/lib/coop/numeros";
-import { entenderResposta, type Previsao } from "@/lib/coop/previsao";
-import { salvarPrevisao } from "../acoes";
-import { Aviso, BotaoImprimir, CampoNumero, lerNumero, mostrarNumero, useAcao } from "../ui";
+import { entenderResposta, lerDocumentoPrevisao, type DocumentoLido, type Previsao } from "@/lib/coop/previsao";
+import { lerAnexoPrevisao, salvarPrevisao } from "../acoes";
+import { Aviso, BotaoImprimir, CampoNumero, lerNumero, marcarSujo, mostrarNumero, useAcao } from "../ui";
 
 interface Prod {
   id: string;
@@ -108,6 +108,20 @@ export function PrevisaoTela({ data, produtores, produtos, inicial }: { data: st
           })}
         </div>
       </div>
+
+      <Anexo
+        produtores={produtores}
+        produtos={produtos}
+        aoPreencher={(doc, obsEscolhidas) => {
+          const novo = { ...e };
+          for (const [id, itensLidos] of Object.entries(doc.porProdutor)) {
+            if (!novo[id]) continue;
+            novo[id] = { ...novo[id], sem: false, itens: itensLidos.map((l) => ({ produto: l.produto, kg: mostrarNumero(l.kg) })) };
+          }
+          setE(novo);
+          if (obsEscolhidas.length) setObs([...obs.split("\n").map((t) => t.trim()).filter(Boolean), ...obsEscolhidas.filter((o) => !obs.includes(o))].join("\n"));
+        }}
+      />
 
       <div className="card nao-imprimir">
         <h2 style={{ marginTop: 0 }}>2. Colar as respostas</h2>
@@ -250,5 +264,97 @@ export function PrevisaoTela({ data, produtores, produtos, inicial }: { data: st
         </p>
       </div>
     </>
+  );
+}
+
+// Anexar um documento (conversa exportada do WhatsApp, planilha, Word) ou colar tudo de uma vez.
+function Anexo({ produtores, produtos, aoPreencher }: { produtores: Prod[]; produtos: string[]; aoPreencher: (doc: DocumentoLido, obs: string[]) => void }) {
+  const [texto, setTexto] = useState("");
+  const [lido, setLido] = useState<DocumentoLido | null>(null);
+  const [obsMarcadas, setObsMarcadas] = useState<string[]>([]);
+  const { pendente, aviso, setAviso, rodar } = useAcao();
+  const nome = new Map(produtores.map((p) => [p.id, p.nome]));
+  function entender(t: string) {
+    const doc = lerDocumentoPrevisao(t, produtores, produtos);
+    setLido(doc);
+    setObsMarcadas(doc.observacoes.filter((o) => !/^o que cada produtor/i.test(o)));
+    if (!Object.keys(doc.porProdutor).length) setAviso({ tipo: "erro", texto: "Não achei nenhum produtor com quantidade. Confira o texto ou cole a resposta de cada um embaixo." });
+  }
+  const totalKg = lido ? Object.values(lido.porProdutor).flat().reduce((s, i) => s + i.kg, 0) : 0;
+  return (
+    <div className="card nao-imprimir" data-livre>
+      <h2 style={{ marginTop: 0 }}>Já tem tudo num documento? Anexe ou cole aqui</h2>
+      <p className="discreto" style={{ marginTop: 0 }}>
+        Serve a conversa exportada do WhatsApp (.txt), a tabela da previsão (.xlsx, .docx ou .csv) ou o texto copiado. O app separa por produtor e mostra antes de
+        preencher. PDF ou foto: abra, copie o texto e cole.
+      </p>
+      <div className="botoes">
+        <input
+          type="file"
+          accept=".txt,.csv,.xlsx,.docx"
+          aria-label="Anexar documento da previsão"
+          onChange={(ev) => {
+            const f = ev.target.files?.[0];
+            if (!f) return;
+            const form = new FormData();
+            form.set("arquivo", f);
+            rodar(() => lerAnexoPrevisao(form), "Arquivo lido. Confira embaixo.", (r) => {
+              if (r.ok) {
+                setTexto(r.texto);
+                entender(r.texto);
+              }
+            });
+          }}
+        />
+      </div>
+      <textarea value={texto} onChange={(ev) => setTexto(ev.target.value)} placeholder={"ou cole aqui, ex.:\nAna  Couve manteiga  150 kg\nAlface lisa  200 kg\nGustavo  Chuchu  1.400 kg"} style={{ minHeight: 90, marginTop: 8 }} />
+      <div className="botoes" style={{ marginTop: 8 }}>
+        <button type="button" className="botao claro" disabled={!texto.trim()} onClick={() => entender(texto)}>
+          Ler o texto
+        </button>
+      </div>
+      <Aviso aviso={aviso} />
+      {lido && Object.keys(lido.porProdutor).length > 0 && (
+        <div style={{ marginTop: 10 }}>
+          <p>
+            <strong>Entendi {Object.keys(lido.porProdutor).length} produtores, {kg(totalKg)} kg no total:</strong>
+          </p>
+          <ul className="lista-lida">
+            {Object.entries(lido.porProdutor).map(([id, itens]) => (
+              <li key={id}>
+                <strong>{nome.get(id)}</strong>: {itens.map((i) => `${i.produto} ${kg(i.kg)} kg`).join(" · ")}
+              </li>
+            ))}
+          </ul>
+          {lido.observacoes.length > 0 && (
+            <>
+              <p style={{ marginBottom: 4 }}>
+                <strong>Linhas que parecem observação</strong> (marque as que vão para a nutricionista):
+              </p>
+              {lido.observacoes.map((o) => (
+                <label key={o} className="discreto" style={{ display: "block" }}>
+                  <input type="checkbox" checked={obsMarcadas.includes(o)} onChange={(ev) => setObsMarcadas(ev.target.checked ? [...obsMarcadas, o] : obsMarcadas.filter((x) => x !== o))} /> {o}
+                </label>
+              ))}
+            </>
+          )}
+          <div className="botoes" style={{ marginTop: 10 }}>
+            <button
+              type="button"
+              className="botao"
+              disabled={pendente}
+              onClick={() => {
+                aoPreencher(lido, obsMarcadas);
+                marcarSujo(true); // ainda não gravou
+                setAviso({ tipo: "ok", texto: "Preenchido! Confira cada produtor embaixo e clique em Gravar previsão." });
+              }}
+            >
+              Preencher a previsão com isso
+            </button>
+            <span className="discreto">Produtor que não está no documento fica como está.</span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

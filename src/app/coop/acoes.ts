@@ -5,6 +5,7 @@ import { z } from "zod";
 import { apagarSemana as apagarArquivoSemana, garantirLocal, gravarCadastro, gravarPrevisao, gravarSemana, lerCadastro, lerPrevisao, lerSemana, listarSemanas } from "@/lib/coop/armazem";
 import { lerConferencia, lerPedidoPrefeitura, type LinhaPedido } from "@/lib/coop/planilha/pedidoPrefeitura";
 import { lerPlanilha } from "@/lib/coop/planilha/lerPlanilha";
+import { textoDeArquivo } from "@/lib/coop/planilha/textoDeArquivo";
 import { novaSemana } from "@/lib/coop/semana";
 import type { Previsao } from "@/lib/coop/previsao";
 import type { Cadastro, Reentrega, Semana } from "@/lib/coop/tipos";
@@ -271,11 +272,38 @@ export async function salvarCapacidadeSemana(data: string, capacidade: Record<st
   }
 }
 
-export async function marcarMensagemEnviada(data: string, produtor: string): Promise<Resposta> {
+// Marca (ou desmarca) a mensagem do pedido como enviada; vários produtores de uma vez.
+export async function marcarMensagens(data: string, produtores: string[], enviada: boolean): Promise<Resposta> {
   try {
     garantirLocal();
+    const ids = z.array(z.string().max(80)).max(100).parse(produtores);
     const s = await exigirSemana(data);
-    s.mensagensEnviadas = { ...(s.mensagensEnviadas ?? {}), [z.string().max(80).parse(produtor)]: new Date().toISOString() };
+    const m = { ...(s.mensagensEnviadas ?? {}) };
+    const agora = new Date().toISOString();
+    for (const id of ids) {
+      if (enviada) m[id] ??= agora;
+      else delete m[id];
+    }
+    s.mensagensEnviadas = m;
+    await gravarSemana(s);
+    revalidatePath(`/coop/semana/${data}`, "layout");
+    return { ok: true };
+  } catch (e) {
+    return erro(e);
+  }
+}
+
+// Recado só desta semana na mensagem do produtor (vazio = sem recado).
+export async function salvarRecado(data: string, produtor: string, texto: string): Promise<Resposta> {
+  try {
+    garantirLocal();
+    const id = z.string().max(80).parse(produtor);
+    const t = z.string().max(300).parse(texto).trim();
+    const s = await exigirSemana(data);
+    const r = { ...(s.recados ?? {}) };
+    if (t) r[id] = t;
+    else delete r[id];
+    s.recados = r;
     await gravarSemana(s);
     revalidatePath(`/coop/semana/${data}`, "layout");
     return { ok: true };
@@ -486,6 +514,21 @@ const esquemaPrevisao = z.object({
   observacoes: z.array(z.string().max(300)).max(50),
   respostas: z.record(z.string().max(80), z.string().max(4000)),
 });
+
+// Previsão: lê o anexo (conversa do WhatsApp, planilha, Word) e devolve o texto para a tela entender.
+export async function lerAnexoPrevisao(form: FormData): Promise<Resposta<{ texto: string }>> {
+  try {
+    garantirLocal();
+    const f = form.get("arquivo");
+    if (!(f instanceof File) || f.size === 0) throw new Error("Escolha o arquivo.");
+    if (f.size > MAX_ARQUIVO) throw new Error("Arquivo grande demais (máximo 7 MB).");
+    const texto = await textoDeArquivo(f.name, await f.arrayBuffer());
+    if (!texto.trim()) throw new Error("O arquivo está vazio ou não tem texto.");
+    return { ok: true, texto: texto.slice(0, 200000) };
+  } catch (e) {
+    return erro(e);
+  }
+}
 
 export async function salvarPrevisao(p: Previsao): Promise<Resposta> {
   try {
