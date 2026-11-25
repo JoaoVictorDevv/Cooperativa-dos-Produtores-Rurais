@@ -77,6 +77,7 @@ export interface Cadastro {
   cidade?: string;
   equipe?: string[]; // quem confere no galpão
   escala?: EscalaGalpao; // quem trabalha em cada dia e a diária (só no app)
+  motoristas?: Record<string, string>; // número da rota → motorista (ex.: { "4": "Augusto" })
   excecoesEscolas?: Record<string, ExcecaoEscola>;
 }
 

@@ -418,3 +418,36 @@
 .coop .folha.romaneio-prod .divisao p { margin: 1px 0; }
 .coop .folha.romaneio-prod .divisao > div { margin-bottom: 8px; }
 .coop .folha.romaneio-prod .divisao-titulo { color: var(--c-verde); font-weight: 700; font-size: 13px; margin-bottom: 4px !important; }
+
+/* Mapa de montagem igual ao da planilha */
+.coop .folha.mapa-planilha { padding: 14px 16px; }
+.coop .folha.mapa-planilha::before, .coop .folha.mapa-planilha::after { content: none; }
+.coop .mapa-faixa { background: #2e7d32; color: #fff; padding: 6px 10px 4px; margin-bottom: 0; }
+.coop .mapa-faixa p { margin: 0; }
+.coop .mapa-faixa .mapa-dia { font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 18px; }
+.coop .mapa-faixa .mapa-rota { font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 14px; }
+.coop .mapa-saida { font-style: italic; font-size: 10.5px; background: #1b5e20; color: #fff; margin: 0 -10px -4px !important; padding: 2px 10px; }
+.coop .folha.mapa-planilha table { margin-top: 10px; font-size: 10.5px; width: auto; border-collapse: collapse; }
+.coop .folha.mapa-planilha th { background: #43843f; color: #fff; text-align: center; font-size: 10px; vertical-align: middle; border: 1px solid #fff; padding: 4px; }
+.coop .folha.mapa-planilha th.vertical { height: 86px; width: 44px; padding: 2px; }
+.coop .folha.mapa-planilha th.vertical span { writing-mode: vertical-rl; transform: rotate(180deg); display: inline-block; white-space: normal; max-height: 82px; }
+.coop .folha.mapa-planilha td { border: 1px solid #888; padding: 1px 4px; height: 17px; }
+.coop .folha.mapa-planilha td.c { text-align: center; }
+.coop .folha.mapa-planilha td.bairro { font-size: 8.5px; }
+.coop .folha.mapa-planilha td.valor { text-align: center; font-weight: 700; min-width: 44px; }
+.coop .folha.mapa-planilha td.vai { background: #fff59d; }
+.coop .folha.mapa-planilha td.falta { background: #ffcc80; }
+.coop .folha.mapa-planilha th.check, .coop .folha.mapa-planilha td.check { width: 40px; background: transparent; }
+.coop .folha.mapa-planilha tr.total td { background: #e8f5e9; color: #1f3d6b; font-weight: 700; text-align: right; }
+.coop .folha.mapa-planilha tr.total td.valor { text-align: center; }
+.coop .mapa-rodape { display: flex; gap: 40px; background: #fbefc5; border: 1px solid #e2c76b; padding: 5px 10px; font-size: 11.5px; margin-top: 4px; max-width: 760px; }
+.coop .mapa-legenda { font-size: 9px; color: #555; margin-top: 14px; }
+.coop .folha.mapa-planilha table.conferencia { width: 100%; }
+.coop .folha.mapa-planilha table.conferencia td { text-align: center; height: 20px; font-size: 11px; }
+.coop .folha.mapa-planilha table.conferencia td:nth-child(2) { text-align: left; }
+.coop .folha.mapa-planilha table.conferencia th small { display: block; font-weight: 400; }
+.coop .folha.mapa-planilha table.conferencia tr.total td { text-align: center; }
+@media print {
+  .coop .folha.mapa-planilha { page: paisagem; }
+  .coop .mapa-faixa, .coop .mapa-saida, .coop .folha.mapa-planilha th, .coop .folha.mapa-planilha td, .coop .mapa-rodape { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}

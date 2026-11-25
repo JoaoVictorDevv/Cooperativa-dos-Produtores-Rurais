@@ -2,9 +2,11 @@ import { escalaDe } from "@/lib/coop/escala";
 import { EditorEscala } from "./EditorEscala";
 import { networkInterfaces } from "node:os";
 import { Celular } from "./Celular";
+import { Motoristas } from "./Motoristas";
+import { motoristasDe, tituloComMotorista } from "@/lib/coop/motoristas";
 import Link from "next/link";
 import { pastaDados } from "@/lib/coop/armazem";
-import { kg } from "@/lib/coop/numeros";
+import { kg, reais } from "@/lib/coop/numeros";
 import { telefoneWhatsApp } from "@/lib/coop/mensagens";
 import { carregarCadastro } from "../dados";
 import { ImportarModelo, ImportarSemana } from "./Importar";
@@ -43,6 +45,7 @@ export default async function Cadastro() {
       {cad && (
         <>
           <EditorEscala inicial={escalaDe(cad)} />
+          <Motoristas inicial={motoristasDe(cad)} />
           <Celular
             enderecos={Object.values(networkInterfaces())
               .flat()
@@ -90,7 +93,7 @@ export default async function Cadastro() {
                   </td>
                     <td>{p.curto}</td>
                     <td>{p.telefone ?? "—"}</td>
-                    <td>{telefoneWhatsApp(p.telefone) ? <span className="etiqueta verde">ok</span> : <span className="etiqueta vermelha">sem número</span>}</td>
+                    <td>{telefoneWhatsApp(p.telefone) ? <span className="etiqueta verde">OK</span> : <span className="etiqueta vermelha">Sem número</span>}</td>
                   </tr>
                 ))}
               </tbody>
@@ -111,8 +114,8 @@ export default async function Cadastro() {
                 {cad.produtos.map((p) => (
                   <tr key={p.nome}>
                     <td>{p.nome}</td>
-                    <td className="n">R$ {kg(p.preco)}</td>
-                    <td className="n">R$ {kg(p.preco - cad.taxaLogistica)}</td>
+                    <td className="n">{reais(p.preco)}</td>
+                    <td className="n">{reais(p.preco - cad.taxaLogistica)}</td>
                     <td>{p.doisDias ? "2 dias (folha)" : "1º dia"}</td>
                   </tr>
                 ))}
@@ -123,7 +126,7 @@ export default async function Cadastro() {
           <div className="card">
             {cad.rotas.map((r) => (
               <p key={r.id} style={{ margin: "4px 0" }}>
-                <strong>{r.titulo}</strong> <span className="discreto">— {r.paradas.length} escolas</span>
+                <strong>{tituloComMotorista(r.titulo, motoristasDe(cad))}</strong> <span className="discreto">— {r.paradas.length} escolas</span>
               </p>
             ))}
           </div>

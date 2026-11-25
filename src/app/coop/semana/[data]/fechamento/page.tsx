@@ -98,14 +98,14 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
                     </td>
                     <td className="direita" style={{ whiteSpace: "nowrap" }}>
                       <Link className="botao pequeno claro" href={`${base}/imprimir/extratos?produtor=${encodeURIComponent(p.id)}`}>
-                        🖨 demonstrativo
+                        🖨 Demonstrativo
                       </Link>{" "}
                       {zap ? (
                         <a className="botao pequeno" href={zap} target="_blank" rel="noreferrer" title="Abre a conversa com o texto pronto; é só enviar">
                           WhatsApp
                         </a>
                       ) : (
-                        <span className="etiqueta vermelha" title="Cadastre o telefone no MODELO">sem número</span>
+                        <span className="etiqueta vermelha" title="Cadastre o telefone no MODELO">Sem número</span>
                       )}
                     </td>
                   </tr>

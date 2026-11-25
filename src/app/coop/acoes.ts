@@ -53,6 +53,7 @@ export async function importarModelo(form: FormData): Promise<Resposta<{ resumo:
       cadastro.equipe = antigo.equipe;
       cadastro.excecoesEscolas = antigo.excecoesEscolas;
       cadastro.escala = antigo.escala;
+      cadastro.motoristas = antigo.motoristas;
     }
     await gravarCadastro(cadastro);
     revalidatePath("/coop", "layout");
@@ -550,6 +551,21 @@ export async function salvarEscala(entrada: z.infer<typeof esquemaEscala>): Prom
     cad.escala = e;
     // Quem está na escala entra na lista de "quem conferiu".
     cad.equipe = [...new Set([...(cad.equipe ?? []), ...e.dias.flatMap((d) => d.pessoas.map((p) => p.nome.trim()))])].filter(Boolean);
+    await gravarCadastro(cad);
+    revalidatePath("/coop", "layout");
+    return { ok: true };
+  } catch (e) {
+    return erro(e);
+  }
+}
+
+// Motorista de cada rota (Rota 1 a 4).
+export async function salvarMotoristas(m: Record<string, string>): Promise<Resposta> {
+  try {
+    garantirLocal();
+    const v = z.record(z.string().regex(/^\d{1,2}$/), z.string().max(40)).parse(m);
+    const cad = await exigirCadastro();
+    cad.motoristas = Object.fromEntries(Object.entries(v).map(([k, x]) => [k, x.trim()]).filter(([, x]) => x));
     await gravarCadastro(cad);
     revalidatePath("/coop", "layout");
     return { ok: true };

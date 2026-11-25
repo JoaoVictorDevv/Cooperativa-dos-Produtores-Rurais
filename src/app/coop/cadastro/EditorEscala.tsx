@@ -46,11 +46,11 @@ export function EditorEscala({ inicial }: { inicial: EscalaGalpao }) {
             ))}
             <div className="botoes">
               <button type="button" className="botao pequeno claro" onClick={() => setE({ ...e, dias: e.dias.map((x, j) => (j === k ? { ...x, pessoas: [...x.pessoas, { nome: "", funcao: "ajudante", hora: x.pessoas.at(-1)?.hora ?? "" }] } : x)) })}>
-                + pessoa
+                + Pessoa
               </button>
               {e.dias.length > 1 && (
                 <button type="button" className="botao pequeno claro" onClick={() => setE({ ...e, dias: e.dias.filter((_, j) => j !== k) })}>
-                  tirar o dia
+                  Tirar o dia
                 </button>
               )}
             </div>
@@ -59,7 +59,7 @@ export function EditorEscala({ inicial }: { inicial: EscalaGalpao }) {
       </div>
       <div className="botoes" style={{ marginTop: 8 }}>
         <button type="button" className="botao pequeno claro" onClick={() => setE({ ...e, dias: [...e.dias, { dia: "", pessoas: [] }] })}>
-          + dia
+          + Dia
         </button>
       </div>
       <div className="grade" style={{ marginTop: 12 }}>

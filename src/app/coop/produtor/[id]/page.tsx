@@ -71,7 +71,7 @@ export default async function FichaProdutor({ params }: PageProps<"/coop/produto
       </Link>
       <h1>{p.nome}</h1>
       <p className="sub">
-        Chamado de {p.curto} · Telefone: {p.telefone ?? "sem número no MODELO"}
+        Chamado de {p.curto} · Telefone: {p.telefone ?? "sem número no cadastro"}
         {zap && (
           <>
             {" "}
@@ -146,7 +146,7 @@ export default async function FichaProdutor({ params }: PageProps<"/coop/produto
                     <td className="direita">
                       {x.lancou && (
                         <Link className="botao pequeno claro" href={`/coop/semana/${x.s.data}/imprimir/extratos?produtor=${encodeURIComponent(p.id)}`}>
-                          🖨 demonstrativo
+                          🖨 Demonstrativo
                         </Link>
                       )}
                     </td>

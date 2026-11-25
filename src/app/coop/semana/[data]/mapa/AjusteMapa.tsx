@@ -54,11 +54,10 @@ export function AjusteMapa({
           className="botao claro pequeno"
           onClick={() => setAberto(true)}
         >
-          Ajustar o mapa por produto…
+          Ajuste manual do mapa (só se precisar)…
         </button>
         <span className="discreto">
-          Ex.: mandar o pedido todo na terça, ou o chuchu que veio em 2 dias
-          contar como legume.
+          Normalmente não precisa: o app divide sozinho o que chegou no galpão.
         </span>
       </div>
     );
@@ -81,13 +80,19 @@ export function AjusteMapa({
   }
   return (
     <div className="card nao-imprimir">
-      <h3 style={{ marginTop: 0 }}>Ajustar o mapa por produto</h3>
-      <p className="discreto" style={{ marginTop: 0 }}>
-        Em branco = automático (o app divide o que chegou). Digite{" "}
-        <strong>100</strong> para mandar o pedido todo para as escolas naquele
-        dia. “Somar os 2 dias” = o que chegou no 2º dia soma com a sobra do 1º
-        (para legume que veio em dois dias).
-      </p>
+      <h3 style={{ marginTop: 0 }}>Ajuste manual do mapa</h3>
+      <ul className="discreto" style={{ marginTop: 0, paddingLeft: 18 }}>
+        <li>
+          Cada número é <strong>quanto do pedido cada escola recebe</strong> naquele dia: <strong>100</strong> = o pedido todo, <strong>50</strong> = metade.
+        </li>
+        <li>
+          <strong>Em branco = automático.</strong> O número cinza é o que o app calculou com o que chegou no galpão.
+        </li>
+        <li>Use só quando souber de algo que o app não sabe (ex.: vai chegar mais produto antes de o caminhão sair).</li>
+        <li>
+          <strong>Somar os 2 dias:</strong> para legume que chegou parte no 1º dia e parte no 2º (ex.: chuchu). Soma tudo antes de dividir.
+        </li>
+      </ul>
       <div className="rolar">
         <table className="tabela">
           <thead>
@@ -155,6 +160,19 @@ export function AjusteMapa({
           onClick={salvar}
         >
           {pendente ? "Recalculando…" : "Salvar e recalcular o mapa"}
+        </button>
+        <button
+          type="button"
+          className="botao claro"
+          onClick={() =>
+            setV(
+              Object.fromEntries(
+                linhas.map((l) => [l.produto, { somar: false, f1: "", f2: "" }]),
+              ),
+            )
+          }
+        >
+          Limpar tudo (voltar ao automático)
         </button>
         <button
           type="button"

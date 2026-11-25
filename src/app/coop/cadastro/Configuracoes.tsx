@@ -68,11 +68,11 @@ export function ExcecoesEscolas({ escolas, produtos, excecoes }: { escolas: Esco
                 <td>
                   <strong>{nomes.get(cod) ?? "?"}</strong>
                 </td>
-                <td>{ex.naoRecebe ? <span className="etiqueta vermelha">não recebe nada</span> : <span className="etiqueta amarela">sem {ex.produtos?.join(", ")}</span>}</td>
+                <td>{ex.naoRecebe ? <span className="etiqueta vermelha">Não recebe nada</span> : <span className="etiqueta amarela">Sem {ex.produtos?.join(", ")}</span>}</td>
                 <td className="discreto">{ex.motivo}</td>
                 <td className="direita">
                   <button type="button" className="botao pequeno claro" disabled={pendente} onClick={() => rodar(() => salvarExcecaoEscola(cod, null), "Tirado.")}>
-                    tirar
+                    Tirar
                   </button>
                 </td>
               </tr>
@@ -89,7 +89,7 @@ export function ExcecoesEscolas({ escolas, produtos, excecoes }: { escolas: Esco
                 {codigo} · {nomes.get(codigo)}
               </strong>
               <button type="button" className="botao pequeno claro" onClick={() => setCodigo("")}>
-                trocar
+                Trocar
               </button>
             </span>
           ) : (

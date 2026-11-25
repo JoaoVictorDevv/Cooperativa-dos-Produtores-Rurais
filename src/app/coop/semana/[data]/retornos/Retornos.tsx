@@ -85,7 +85,7 @@ export function Retornos({ data, rotas, produtos, motivos, conferidos, abrir }: 
           {comProblema} escola(s) com diferença. O resto conta como recebeu o que saiu no caminhão.
         </span>
         <span className="botoes">
-          {conferidos ? <span className="etiqueta verde">romaneios conferidos</span> : <span className="etiqueta amarela">ainda conferindo</span>}
+          {conferidos ? <span className="etiqueta verde">Romaneios conferidos</span> : <span className="etiqueta amarela">Ainda conferindo</span>}
           <button
             type="button"
             className={conferidos ? "botao claro pequeno" : "botao pequeno"}
@@ -166,7 +166,7 @@ function FragmentoEscola({
           <strong>{e.nomeMapa}</strong>
         </td>
         <td>
-          {problemas.length ? <span className="etiqueta vermelha">{problemas.map(resumoRetorno).join(" · ")}</span> : !e.reentrega ? <span className="etiqueta verde">ok</span> : null}{" "}
+          {problemas.length ? <span className="etiqueta vermelha">{problemas.map(resumoRetorno).join(" · ")}</span> : !e.reentrega ? <span className="etiqueta verde">OK</span> : null}{" "}
           {e.reentrega && <span className={`etiqueta ${e.reentrega.feita ? "verde" : "amarela"}`}>{e.reentrega.feita ? "reentregue" : `reentrega: ${e.reentrega.motivo.toLowerCase()}`}</span>}
         </td>
         <td className="direita">{aberto ? "▲" : "▼"}</td>
