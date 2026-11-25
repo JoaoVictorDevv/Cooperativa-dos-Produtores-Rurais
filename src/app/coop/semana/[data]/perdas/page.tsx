@@ -1,12 +1,15 @@
 import { kg2, reais } from "@/lib/coop/numeros";
-import { NOME_CAUSA, perdasDaSemana, type CausaPerda } from "@/lib/coop/perdas";
+import { NOME_CAUSA, perdasDaSemana, type CausaPerda, type ItemPerda } from "@/lib/coop/perdas";
+import { VerPerdas } from "./VerPerdas";
 import { carregarSemana } from "../../../dados";
 import { BotaoImprimir } from "../../../ui";
 
 export const metadata = { title: "Perdas" };
 
-export default async function Perdas({ params }: PageProps<"/coop/semana/[data]/perdas">) {
+export default async function Perdas({ params, searchParams }: PageProps<"/coop/semana/[data]/perdas">) {
   const { data } = await params;
+  const q = await searchParams;
+  const ver = q.ver === "produto" ? "produto" : "motivo";
   const { cad, sem, r } = await carregarSemana(data);
   const p = perdasDaSemana(cad, sem, r);
   const causas = [...new Set(p.linhas.map((l) => l.causa))];
@@ -18,7 +21,10 @@ export default async function Perdas({ params }: PageProps<"/coop/semana/[data]/
         <p className="discreto" style={{ margin: 0 }}>
           Perda = o que a Prefeitura não pagou (valor de venda), escola por escola. Clique numa linha para ver cada escola.
         </p>
-        <BotaoImprimir />
+        <span className="botoes">
+          <VerPerdas ver={ver} escolhido={typeof q.ver === "string"} />
+          <BotaoImprimir />
+        </span>
       </div>
       <div className="folha">
         <h3 className="vermelho" style={{ fontSize: 22 }}>
@@ -43,9 +49,9 @@ export default async function Perdas({ params }: PageProps<"/coop/semana/[data]/
               </tr>
             </thead>
             <tbody>
-              {causas.map((causa, n) => (
-                <Grupo key={causa} numero={n + 1} causa={causa} linhas={p.linhas.filter((l) => l.causa === causa)} />
-              ))}
+              {ver === "motivo"
+                ? causas.map((causa, n) => <Grupo key={causa} numero={n + 1} causa={causa} linhas={p.linhas.filter((l) => l.causa === causa)} />)
+                : porProduto(p.linhas.flatMap((l) => l.itens)).map((g, n) => <GrupoProduto key={g.produto} numero={n + 1} {...g} />)}
               {p.ajusteConferencia !== 0 && (
                 <tr>
                   <td>Diferença da conferência da Prefeitura (pagou {p.ajusteConferencia < 0 ? "a mais" : "a menos"} que as escolas aceitaram)</td>
@@ -131,6 +137,45 @@ function Grupo({ numero, causa, linhas }: { numero: number; causa: CausaPerda; l
           </td>
           <td className="n">{kg2(l.kg)} kg</td>
           <td className="n">{reais(l.valor)}</td>
+        </tr>
+      ))}
+    </>
+  );
+}
+
+// Por produto (como a folha de 23/11): o produto e, embaixo, cada escola com o que aconteceu.
+function porProduto(itens: ItemPerda[]) {
+  const grupos = new Map<string, ItemPerda[]>();
+  for (const i of itens) grupos.set(i.produto, [...(grupos.get(i.produto) ?? []), i]);
+  return [...grupos.entries()]
+    .map(([produto, lista]) => ({ produto, itens: lista.sort((a, b) => b.valor - a.valor), kg: lista.reduce((s, i) => s + i.kg, 0), valor: lista.reduce((s, i) => s + i.valor, 0) }))
+    .sort((a, b) => b.valor - a.valor);
+}
+
+function oQueHouve(i: ItemPerda): string {
+  const d = i.detalhe ? i.detalhe.toLowerCase() : "";
+  if (i.causa === "semReceber") return d && d !== "não recebeu" ? `não recebeu (${d})` : "não recebeu";
+  if (i.causa === "devolvido") return d && d !== "recusado" ? `devolvida (${d})` : "devolvida";
+  return d ? `recebeu a menos (${d})` : "recebeu a menos";
+}
+
+function GrupoProduto({ numero, produto, itens, kg, valor }: { numero: number; produto: string; itens: ItemPerda[]; kg: number; valor: number }) {
+  return (
+    <>
+      <tr className="causa">
+        <td>
+          {numero}. {produto}
+        </td>
+        <td className="n">{kg2(kg)} kg</td>
+        <td className="n">{reais(valor)}</td>
+      </tr>
+      {itens.map((i) => (
+        <tr key={`${i.codigo}-${i.produto}`}>
+          <td>
+            {i.codigo} {i.escola} — {oQueHouve(i)}
+          </td>
+          <td className="n">{kg2(i.kg)} kg</td>
+          <td className="n">{reais(i.valor)}</td>
         </tr>
       ))}
     </>

@@ -2,8 +2,9 @@
 //   node scripts/coop/iniciar.mjs            -> modo desenvolvimento (npm run coop:dev)
 //   node scripts/coop/iniciar.mjs producao   -> modo final (abrir-app.bat ou npm run coop)
 //
-// Liga o modo local (sem login, dados em ./dados-cooperativa) e inicia o Next.
-// Só escuta no próprio computador (127.0.0.1): sem login, não pode abrir na rede.
+// Liga o modo local (dados em ./dados-cooperativa) e inicia o Next.
+// Abre também na rede (Wi-Fi) para o celular: lá o app pede o PIN (Cadastro → Celular).
+// Neste PC o navegador entra direto, com uma chave nova a cada vez que o app abre.
 //
 // No modo final:
 // - se o app ainda não foi preparado, ou se os arquivos mudaram depois de uma
@@ -11,7 +12,9 @@
 // - se o app já está aberto, só abre o navegador;
 // - abre o navegador quando o app estiver pronto (COOP_ABRIR=0 para não abrir).
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { networkInterfaces } from "node:os";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -26,8 +29,30 @@ const producao = process.argv[2] === "producao";
 const env = { ...process.env, COOP_LOCAL: "1", NEXT_TELEMETRY_DISABLED: "1" };
 const nextBin = createRequire(path.join(raiz, "package.json")).resolve("next/dist/bin/next");
 
+// Chave para este PC entrar sem PIN (o app confere em /entrar?chave=...).
+const arquivoChave = path.join(raiz, ".next", "coop-chave");
+function chave() {
+  if (existsSync(arquivoChave)) return readFileSync(arquivoChave, "utf8").trim();
+  return novaChave();
+}
+function novaChave() {
+  mkdirSync(path.dirname(arquivoChave), { recursive: true });
+  const c = randomBytes(24).toString("hex");
+  writeFileSync(arquivoChave, c);
+  return c;
+}
+
+// Endereços deste PC na rede (para digitar no celular).
+function enderecosNaRede() {
+  return Object.values(networkInterfaces())
+    .flat()
+    .filter((i) => i && i.family === "IPv4" && !i.internal)
+    .map((i) => `http://${i.address}:${porta}/coop`);
+}
+
 function abrirNavegador() {
   if (process.env.COOP_ABRIR === "0") return;
+  const url = `http://localhost:${porta}/entrar?chave=${chave()}`;
   const [cmd, args] =
     process.platform === "win32" ? ["cmd", ["/c", "start", "", url]] : process.platform === "darwin" ? ["open", [url]] : ["xdg-open", [url]];
   try {
@@ -79,9 +104,18 @@ function preparar() {
   return true;
 }
 
+function mostrarCelular() {
+  const ends = enderecosNaRede();
+  if (!ends.length) return;
+  console.log("No CELULAR (no mesmo Wi-Fi deste PC), abra um destes endereços e digite o PIN:");
+  for (const e of ends) console.log(`   ${e}`);
+  console.log("Se o Windows perguntar, clique em Permitir acesso (redes privadas).\n");
+}
+
 async function main() {
   if (await respondendo()) {
     console.log(`\nO app já está aberto. Abrindo o navegador em ${url}\n`);
+    mostrarCelular();
     abrirNavegador();
     return;
   }
@@ -90,13 +124,16 @@ async function main() {
     console.log("\nNão deu para preparar o app no modo final. Vou abrir no modo simples (funciona igual, só um pouco mais lento).\n");
     modo = "dev";
   }
+  novaChave();
   console.log(`\nApp da Cooperativa: ${url}\nDeixe esta janela aberta enquanto usa. Para fechar o app, feche esta janela.\n`);
-  const filho = spawn(process.execPath, [nextBin, modo, "-p", porta, "-H", "127.0.0.1"], { stdio: "inherit", env });
+  // 0.0.0.0 = também na rede, para o celular (com PIN).
+  const filho = spawn(process.execPath, [nextBin, modo, "-p", porta, "-H", "0.0.0.0"], { stdio: "inherit", env });
   filho.on("exit", (codigo) => process.exit(codigo ?? 0));
   for (let i = 0; i < 240; i++) {
     await new Promise((r) => setTimeout(r, 1000));
     if (await respondendo()) {
       console.log(`\nPronto! Abrindo ${url}\n`);
+      mostrarCelular();
       abrirNavegador();
       return;
     }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 // Feito = a etapa está terminada (aparece o ✓ na aba).
 export interface FeitoAbas {
@@ -71,10 +72,15 @@ export function Abas({ data, dias, feito }: { data: string; dias: [string, strin
   const base = `/coop/semana/${data}`;
   const daImpressao = abaDaImpressao(atual, q.get("dia"));
   const abas = listaAbas(base, dias, feito);
+  const nav = useRef<HTMLElement>(null);
+  // No celular as abas deslizam: mostra a aba aberta.
+  useEffect(() => {
+    nav.current?.querySelector<HTMLElement>("a.ativa")?.scrollIntoView({ block: "nearest", inline: "center" });
+  }, [atual]);
   const ativa = (href: string) =>
     daImpressao ? href === base + daImpressao : atual === href || (href !== base && atual.startsWith(href));
   return (
-    <nav className="abas nao-imprimir">
+    <nav className="abas nao-imprimir" ref={nav}>
       {abas.map(([href, texto, ok]) => (
         <Link key={href} href={href} className={[ativa(href) ? "ativa" : "", ok ? "feita" : ""].join(" ").trim() || undefined} title={ok ? "Etapa terminada" : undefined}>
           {ok && <span className="check">✓</span>}

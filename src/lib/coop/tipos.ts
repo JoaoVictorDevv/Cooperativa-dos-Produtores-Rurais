@@ -76,7 +76,14 @@ export interface Cadastro {
   nomeCooperativa?: string;
   cidade?: string;
   equipe?: string[]; // quem confere no galpão
+  escala?: EscalaGalpao; // quem trabalha em cada dia e a diária (só no app)
   excecoesEscolas?: Record<string, ExcecaoEscola>;
+}
+
+export interface EscalaGalpao {
+  diaria: number; // R$ por pessoa por dia (todos iguais)
+  tarefasChefe: string[];
+  dias: { dia: string; pessoas: { nome: string; funcao: "chefe" | "ajudante"; hora: string }[] }[];
 }
 
 export type PorProdutorProduto = Record<string, Record<string, number>>; // produtor → produto → kg

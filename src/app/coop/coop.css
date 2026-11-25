@@ -350,3 +350,50 @@
 .coop .msg-cartao.enviada .msg { opacity: 0.75; }
 .coop .lista-lida { margin: 4px 0 8px; padding-left: 20px; font-size: 14px; }
 .coop .lista-lida li { margin: 2px 0; }
+
+/* Escala do galpão */
+.coop .escala-dias { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.coop .escala-dia { border: 1px solid var(--c-line); border-radius: 12px; padding: 10px; background: #fff; }
+.coop .escala-dia .escala-titulo { font-weight: 700; font-size: 16px; width: 100%; margin-bottom: 6px; }
+.coop .escala-pessoa { margin-bottom: 4px; flex-wrap: nowrap; }
+.coop .hoje-galpao { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; background: var(--c-verde-claro); border: 1px solid #b9d8b5; border-radius: 12px; padding: 9px 14px; margin: 10px 0; }
+.coop .folha.equipe::after { content: none; }
+.coop .folha.equipe .equipe-titulo { text-align: center; font-size: 30px; color: var(--c-verde); letter-spacing: 0.06em; margin: 0; }
+.coop .folha.equipe .equipe-sub { text-align: center; color: #555; margin: 4px 0 16px; }
+.coop .folha.equipe .equipe-chefe { border: 3px solid var(--c-verde); border-radius: 14px; background: #f1f7ef; padding: 12px 18px; margin-bottom: 14px; }
+.coop .folha.equipe .equipe-chefe h4 { margin: 0 0 6px; color: var(--c-verde); font-size: 20px; text-transform: uppercase; }
+.coop .folha.equipe .equipe-chefe li { font-size: 16px; margin: 4px 0; }
+.coop .folha.equipe .equipe-dia { border: 2px solid #999; border-radius: 14px; overflow: hidden; margin-bottom: 12px; }
+.coop .folha.equipe .equipe-dia-cab { background: var(--c-verde); color: #fff; font-weight: 800; font-size: 22px; padding: 8px 16px; text-transform: uppercase; }
+.coop .folha.equipe .equipe-dia-corpo { padding: 8px 16px; font-size: 16px; }
+.coop .folha.equipe .equipe-dia-corpo p { margin: 6px 0; }
+.coop .folha.equipe .equipe-dia-corpo strong { color: var(--c-azul); }
+@media print { .coop .folha.equipe .equipe-dia-cab, .coop .folha.equipe .equipe-chefe { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+
+/* Alternar (ex.: perdas por motivo | por produto) */
+.coop .alternar { display: inline-flex; border: 2px solid var(--c-marrom); border-radius: 99px; overflow: hidden; }
+.coop .alternar a { padding: 9px 18px; font-weight: 700; font-size: 15px; text-decoration: none; color: var(--c-marrom); background: var(--c-card); }
+.coop .alternar a.ativo { background: var(--c-marrom); color: #fff; }
+
+/* Entrar (PIN) */
+.coop .entrar { max-width: 360px; text-align: center; padding-top: 40px; }
+.coop .entrar img { border-radius: 50%; }
+.coop .entrar form { display: grid; gap: 12px; }
+.coop .entrar .pin { font-size: 28px; text-align: center; letter-spacing: 0.4em; padding: 10px; }
+
+/* Celular: topo e abas compactos (uma linha que desliza para o lado) */
+@media (max-width: 700px) {
+  .coop-top { padding: 6px 10px; gap: 6px 10px; position: sticky; top: 0; z-index: 40; }
+  .coop-top .marca { font-size: 14px; gap: 8px; }
+  .coop-top .marca img { width: 32px; height: 32px; }
+  .coop-top .marca small { display: none; }
+  .coop-top nav { flex-wrap: nowrap; overflow-x: auto; width: 100%; order: 2; scrollbar-width: none; }
+  .coop-top nav a { white-space: nowrap; padding: 7px 10px; }
+  .coop-top .busca input { padding: 6px 12px; }
+  .coop .abas { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; margin: 4px -12px 12px; padding-left: 12px; padding-right: 12px; scrollbar-width: none; }
+  .coop .abas a { white-space: nowrap; padding: 9px 14px; }
+  .coop p.sub { display: none; }
+  .coop h1 { margin: 4px 0; }
+  .coop .botao { padding: 11px 16px; font-size: 16px; }
+  .coop input[type="text"], .coop input[type="search"], .coop select, .coop textarea { font-size: 16px; }
+}

@@ -6,6 +6,7 @@ import { apagarSemana as apagarArquivoSemana, garantirLocal, gravarCadastro, gra
 import { lerConferencia, lerPedidoPrefeitura, type LinhaPedido } from "@/lib/coop/planilha/pedidoPrefeitura";
 import { lerPlanilha } from "@/lib/coop/planilha/lerPlanilha";
 import { textoDeArquivo } from "@/lib/coop/planilha/textoDeArquivo";
+import { gravarPin } from "@/lib/coop/acesso";
 import { novaSemana } from "@/lib/coop/semana";
 import type { Previsao } from "@/lib/coop/previsao";
 import type { Cadastro, Reentrega, Semana } from "@/lib/coop/tipos";
@@ -51,6 +52,7 @@ export async function importarModelo(form: FormData): Promise<Resposta<{ resumo:
       cadastro.cidade = antigo.cidade;
       cadastro.equipe = antigo.equipe;
       cadastro.excecoesEscolas = antigo.excecoesEscolas;
+      cadastro.escala = antigo.escala;
     }
     await gravarCadastro(cadastro);
     revalidatePath("/coop", "layout");
@@ -510,6 +512,48 @@ const esquemaPrevisao = z.object({
   observacoes: z.array(z.string().max(300)).max(50),
   respostas: z.record(z.string().max(80), z.string().max(4000)),
 });
+
+const esquemaEscala = z.object({
+  diaria: z.number().min(0).max(10000),
+  tarefasChefe: z.array(z.string().min(1).max(120)).max(20),
+  dias: z
+    .array(
+      z.object({
+        dia: z.string().min(1).max(30),
+        pessoas: z.array(z.object({ nome: z.string().min(1).max(60), funcao: z.enum(["chefe", "ajudante"]), hora: z.string().max(10) })).max(20),
+      }),
+    )
+    .max(7),
+});
+
+export async function salvarEscala(entrada: z.infer<typeof esquemaEscala>): Promise<Resposta> {
+  try {
+    garantirLocal();
+    const e = esquemaEscala.parse(entrada);
+    const cad = await exigirCadastro();
+    cad.escala = e;
+    // Quem está na escala entra na lista de "quem conferiu".
+    cad.equipe = [...new Set([...(cad.equipe ?? []), ...e.dias.flatMap((d) => d.pessoas.map((p) => p.nome.trim()))])].filter(Boolean);
+    await gravarCadastro(cad);
+    revalidatePath("/coop", "layout");
+    return { ok: true };
+  } catch (e) {
+    return erro(e);
+  }
+}
+
+// PIN do celular (4 a 8 números). Quem já tinha entrado pelo celular precisa digitar o novo.
+export async function salvarPin(pin: string): Promise<Resposta> {
+  try {
+    garantirLocal();
+    const p = z.string().regex(/^\d{4,8}$/, "O PIN tem que ter de 4 a 8 números.").parse(pin.trim());
+    await gravarPin(p);
+    return { ok: true };
+  } catch (e) {
+    if (e instanceof z.ZodError) return { ok: false, erro: "O PIN tem que ter de 4 a 8 números." };
+    return erro(e);
+  }
+}
 
 // Previsão: lê o anexo (conversa do WhatsApp, planilha, Word) e devolve o texto para a tela entender.
 export async function lerAnexoPrevisao(form: FormData): Promise<Resposta<{ texto: string }>> {

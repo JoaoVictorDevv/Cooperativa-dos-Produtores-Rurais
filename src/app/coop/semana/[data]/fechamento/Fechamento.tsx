@@ -22,7 +22,23 @@ interface ProdutorPag {
   desconto: number;
 }
 
-export function Fechamento({ data, produtos, custos, conferidos, produtores, observacao }: { data: string; produtos: LinhaConf[]; custos: Custos; conferidos: boolean; produtores: ProdutorPag[]; observacao: string }) {
+export function Fechamento({
+  data,
+  produtos,
+  custos,
+  conferidos,
+  produtores,
+  observacao,
+  escala,
+}: {
+  data: string;
+  produtos: LinhaConf[];
+  custos: Custos;
+  conferidos: boolean;
+  produtores: ProdutorPag[];
+  observacao: string;
+  escala: { diarias: number; diaria: number; total: number };
+}) {
   const [obs, setObs] = useState(observacao);
   const [desc, setDesc] = useState<Record<string, string>>(() => Object.fromEntries(produtores.map((p) => [p.id, p.desconto > 0 ? mostrarNumero(p.desconto) : ""])));
   const [conf, setConf] = useState<Record<string, string>>(() => Object.fromEntries(produtos.map((p) => [p.produto, mostrarNumero(p.conferido)])));
@@ -117,8 +133,21 @@ export function Fechamento({ data, produtos, custos, conferidos, produtores, obs
         <div className="grade">
           {NOMES_CUSTOS.map(([k, nome]) => (
             <label key={k} className="campo">
-              {nome}
+              {k === "montagem" ? "Montagem (ajudantes)" : nome}
               <CampoNumero rotulo={nome} valor={c[k]} aoMudar={(t) => setC({ ...c, [k]: t })} largura={140} />
+              {k === "montagem" && escala.total > 0 && (
+                <span className="discreto" style={{ fontSize: 12.5 }}>
+                  Pela escala: {escala.diarias} diárias × {reais(escala.diaria)} = {reais(escala.total)}
+                  {(lerNumero(c.montagem) ?? 0) !== escala.total && (
+                    <>
+                      {" "}
+                      <button type="button" className="botao pequeno claro" onClick={() => setC({ ...c, montagem: mostrarNumero(escala.total) })}>
+                        usar
+                      </button>
+                    </>
+                  )}
+                </span>
+              )}
             </label>
           ))}
           <label className="campo">
