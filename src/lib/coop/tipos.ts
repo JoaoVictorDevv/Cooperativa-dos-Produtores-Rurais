@@ -101,6 +101,9 @@ export interface Recebimento {
   conferente?: string;
   qualidade?: "ok" | "ruim";
   obs?: string;
+  // Recusado na hora, no galpão (ex.: couve ruim): kg por produto. Já sai do que conta como entregue
+  // (o produtor recebe só o aceito); fica guardado aqui para mostrar no demonstrativo.
+  recusado?: Record<string, number>;
 }
 
 // Escola fechada no dia: vai outro dia, por outra rota, com o mesmo romaneio.

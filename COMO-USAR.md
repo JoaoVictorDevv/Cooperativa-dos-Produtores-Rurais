@@ -42,7 +42,8 @@ Seus dados ficam na pasta `dados-cooperativa` e **não mudam** ao atualizar.
 3. **1. Pedido e mensagens**: confira a divisão (**Mexer** para ajustar, inclusive o "1º dia") →
    **Abrir no WhatsApp** em cada produtor → enviar (o ✓ marca sozinho). Mandou por fora? Marque o ✓ ou **Já mandei para todos**.
 4. **2. Galpão domingo** e **3. Galpão segunda**: por produtor, balança + caixas (ou só o líquido), hora,
-   quem conferiu, qualidade → **Salvar**. Em branco = veio o pedido. **Veio tudo certo** / **Não veio** = um clique.
+   quem conferiu, qualidade → **Salvar**. Em branco = veio o pedido. Produto ruim? Ponha os kg em **Recusado**:
+   sai sozinho do pagamento do produtor e aparece no demonstrativo. **Veio tudo certo** / **Não veio** = um clique.
 5. **4. Mapa e romaneios**: botão **Tudo de segunda** → Imprimir (mapa + excedente + reentregas + romaneios).
    Terça é igual.
 6. **5. Retornos**: procure a escola pelo código, marque o que faltou ou foi recusado, ou escreva

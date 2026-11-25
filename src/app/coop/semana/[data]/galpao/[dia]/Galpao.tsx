@@ -43,17 +43,33 @@ export function Galpao({ data, dia, cartoes, caixa, equipe }: { data: string; di
   );
 }
 
-type Linha = { balanca: string; grandes: string; pequenas: string; liquido: string; extra: string };
+type Linha = { balanca: string; grandes: string; pequenas: string; liquido: string; extra: string; recusado: string };
 
 function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: CartaoProdutor; caixa: { grande: number; pequena: number } }) {
   const [todos, setTodos] = useState(false);
   const [comExtra, setComExtra] = useState(c.itens.some((i) => i.extra !== null));
   const [v, setV] = useState<Record<string, Linha>>(() =>
-    Object.fromEntries(c.itens.map((i) => [i.produto, { balanca: "", grandes: "", pequenas: "", liquido: mostrarNumero(i.entregue), extra: mostrarNumero(i.extra) }])),
+    Object.fromEntries(
+      c.itens.map((i) => {
+        const rec = c.recebimento?.recusado?.[i.produto] ?? 0;
+        return [i.produto, { balanca: "", grandes: "", pequenas: "", liquido: mostrarNumero(i.entregue === null ? null : arred(i.entregue + rec)), extra: mostrarNumero(i.extra), recusado: rec ? mostrarNumero(rec) : "" }];
+      }),
+    ),
   );
   const { pendente, aviso, rodar } = useAcao();
   const visiveis = c.itens.filter((i) => todos || i.planejado > 0.004 || i.entregue !== null || i.extra !== null);
   const [rec, setRec] = useState<Recebimento>({ hora: c.recebimento?.hora ?? "", conferente: c.recebimento?.conferente ?? "", qualidade: c.recebimento?.qualidade, obs: c.recebimento?.obs ?? "" });
+  // Recusado na hora (kg): sai do que conta como entregue; o produtor recebe só o aceito.
+  const recusadoDe = (l: Linha) => {
+    const r = lerNumero(l.recusado);
+    return r === null || Number.isNaN(r) ? 0 : r;
+  };
+  const aceito = (l: Linha, planejado: number): number | null => {
+    const x = liquido(l);
+    const r = recusadoDe(l);
+    if (x === null) return r > 0 ? Math.max(0, arred(planejado - r)) : null;
+    return Math.max(0, arred(x - r));
+  };
   const agora = () => {
     const d = new Date();
     return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
@@ -70,15 +86,17 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
     const d = lerNumero(l.liquido);
     return d === null || Number.isNaN(d) ? null : d;
   };
-  const invalido = Object.values(v).some((l) => [l.balanca, l.grandes, l.pequenas, l.liquido, l.extra].some((t) => Number.isNaN(lerNumero(t))));
-  const total = useMemo(() => c.itens.reduce((s, i) => s + (liquido(v[i.produto]) ?? i.planejado), 0), [v, c.itens]); // eslint-disable-line react-hooks/exhaustive-deps
+  const invalido = Object.values(v).some((l) => [l.balanca, l.grandes, l.pequenas, l.liquido, l.extra, l.recusado].some((t) => Number.isNaN(lerNumero(t))));
+  const total = useMemo(() => c.itens.reduce((s, i) => s + (aceito(v[i.produto], i.planejado) ?? i.planejado), 0), [v, c.itens]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function salvar(modo: "normal" | "tudoCerto" | "naoVeio") {
     const valores: Record<string, number | null> = {};
     const extras: Record<string, number | null> = {};
+    const recusado: Record<string, number> = {};
     for (const i of c.itens) {
       const l = v[i.produto];
-      const x = liquido(l);
+      const x = aceito(l, i.planejado);
+      if (modo === "normal" && recusadoDe(l) > 0) recusado[i.produto] = recusadoDe(l);
       // Em branco = veio o pedido do dia (a planilha pagaria 0 se ficasse em branco).
       if (modo === "naoVeio") valores[i.produto] = i.planejado > 0.004 ? 0 : null;
       else if (modo === "tudoCerto") valores[i.produto] = i.planejado > 0.004 ? i.planejado : x;
@@ -87,7 +105,7 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
       extras[i.produto] = e === null || Number.isNaN(e) || e === 0 ? null : e;
     }
     // Conferência na chegada: se ninguém preencheu a hora, marca a hora de agora.
-    const recSalvar: Recebimento = modo === "naoVeio" ? {} : { ...rec, hora: rec.hora || agora() };
+    const recSalvar: Recebimento = modo === "naoVeio" ? {} : { ...rec, hora: rec.hora || agora(), recusado };
     if (modo !== "naoVeio" && !rec.hora) setRec(recSalvar);
     rodar(async () => {
       const a = await salvarEntrega(data, dia, c.id, valores);
@@ -101,7 +119,7 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
         Object.fromEntries(
           c.itens.map((i) => [
             i.produto,
-            { ...old[i.produto], balanca: "", grandes: "", pequenas: "", liquido: i.planejado > 0.004 ? mostrarNumero(modo === "naoVeio" ? 0 : i.planejado) : old[i.produto].liquido },
+            { ...old[i.produto], balanca: "", grandes: "", pequenas: "", recusado: "", liquido: i.planejado > 0.004 ? mostrarNumero(modo === "naoVeio" ? 0 : i.planejado) : old[i.produto].liquido },
           ]),
         ),
       );
@@ -165,6 +183,7 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
               <th className="n">Cx grandes</th>
               <th className="n">Cx pequenas</th>
               <th className="n">Entregou (líquido)</th>
+              <th className="n">Recusado (ruim)</th>
               {comExtra && <th className="n">Extra</th>}
               <th className="n">Diferença</th>
             </tr>
@@ -172,7 +191,7 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
           <tbody>
             {visiveis.map((i) => {
               const l = v[i.produto];
-              const x = liquido(l);
+              const x = aceito(l, i.planejado);
               const temBalanca = lerNumero(l.balanca) !== null;
               const dif = x === null ? 0 : arred(x - i.planejado);
               const set = (campo: keyof Linha) => (t: string) => setV({ ...v, [i.produto]: { ...l, [campo]: t } });
@@ -193,10 +212,13 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
                   </td>
                   <td className="n" data-r="Entregou (líquido)">
                     {temBalanca ? (
-                      <strong>{kg(x ?? 0)}</strong>
+                      <strong>{kg(liquido(l) ?? 0)}</strong>
                     ) : (
                       <CampoNumero rotulo={`Entregou ${i.produto}`} valor={l.liquido} aoMudar={set("liquido")} placeholder={i.planejado > 0.004 ? mostrarNumero(i.planejado) : ""} />
                     )}
+                  </td>
+                  <td className="n" data-r="Recusado (ruim)">
+                    <CampoNumero rotulo={`Recusado ${i.produto}`} valor={l.recusado} aoMudar={set("recusado")} largura={70} placeholder="0" />
                   </td>
                   {comExtra && (
                     <td className="n" data-r="Extra">
