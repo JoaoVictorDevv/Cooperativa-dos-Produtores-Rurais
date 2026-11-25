@@ -145,6 +145,9 @@ export interface Semana {
   // MODELO v100 (04/11/2026): folha não dorme no galpão. Nas rotas de terça a
   // folha usa só o que chegou no 2º dia (_ENTREGA linha 13). Ausente = regra antiga (v99).
   folhaSoNoDia?: boolean;
+  // MODELO v103 (24/11/2026): no EXCEDENTE de folhas/repolho, as rotas 1 a 3 só levam
+  // a parte delas se der 1 kg ou mais; a última rota leva o que sobra. Ausente = regra antiga.
+  excedenteRestoUltima?: boolean;
   // Ajuste manual do mapa por produto (aba _ENTREGA digitada por cima, ex. 16/11):
   // somarDias = o que chega no 2º dia soma com a sobra do 1º (legume, mesmo com entrega em 2 dias);
   // fator1/fator2 = parte do pedido que vai para as escolas no dia (1 = o pedido todo).

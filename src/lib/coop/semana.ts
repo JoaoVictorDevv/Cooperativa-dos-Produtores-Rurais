@@ -75,6 +75,7 @@ export function novaSemana(
     rotas: structuredClone(cad.rotas),
     regraPrimeiroDia: "corrigida",
     folhaSoNoDia: true, // MODELO v100
+    excedenteRestoUltima: true, // MODELO v103
     mensagensEnviadas: {},
   };
 }

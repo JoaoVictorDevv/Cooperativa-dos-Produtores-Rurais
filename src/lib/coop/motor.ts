@@ -315,7 +315,22 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
       if (folha || repolho) {
         const totais = numeradas.map((r) => soma(r.paradas.map((pa) => n(enviado[pa.codigo]?.[produto]))));
         const somaTotais = soma(totais);
-        if (somaTotais > 0) numeradas.forEach((r, i) => (item.porRota[r.id] = arred((total * totais[i]) / somaTotais)));
+        if (somaTotais > 0) {
+          if (sem.excedenteRestoUltima) {
+            // v103: rotas antes da última só levam se der 1 kg ou mais; a última fica com o resto.
+            let dado = 0;
+            numeradas.forEach((r, i) => {
+              if (i === numeradas.length - 1) {
+                const resto = arred(total - dado);
+                item.porRota[r.id] = resto > 0 ? resto : 0;
+              } else {
+                const parte = arred((total * totais[i]) / somaTotais);
+                item.porRota[r.id] = parte >= 1 ? parte : 0;
+                dado += item.porRota[r.id];
+              }
+            });
+          } else numeradas.forEach((r, i) => (item.porRota[r.id] = arred((total * totais[i]) / somaTotais)));
+        }
         excedente[dia].folhas.push(item);
       } else {
         item.escolas = escolasDia.filter((c) => n(enviado[c]?.[produto]) > 0).length;
