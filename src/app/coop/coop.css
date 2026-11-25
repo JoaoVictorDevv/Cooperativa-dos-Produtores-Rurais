@@ -397,3 +397,15 @@
   .coop .botao { padding: 11px 16px; font-size: 16px; }
   .coop input[type="text"], .coop input[type="search"], .coop select, .coop textarea { font-size: 16px; }
 }
+
+/* Limite de R$ 40 mil */
+.coop .folha.limite .limite-titulo { font-size: 24px; color: var(--c-verde); }
+.coop .folha .tabela-limite { font-size: 15px; }
+.coop .folha .tabela-limite th { background: var(--c-verde); color: #fff; border-color: var(--c-verde); }
+.coop .folha .tabela-limite td { border-left: 0; border-right: 0; padding: 9px 8px; }
+.coop .limite-prev { display: block; font-size: 11px; color: #777; }
+.coop .limite-barra { display: inline-block; width: 100%; min-width: 120px; height: 12px; border-radius: 6px; background: #ececec; overflow: hidden; vertical-align: middle; }
+.coop .limite-barra span { display: block; height: 100%; border-radius: 6px; background: var(--c-verde-2); }
+.coop .limite-barra span.medio { background: var(--c-laranja); }
+.coop .limite-barra span.alto { background: #e53935; }
+@media print { .coop .folha .tabela-limite th, .coop .limite-barra span { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }

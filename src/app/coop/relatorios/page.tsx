@@ -4,11 +4,11 @@ import { calcularSemana } from "@/lib/coop/motor";
 import { kg, reais } from "@/lib/coop/numeros";
 import { NOME_CAUSA, perdasDaSemana, type ItemPerda } from "@/lib/coop/perdas";
 import { carregarCadastro } from "../dados";
+import { LIMITE_ANO, limitePorProdutor } from "@/lib/coop/limite";
 
 export const metadata = { title: "Relatórios" };
 
 const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
-const LIMITE = 40000;
 
 export default async function Relatorios() {
   const cad = await carregarCadastro();
@@ -37,11 +37,7 @@ export default async function Relatorios() {
     m.semanas += 1;
     meses.set(k, m);
   }
-  const ano = new Map<string, number>();
-  for (const { s, r } of linhas) {
-    if (s.data.slice(0, 4) !== (datas.at(-1) ?? "").slice(0, 4)) continue;
-    for (const [p, v] of Object.entries(r.pagarProdutor)) ano.set(p, (ano.get(p) ?? 0) + v);
-  }
+  const limite = await limitePorProdutor(cad);
   // Perdas por produto, somando as semanas (escola por escola).
   const porProduto = new Map<string, { kg: number; valor: number; semanas: Set<string>; motivos: Map<string, number> }>();
   for (const { s, r } of linhas) {
@@ -134,35 +130,38 @@ export default async function Relatorios() {
           </tbody>
         </table>
       </div>
-      <h2>Vendido por produtor no ano</h2>
-      <p className="discreto">Só informação: a referência de R$ 40.000,00 por produtor não trava, não corta e não reduz nada.</p>
+      <h2>Limite de R$ 40 mil por produtor ({limite.ano})</h2>
+      <p className="discreto">Só informação: não trava, não corta e não reduz nada. Conta pelo valor de venda (o que a Prefeitura paga).</p>
       <div className="card rolar">
         <table className="tabela">
           <thead>
             <tr>
               <th>Produtor</th>
               <th className="n">Vendido</th>
+              <th className="n">Ainda pode vender</th>
               <th className="n">% de R$ 40 mil</th>
             </tr>
           </thead>
           <tbody>
-            {cad.produtores
-              .filter((p) => (ano.get(p.id) ?? 0) > 0)
-              .sort((a, b) => (ano.get(b.id) ?? 0) - (ano.get(a.id) ?? 0))
-              .map((p) => {
-                const v = ano.get(p.id) ?? 0;
-                return (
-                  <tr key={p.id}>
-                    <td>
-                      <Link href={`/coop/produtor/${encodeURIComponent(p.id)}`}>{p.nome}</Link>
-                    </td>
-                    <td className="n">{reais(v)}</td>
-                    <td className="n">{kg((v / LIMITE) * 100, 1)}%</td>
-                  </tr>
-                );
-              })}
+            {limite.linhas.map((x) => (
+              <tr key={x.id}>
+                <td>
+                  <Link href={`/coop/produtor/${encodeURIComponent(x.id)}`}>{x.nome}</Link>
+                </td>
+                <td className="n">{reais(x.total)}</td>
+                <td className="n">{reais(Math.max(0, LIMITE_ANO - x.total))}</td>
+                <td className="n" style={x.total / LIMITE_ANO >= 0.9 ? { color: "var(--c-vermelho)", fontWeight: 700 } : undefined}>
+                  {kg((x.total / LIMITE_ANO) * 100, 1)}%
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
+        <div className="botoes" style={{ marginTop: 10 }}>
+          <Link className="botao claro" href="/coop/limite">
+            🖨 Folha do limite (imprimir / imagem)
+          </Link>
+        </div>
       </div>
       {perdasProduto.length > 0 && (
         <details className="adicional">

@@ -23,6 +23,7 @@ Resumo: instale o Node.js (LTS), baixe esta pasta, coloque `dados-cooperativa` d
 | --- | --- |
 | `abrir-app.bat` | abre o app (instala e prepara na primeira vez) |
 | `atualizar-app.bat` | pega a versão nova (para quem não usa o GitHub Desktop) |
+| `liberar-celular.bat` | libera o app no Firewall do Windows para o celular abrir (uma vez só) |
 | `COMO-USAR.md` | tutorial |
 | `docs/como-funciona.md` | regras das contas e onde ficam os dados |
 | `src/app/coop` | as telas |
