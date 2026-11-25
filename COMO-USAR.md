@@ -79,6 +79,12 @@ Em **Cadastro → Escala do galpão**: quem trabalha em cada dia, a hora e a di�
 A semana nova já vem com o custo de montagem pela escala (ex.: 7 diárias × R$ 150 = R$ 1.050); no Fechamento dá para mudar.
 **Folha da equipe** para imprimir ou salvar imagem. Na aba Galpão aparece quem está escalado no dia.
 
+## Pagamento dos produtores
+
+No **Fechamento** de cada semana, marque o ✓ de cada produtor quando pagar (ou **✓ Paguei todos**).
+O app guarda o dia. Em **Relatórios → Pagamento aos produtores** tem o quadro de todas as semanas
+(✓ verde = pago, laranja = falta pagar) e o total que falta para cada um. A tela inicial também avisa.
+
 ## Limite de R$ 40 mil
 
 **Relatórios → Folha do limite**: quanto cada produtor já vendeu no ano (valor de venda que a Prefeitura paga,

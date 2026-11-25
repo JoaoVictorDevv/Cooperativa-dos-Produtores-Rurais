@@ -5,6 +5,7 @@ import { custoDaEscala, diariasDaEscala, escalaDe } from "@/lib/coop/escala";
 import { carregarSemana } from "../../../dados";
 import { perdasDaSemana } from "@/lib/coop/perdas";
 import { Fechamento } from "./Fechamento";
+import { PagarTodos, PagoCheck } from "./Pagos";
 
 export const metadata = { title: "Fechamento" };
 
@@ -20,6 +21,7 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
       // Soma do que cada escola aceitou (coluna U das fichas), sem a conferência.
       aceitoEscolas: Math.min(p.pedido, Object.values(r.fichas).reduce((s, f) => s + (f[p.produto]?.cobrado ?? 0), 0)), conferido: sem.conferidoPrefeitura[p.produto] ?? null, preco: cad.produtos.find((x) => x.nome === p.produto)?.preco ?? 0 }));
   const b = r.balanco;
+  const aPagar = cad.produtores.filter((p) => r.pagarProdutor[p.id] > 0);
   return (
     <>
       <Fechamento
@@ -62,7 +64,10 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
           🖨 Demonstrativos de todos os produtores
         </Link>
       </div>
-      <h2>Pagamento dos produtores</h2>
+      <div className="botoes" style={{ justifyContent: "space-between", alignItems: "center" }}>
+        <h2>Pagamento dos produtores</h2>
+        <PagarTodos data={data} ids={aPagar.map((p) => p.id)} pagos={aPagar.filter((p) => sem.pagamentos?.[p.id]).length} />
+      </div>
       <div className="card rolar">
         <table className="tabela">
           <thead>
@@ -73,6 +78,7 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
               <th className="n">Pago (kg)</th>
               <th className="n">Desconto</th>
               <th className="n">A pagar</th>
+              <th>Pago?</th>
               <th />
             </tr>
           </thead>
@@ -95,6 +101,7 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
                     <td className="n">
                       <strong>{reais(r.pagarProdutor[p.id])}</strong>
                     </td>
+                    <td>{r.pagarProdutor[p.id] > 0 ? <PagoCheck data={data} id={p.id} pagoEm={sem.pagamentos?.[p.id] ?? null} /> : "—"}</td>
                     <td className="direita" style={{ whiteSpace: "nowrap" }}>
                       <Link className="botao pequeno claro" href={`${base}/imprimir/extratos?produtor=${encodeURIComponent(p.id)}`}>
                         🖨 demonstrativo
@@ -115,7 +122,12 @@ export default async function PaginaFechamento({ params }: PageProps<"/coop/sema
             <tr>
               <td colSpan={5}>Total</td>
               <td className="n">{reais(b.pago)}</td>
-              <td />
+              <td colSpan={2}>
+                {(() => {
+                  const falta = aPagar.filter((p) => !sem.pagamentos?.[p.id]).reduce((t, p) => t + r.pagarProdutor[p.id], 0);
+                  return falta > 0.004 ? `falta pagar ${reais(falta)}` : "tudo pago ✓";
+                })()}
+              </td>
             </tr>
           </tfoot>
         </table>

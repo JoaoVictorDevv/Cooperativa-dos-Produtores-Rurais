@@ -5,6 +5,7 @@ import { kg, reais } from "@/lib/coop/numeros";
 import { NOME_CAUSA, perdasDaSemana, type ItemPerda } from "@/lib/coop/perdas";
 import { carregarCadastro } from "../dados";
 import { LIMITE_ANO, limitePorProdutor } from "@/lib/coop/limite";
+import { pagamentosPorSemana } from "@/lib/coop/pagamentos";
 
 export const metadata = { title: "Relatórios" };
 
@@ -38,6 +39,7 @@ export default async function Relatorios() {
     meses.set(k, m);
   }
   const limite = await limitePorProdutor(cad);
+  const pag = await pagamentosPorSemana(cad);
   // Perdas por produto, somando as semanas (escola por escola).
   const porProduto = new Map<string, { kg: number; valor: number; semanas: Set<string>; motivos: Map<string, number> }>();
   for (const { s, r } of linhas) {
@@ -127,6 +129,55 @@ export default async function Relatorios() {
                 <td className="n">{reais(r.balanco.saldo)}</td>
               </tr>
             ))}
+          </tbody>
+        </table>
+      </div>
+      <h2 id="pagamentos">Pagamento aos produtores</h2>
+      <p className="discreto">
+        ✓ = a cooperativa já pagou aquela semana (marque no Fechamento de cada semana).{" "}
+        {pag.falta > 0.004 ? (
+          <strong>
+            Falta pagar {reais(pag.falta)} ({pag.semanasComFalta.join(", ")}).
+          </strong>
+        ) : (
+          "Tudo pago."
+        )}
+      </p>
+      <div className="card rolar">
+        <table className="tabela">
+          <thead>
+            <tr>
+              <th>Produtor</th>
+              {pag.semanas.map((s) => (
+                <th key={s.data} className="n">
+                  <Link href={`/coop/semana/${s.data}/fechamento`}>{s.ref}</Link>
+                </th>
+              ))}
+              <th className="n">Falta pagar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cad.produtores
+              .filter((p) => pag.semanas.some((s) => s.porProdutor[p.id]))
+              .map((p) => {
+                const falta = pag.semanas.reduce((t, s) => t + (s.porProdutor[p.id] && !s.porProdutor[p.id].pagoEm ? s.porProdutor[p.id].valor : 0), 0);
+                return (
+                  <tr key={p.id}>
+                    <td>
+                      <Link href={`/coop/produtor/${encodeURIComponent(p.id)}`}>{p.curto}</Link>
+                    </td>
+                    {pag.semanas.map((s) => {
+                      const x = s.porProdutor[p.id];
+                      return (
+                        <td key={s.data} className="n" style={x ? { color: x.pagoEm ? "var(--c-verde)" : "var(--c-laranja)" } : undefined} title={x?.pagoEm ? `pago em ${x.pagoEm.split("-").reverse().join("/")}` : x ? "falta pagar" : undefined}>
+                          {x ? `${x.pagoEm ? "✓ " : ""}${reais(x.valor)}` : "—"}
+                        </td>
+                      );
+                    })}
+                    <td className="n">{falta > 0.004 ? <strong>{reais(falta)}</strong> : <span style={{ color: "var(--c-verde)" }}>✓</span>}</td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>

@@ -409,3 +409,5 @@
 .coop .limite-barra span.medio { background: var(--c-laranja); }
 .coop .limite-barra span.alto { background: #e53935; }
 @media print { .coop .folha .tabela-limite th, .coop .limite-barra span { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+.coop .pago-check { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
+.coop .pago-check input { width: 20px; height: 20px; accent-color: var(--c-verde); }

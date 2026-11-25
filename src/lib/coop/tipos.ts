@@ -163,6 +163,7 @@ export interface Semana {
   mensagensEnviadas?: Record<string, string>; // produtor → data/hora em que o botão foi usado
   // BALANÇO, coluna E (09/11): desconto por produtor, ex.: folha estragada. Sai do pagamento.
   descontos?: Record<string, number>;
+  pagamentos?: Record<string, string>; // produtor → dia em que a cooperativa pagou a semana (aaaa-mm-dd)
   observacao?: string; // uma linha sobre a semana ("van quebrou: 9 escolas sem entrega")
   recebimento?: { "1": Record<string, Recebimento>; "2": Record<string, Recebimento> }; // dia → produtor
   reentregas?: Record<string, Reentrega>; // código da escola
