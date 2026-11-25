@@ -90,10 +90,69 @@ export function CampoNumero({
   );
 }
 
-export function BotaoImprimir({ texto = "Imprimir / salvar PDF" }: { texto?: string }) {
+export function BotaoImprimir({ texto = "Imprimir / salvar PDF", imagem = true }: { texto?: string; imagem?: boolean }) {
   return (
-    <button type="button" className="botao claro nao-imprimir" onClick={() => window.print()}>
-      🖨 {texto}
+    <>
+      <button type="button" className="botao claro nao-imprimir" onClick={() => window.print()}>
+        🖨 {texto}
+      </button>
+      {imagem && <BotaoImagem />}
+    </>
+  );
+}
+
+const nomeArquivo = (t: string) =>
+  t
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 60) || "folha";
+
+// Salva cada folha da tela como imagem (PNG), do jeito que sai na impressão, para mandar no WhatsApp.
+export function BotaoImagem() {
+  const [estado, setEstado] = useState<"" | "fazendo" | "ok" | "erro">("");
+  async function salvar() {
+    setEstado("fazendo");
+    try {
+      const { toPng } = await import("html-to-image");
+      const folhas = [...document.querySelectorAll<HTMLElement>(".coop-main .folha")].filter((f) => f.offsetParent !== null);
+      for (const [i, f] of folhas.entries()) {
+        const titulo = f.dataset.arquivo ?? f.querySelector("h3")?.textContent ?? document.title;
+        // A logo da folha é um fundo (::before), que não sai na imagem: põe uma <img> no lugar enquanto tira a foto.
+        const logo = document.createElement("img");
+        logo.src = "/coop/logo.jpg";
+        logo.alt = "";
+        Object.assign(logo.style, { position: "absolute", left: "18px", top: "16px", width: "54px", height: "54px", borderRadius: "50%", objectFit: "cover" });
+        f.appendChild(logo);
+        await logo.decode().catch(() => undefined);
+        let url: string;
+        try {
+          url = await toPng(f, {
+            pixelRatio: 2,
+            backgroundColor: "#ffffff",
+            cacheBust: true,
+            filter: (n) => !(n instanceof HTMLElement && n.classList.contains("nao-imprimir")),
+          });
+        } finally {
+          logo.remove();
+        }
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${nomeArquivo(titulo)}${folhas.length > 1 ? `-${i + 1}` : ""}.png`;
+        a.click();
+        if (folhas.length > 1) await new Promise((r) => setTimeout(r, 400));
+      }
+      setEstado(folhas.length ? "ok" : "erro");
+    } catch {
+      setEstado("erro");
+    }
+    setTimeout(() => setEstado(""), 3000);
+  }
+  return (
+    <button type="button" className="botao claro nao-imprimir" onClick={salvar} disabled={estado === "fazendo"} title="Baixa a folha como imagem (PNG) para mandar no WhatsApp">
+      {estado === "fazendo" ? "Gerando…" : estado === "ok" ? "✓ Imagem salva (Downloads)" : estado === "erro" ? "Não deu, tente de novo" : "🖼 Salvar imagem"}
     </button>
   );
 }

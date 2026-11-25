@@ -71,12 +71,27 @@ export async function importarSemanaDaPlanilha(form: FormData): Promise<Resposta
     const { cadastro, semana } = await lerPlanilha(await arquivoDoForm(form));
     if (!semana.data) throw new Error("A planilha não tem a data da semana (ÍNDICE, D2).");
     if (!(await lerCadastro())) await gravarCadastro(cadastro);
-    if ((await lerSemana(semana.data)) && form.get("substituir") !== "sim") {
+    const existente = await lerSemana(semana.data);
+    if (existente && form.get("substituir") !== "sim") {
       throw new Error(`A semana ${semana.referencia} já existe no app. Marque "substituir" para trocar.`);
     }
-    // Semana feita na planilha: as mensagens já foram mandadas naquela época.
+    // Planilha ainda sem custos: usa os que já estavam no app, senão os da semana anterior (igual à semana nova).
+    const semCustos = Object.values(semana.custos).every((v) => !v);
+    if (semCustos) {
+      const anterior = (await listarSemanas()).find((d) => d < semana.data);
+      const base = existente?.custos && Object.values(existente.custos).some((v) => v) ? existente.custos : anterior ? (await lerSemana(anterior))?.custos : undefined;
+      if (base) semana.custos = { ...base };
+    }
+    // Semana feita na planilha: as mensagens já foram mandadas. O que só existe no app (observação,
+    // recebimento no galpão, reentregas, ✓ das mensagens) continua quando substitui.
     const quando = new Date().toISOString();
-    await gravarSemana({ ...semana, mensagensEnviadas: Object.fromEntries(cadastro.produtores.map((p) => [p.id, quando])) });
+    await gravarSemana({
+      ...semana,
+      observacao: existente?.observacao,
+      recebimento: existente?.recebimento,
+      reentregas: existente?.reentregas,
+      mensagensEnviadas: { ...Object.fromEntries(cadastro.produtores.map((p) => [p.id, quando])), ...(existente?.mensagensEnviadas ?? {}) },
+    });
     revalidatePath("/coop", "layout");
     return { ok: true, data: semana.data };
   } catch (e) {
@@ -285,25 +300,6 @@ export async function marcarMensagens(data: string, produtores: string[], enviad
       else delete m[id];
     }
     s.mensagensEnviadas = m;
-    await gravarSemana(s);
-    revalidatePath(`/coop/semana/${data}`, "layout");
-    return { ok: true };
-  } catch (e) {
-    return erro(e);
-  }
-}
-
-// Recado só desta semana na mensagem do produtor (vazio = sem recado).
-export async function salvarRecado(data: string, produtor: string, texto: string): Promise<Resposta> {
-  try {
-    garantirLocal();
-    const id = z.string().max(80).parse(produtor);
-    const t = z.string().max(300).parse(texto).trim();
-    const s = await exigirSemana(data);
-    const r = { ...(s.recados ?? {}) };
-    if (t) r[id] = t;
-    else delete r[id];
-    s.recados = r;
     await gravarSemana(s);
     revalidatePath(`/coop/semana/${data}`, "layout");
     return { ok: true };

@@ -40,8 +40,6 @@ export function textoPedido(cad: Cadastro, sem: Semana, r: ResultadoSemana, prod
   };
   dia(dia1, "planejado1");
   dia(dia2, "planejado2");
-  const recado = sem.recados?.[produtor.id]?.trim();
-  if (recado) linhas.push(recado);
   linhas.push("Qualquer problema, avise antes. Obrigado!");
   return linhas.join("\n");
 }

@@ -112,7 +112,9 @@ export function perdasDaSemana(cad: Cadastro, sem: Semana, r: ResultadoSemana): 
   const somaEscolas = { kg: itens.reduce((s, i) => s + i.kg, 0), valor: itens.reduce((s, i) => s + i.valor, 0) };
   const pedidoValor = r.resumo.produtos.reduce((s, p) => s + p.pedido * (preco[p.produto] ?? 0), 0);
   // Total = por produto (é o que vai na cobrança; com a conferência, o que a Prefeitura conferiu).
-  const total = r.resumo.entregasLancadasKg > 0 ? r.resumo.produtos.reduce((s, p) => s + p.naoCobradoValor, 0) : 0;
+  const totalBruto = r.resumo.entregasLancadasKg > 0 ? r.resumo.produtos.reduce((s, p) => s + p.naoCobradoValor, 0) : 0;
+  // Sem nada perdido escola por escola, centavos de diferença são só arredondamento.
+  const total = Math.abs(totalBruto) < 0.1 && somaEscolas.valor < 0.005 ? 0 : totalBruto;
   const ajuste = total - somaEscolas.valor;
   return {
     linhas,
