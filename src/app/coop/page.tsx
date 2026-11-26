@@ -57,6 +57,7 @@ export default async function Inicio() {
           const itens = listinha(cad, s, r);
           const feitos = itens.filter((i) => i.feito).length;
           const proximo = itens.find((i) => !i.feito);
+          const galpaoPronto = itens.filter((i) => i.chave === "dia1" || i.chave === "dia2").every((i) => i.feito);
           return (
             <Link key={s.data} href={`/coop/semana/${s.data}`} className={`passo${feitos === itens.length ? " feito" : ""}`}>
               <div className="bola">{feitos === itens.length ? "✓" : `${feitos}/${itens.length}`}</div>
@@ -65,7 +66,7 @@ export default async function Inicio() {
                   Semana {s.referencia} · entrega {s.entrega}
                 </strong>
                 <span>
-                  {kg(r.resumo.pedidoTotal)} kg · cobrar {reais(r.resumo.cobrar)} · saldo {reais(r.balanco.saldo)}
+                  {kg(r.resumo.pedidoTotal)} kg{galpaoPronto ? ` · cobrar ${reais(r.resumo.cobrar)} · saldo ${reais(r.balanco.saldo)}` : " · em andamento"}
                 </span>
                 <br />
                 <span>

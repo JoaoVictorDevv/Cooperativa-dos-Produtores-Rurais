@@ -451,3 +451,68 @@
   .coop .folha.mapa-planilha { page: paisagem; }
   .coop .mapa-faixa, .coop .mapa-saida, .coop .folha.mapa-planilha th, .coop .folha.mapa-planilha td, .coop .mapa-rodape { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }
+
+/* Romaneio da escola (igual ao modelo do João) */
+.coop .folha.romaneio-escola h3 { text-transform: uppercase; }
+.coop .folha.romaneio-escola table th { padding: 14px 8px; }
+.coop .folha.romaneio-escola .aviso-folha { margin: 0 0 6px; font-size: 12px; color: var(--c-soft); }
+
+/* Modo galpão (celular): um produtor por vez, botões grandes */
+.coop .mg { max-width: 560px; margin: 0 auto; padding-bottom: 90px; }
+.coop .mg h2 { margin: 0; font-size: 20px; }
+.coop .mg-topo { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 6px 0 10px; }
+.coop .mg-progresso { text-align: center; background: var(--c-verde-claro); border-radius: 14px; padding: 6px 14px; line-height: 1.1; }
+.coop .mg-progresso strong { display: block; font-size: 22px; color: var(--c-verde); }
+.coop .mg-progresso span { font-size: 12px; color: var(--c-soft); }
+.coop .mg-barra { height: 8px; background: var(--c-line); border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+.coop .mg-barra span { display: block; height: 100%; background: var(--c-verde-2); transition: width 0.3s; }
+.coop .mg-quem { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 10px; font-size: 14px; color: var(--c-soft); }
+.coop .mg-quem button { border: 1px solid var(--c-line); background: var(--c-card); border-radius: 999px; padding: 6px 12px; font-size: 14px; color: var(--c-ink); cursor: pointer; }
+.coop .mg-quem button.ativo { background: var(--c-verde); border-color: var(--c-verde); color: #fff; }
+.coop .mg-busca { width: 100%; font-size: 17px; padding: 12px 14px; border-radius: 12px; margin-bottom: 10px; box-sizing: border-box; }
+.coop .mg-lista { display: grid; gap: 8px; }
+.coop .mg-produtor { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; text-align: left; width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--c-line); border-left: 6px solid var(--c-laranja); background: var(--c-card); cursor: pointer; font: inherit; color: var(--c-ink); }
+.coop .mg-produtor.ok { border-left-color: var(--c-verde-2); opacity: 0.8; }
+.coop .mg-produtor.naoVeio { border-left-color: var(--c-vermelho); opacity: 0.8; }
+.coop .mg-nome { font-weight: 700; font-size: 17px; }
+.coop .mg-itens { grid-column: 1; font-size: 13px; color: var(--c-soft); }
+.coop .mg-estado { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-size: 13px; font-weight: 600; white-space: nowrap; color: var(--c-laranja); }
+.coop .mg-produtor.ok .mg-estado { color: var(--c-verde); }
+.coop .mg-produtor.naoVeio .mg-estado { color: var(--c-vermelho); }
+.coop .mg-tudo-certo { display: block; width: 100%; padding: 16px; margin-bottom: 14px; border: 0; border-radius: 14px; background: var(--c-verde); color: #fff; font-size: 19px; font-weight: 700; cursor: pointer; }
+.coop .mg-tudo-certo small { display: block; font-size: 13px; font-weight: 400; opacity: 0.85; }
+.coop .mg-tudo-certo:disabled { opacity: 0.6; }
+.coop .mg-produto { background: var(--c-card); border: 1px solid var(--c-line); border-radius: 16px; padding: 14px; margin-bottom: 12px; display: grid; gap: 10px; }
+.coop .mg-cab { display: flex; justify-content: space-between; align-items: baseline; font-size: 18px; }
+.coop .mg-cab span { font-size: 15px; color: var(--c-soft); }
+.coop .mg-campo { display: grid; gap: 4px; font-size: 14px; color: var(--c-soft); }
+.coop .mg-campo input { font-size: 26px; padding: 10px 12px; border-radius: 12px; text-align: center; width: 100%; box-sizing: border-box; font-variant-numeric: tabular-nums; }
+.coop .mg-campo.recusa input { font-size: 20px; border-color: var(--c-vermelho); }
+.coop .mg-pesagens { margin: 0; font-size: 14px; color: var(--c-soft); }
+.coop .mg-pesagens button, .coop .mg-link { background: none; border: 0; color: var(--c-azul); text-decoration: underline; cursor: pointer; font-size: 14px; padding: 0 6px; justify-self: start; }
+.coop .mg-somar { border: 1px dashed var(--c-verde); background: var(--c-verde-claro); color: var(--c-verde); border-radius: 12px; padding: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+.coop .mg-caixas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.coop .mg-contador { background: var(--c-bg); border-radius: 12px; padding: 8px; text-align: center; font-size: 13px; color: var(--c-soft); }
+.coop .mg-contador div { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+.coop .mg-contador b { font-size: 24px; color: var(--c-ink); min-width: 36px; }
+.coop .mg-contador button { width: 48px; height: 48px; border-radius: 12px; border: 1px solid var(--c-line); background: var(--c-card); font-size: 26px; line-height: 1; cursor: pointer; color: var(--c-marrom); }
+.coop .mg-contador button:disabled { opacity: 0.35; }
+.coop .mg-resultado { display: grid; justify-items: center; gap: 2px; padding: 10px; border-radius: 12px; background: var(--c-bg); font-size: 14px; color: var(--c-soft); }
+.coop .mg-resultado.igual { background: var(--c-verde-claro); }
+.coop .mg-resultado.menos { background: var(--c-vermelho-claro); }
+.coop .mg-resultado.mais { background: var(--c-amarelo); }
+.coop .mg-liquido { font-size: 16px; color: var(--c-ink); }
+.coop .mg-liquido b { font-size: 34px; }
+.coop .mg-resultado.igual .mg-dif { color: var(--c-verde); font-weight: 600; }
+.coop .mg-resultado.menos .mg-dif { color: var(--c-vermelho); font-weight: 600; }
+.coop .mg-resultado.mais .mg-dif { color: var(--c-marrom-2); font-weight: 600; }
+.coop .mg-outro { width: 100%; font-size: 16px; padding: 12px; border-radius: 12px; margin-bottom: 12px; }
+.coop .mg-rodape { position: fixed; left: 0; right: 0; bottom: 0; display: flex; gap: 10px; justify-content: center; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--c-card); border-top: 1px solid var(--c-line); box-shadow: 0 -4px 14px rgba(43, 27, 14, 0.08); z-index: 20; }
+.coop .mg-rodape .botao { flex: 1; max-width: 270px; padding: 14px; font-size: 18px; }
+/* No modo galpão some o cabeçalho da semana (no celular ocupa meia tela). */
+.coop:has(.mg) .cab-semana, .coop:has(.mg) .proxima { display: none; }
+.coop .numero.espera strong { color: var(--c-soft); font-size: 17px; font-weight: 600; }
+/* Divisão: um produtor por linha, sem quebrar o nome do número */
+.coop td.quem-entrega span { display: inline-block; white-space: nowrap; margin: 1px 10px 1px 0; }
+.coop td.quem-entrega b { font-weight: 600; }
+@media (max-width: 700px) { .coop td.quem-entrega span { display: block; } }

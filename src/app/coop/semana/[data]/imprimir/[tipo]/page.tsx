@@ -188,70 +188,85 @@ function enderecoEscola(endereco: string, bairro: string) {
   return [rua, bairro, cep].filter(Boolean).join(" — ");
 }
 
-// Igual à aba de cada escola (área de impressão W1:X37), na ordem do mapa.
+// Controle de entrega da escola (igual ao modelo do João, 24/11), na ordem do mapa.
+function FolhaEscola({ cad, sem, r, codigo, data, aviso, mostrarEnviado }: P & { codigo: string; data?: string | null; aviso?: string; mostrarEnviado?: boolean }) {
+  const e = cad.escolas.find((x) => x.codigo === codigo);
+  const itens = cad.produtos.filter((p) => (sem.pedidoEscolas[codigo]?.[p.nome] ?? 0) > 0);
+  if (!e || !itens.length) return null;
+  const ped = (p: string) => sem.pedidoEscolas[codigo]?.[p] ?? 0;
+  const env = (p: string) => r.enviado[codigo]?.[p] ?? 0;
+  // Coluna ENVIADO só quando faltou produto para esta escola (a escola vê o que foi de verdade).
+  const enviado = mostrarEnviado || itens.some((p) => ped(p.nome) - env(p.nome) > 0.005);
+  return (
+    <div className="folha demonstrativo romaneio-prod romaneio-escola" data-arquivo={`romaneio escola ${e.codigo}`}>
+      {aviso && <p className="aviso-folha nao-imprimir">{aviso}</p>}
+      <p className="titulo-coop">
+        <strong>{(cad.nomeCooperativa ?? "Cooperativa").toUpperCase()}</strong>
+      </p>
+      <h3>Controle de entrega — escola</h3>
+      <p className="linha-cab">
+        <strong>ESCOLA: {e.nome}</strong>
+      </p>
+      <p className="linha-cab">
+        CÓDIGO: {e.codigo} &nbsp;&nbsp;|&nbsp;&nbsp; TELEFONE: {e.telefone || "—"}
+      </p>
+      <p className="linha-cab">ENDEREÇO: {enderecoEscola(e.endereco, e.bairro)}</p>
+      <p className="linha-cab">
+        CHAMADA PÚBLICA: {sem.chamada} &nbsp;&nbsp;|&nbsp;&nbsp; PROCESSO ADMINISTRATIVO: {sem.processo}
+      </p>
+      <p className="linha-cab">
+        <strong>SEMANA (REFERÊNCIA): {sem.referencia}</strong> &nbsp;&nbsp;|&nbsp;&nbsp; <strong>ENTREGA {sem.entrega}</strong>
+      </p>
+      <table style={{ maxWidth: 680 }}>
+        <thead>
+          <tr>
+            <th>PRODUTO</th>
+            <th>PEDIDO</th>
+            {enviado && <th>ENVIADO</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {itens.map((p) => (
+            <tr key={p.nome}>
+              <td>{p.nome}</td>
+              <td style={{ textAlign: "center" }}>
+                {kg2(ped(p.nome))} {p.unidade}
+              </td>
+              {enviado && (
+                <td style={{ textAlign: "center" }}>
+                  {kg2(env(p.nome))} {p.unidade}
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="assina">
+        <strong>OBS:</strong>
+        <Linhas n={2} />
+        <p>
+          <strong>DATA DA ENTREGA:</strong> &nbsp;{data ?? "____/____/________"}
+        </p>
+        <p>
+          <strong>ASSINATURA RESPONSÁVEL:</strong>
+        </p>
+        <Linhas n={1} />
+        <p>
+          <strong>MATRÍCULA:</strong> ______________________________
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function RomaneiosEscolas({ cad, sem, r, dia, rota }: P & { dia: DiaRota; rota?: string }) {
-  const escolas = new Map(cad.escolas.map((e) => [e.codigo, e]));
   const rotas = sem.rotas.filter((x) => x.dia === dia && (!rota || x.id === rota));
   return (
     <>
       {rotas.flatMap((ro) =>
-        ro.paradas.map((pa) => {
-          const e = escolas.get(pa.codigo);
-          const itens = cad.produtos.filter((p) => (sem.pedidoEscolas[pa.codigo]?.[p.nome] ?? 0) > 0);
-          if (!e || !itens.length) return null;
-          const temCorte = itens.some((p) => (sem.pedidoEscolas[pa.codigo]?.[p.nome] ?? 0) - (r.enviado[pa.codigo]?.[p.nome] ?? 0) > 0.005);
-          return (
-            <div className="folha" key={`${ro.id}-${pa.codigo}`}>
-              <p className="discreto" style={{ margin: 0 }}>
-                {ro.titulo} · parada {pa.par}
-                {pa.sub}
-              </p>
-              <h3>Controle de entrega — escola</h3>
-              <p className="linha-cab">
-                <strong>ESCOLA:</strong> {e.nome}
-              </p>
-              <p className="linha-cab">
-                <strong>CÓDIGO:</strong> {e.codigo} &nbsp;|&nbsp; <strong>TELEFONE:</strong> {e.telefone || "—"}
-              </p>
-              <p className="linha-cab">
-                <strong>ENDEREÇO:</strong> {enderecoEscola(e.endereco, e.bairro)}
-              </p>
-              <p className="linha-cab">
-                <strong>CHAMADA PÚBLICA:</strong> {sem.chamada} &nbsp;|&nbsp; <strong>PROCESSO ADMINISTRATIVO:</strong> {sem.processo}
-              </p>
-              <p className="linha-cab">
-                <strong>SEMANA (REFERÊNCIA):</strong> {sem.referencia} &nbsp;|&nbsp; <strong>ENTREGA</strong> {sem.entrega}
-              </p>
-              <table>
-                <thead>
-                  <tr>
-                    <th>PRODUTO</th>
-                    <th className="n">PEDIDO</th>
-                    {temCorte && <th className="n">ENVIADO</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {itens.map((p) => (
-                    <tr key={p.nome}>
-                      <td>{p.nome}</td>
-                      <td className="n">
-                        {kg2(sem.pedidoEscolas[pa.codigo][p.nome])} {p.unidade}
-                      </td>
-                      {temCorte && <td className="n">{kg2(r.enviado[pa.codigo]?.[p.nome] ?? 0)}</td>}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="assina">
-                <strong>OBS:</strong>
-                <Linhas n={3} />
-                <p>DATA DA ENTREGA: {dataDaRota(sem, ro.titulo) ?? "____/____/________"}</p>
-                <p>ASSINATURA RESPONSÁVEL: ______________________________________________</p>
-                <p>MATRÍCULA: ______________________________________</p>
-              </div>
-            </div>
-          );
-        }),
+        ro.paradas.map((pa) => (
+          <FolhaEscola key={`${ro.id}-${pa.codigo}`} cad={cad} sem={sem} r={r} codigo={pa.codigo} data={dataDaRota(sem, ro.titulo)} aviso={`${ro.titulo} · parada ${pa.par}${pa.sub ?? ""}`} />
+        )),
       )}
     </>
   );
@@ -263,57 +278,9 @@ function RomaneiosReentrega({ cad, sem, r, dia }: P & { dia: DiaRota }) {
   if (!lista.length) return null;
   return (
     <>
-      {lista.map(({ codigo, re, escola }) => {
-        const e = escola!;
-        const itens = cad.produtos.filter((p) => (sem.pedidoEscolas[codigo]?.[p.nome] ?? 0) > 0);
-        return (
-          <div className="folha" key={`re-${codigo}`}>
-            <p className="discreto" style={{ margin: 0 }}>
-              REENTREGA ({re.motivo}) · {re.quando ?? ""}
-            </p>
-            <h3>Controle de entrega — escola</h3>
-            <p className="linha-cab">
-              <strong>ESCOLA:</strong> {e.nome}
-            </p>
-            <p className="linha-cab">
-              <strong>CÓDIGO:</strong> {e.codigo} &nbsp;|&nbsp; <strong>TELEFONE:</strong> {e.telefone || "—"}
-            </p>
-            <p className="linha-cab">
-              <strong>ENDEREÇO:</strong> {enderecoEscola(e.endereco, e.bairro)}
-            </p>
-            <p className="linha-cab">
-              <strong>SEMANA (REFERÊNCIA):</strong> {sem.referencia} &nbsp;|&nbsp; <strong>ENTREGA</strong> {sem.entrega}
-            </p>
-            <table>
-              <thead>
-                <tr>
-                  <th>PRODUTO</th>
-                  <th className="n">PEDIDO</th>
-                  <th className="n">ENVIADO</th>
-                </tr>
-              </thead>
-              <tbody>
-                {itens.map((p) => (
-                  <tr key={p.nome}>
-                    <td>{p.nome}</td>
-                    <td className="n">
-                      {kg2(sem.pedidoEscolas[codigo][p.nome])} {p.unidade}
-                    </td>
-                    <td className="n">{kg2(r.enviado[codigo]?.[p.nome] ?? 0)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="assina">
-              <strong>OBS:</strong>
-              <Linhas n={3} />
-              <p>DATA DA ENTREGA: ____/____/________</p>
-              <p>ASSINATURA RESPONSÁVEL: ______________________________________________</p>
-              <p>MATRÍCULA: ______________________________________</p>
-            </div>
-          </div>
-        );
-      })}
+      {lista.map(({ codigo, re }) => (
+        <FolhaEscola key={`re-${codigo}`} cad={cad} sem={sem} r={r} codigo={codigo} mostrarEnviado aviso={`REENTREGA (${re.motivo}) · ${re.quando ?? ""}`} />
+      ))}
     </>
   );
 }

@@ -21,7 +21,7 @@ export default async function LayoutSemana({ children, params }: LayoutProps<"/c
   };
   return (
     <>
-      <div className="nao-imprimir">
+      <div className="nao-imprimir cab-semana">
         <Link className="voltar" href="/coop">
           ← Semanas
         </Link>
