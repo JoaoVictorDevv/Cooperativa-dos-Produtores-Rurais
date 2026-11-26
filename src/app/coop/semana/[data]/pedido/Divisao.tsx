@@ -96,7 +96,17 @@ function Linha({ data, l, aberto, alternar }: { data: string; l: LinhaDivisao; a
         <td className="n">
           {kg(l.pedido)} {l.unidade}
         </td>
-        <td>{comPedido.map((p) => `${p.nome} ${kg(p.final)}`).join(" · ") || <span className="discreto">ninguém</span>}</td>
+        <td className="quem-entrega">
+          {comPedido.length ? (
+            comPedido.map((p) => (
+              <span key={p.nome}>
+                {p.nome} <b>{kg(p.final)}</b>
+              </span>
+            ))
+          ) : (
+            <span className="discreto">ninguém</span>
+          )}
+        </td>
         <td className="n">{l.falta >= 0.005 ? <span className="etiqueta vermelha">{kg(l.falta)}</span> : "—"}</td>
         <td className="direita">
           <button type="button" className="botao pequeno claro" onClick={alternar}>

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const ITENS: [string, string][] = [
   ["/coop", "Semanas"],
+  ["/coop/galpao", "Galpão"],
   ["/coop/resumo", "Resumo"],
   ["/coop/previsao", "Previsão"],
   ["/coop/relatorios", "Relatórios"],
@@ -13,7 +14,9 @@ const ITENS: [string, string][] = [
 
 export function MenuTopo() {
   const atual = usePathname();
-  const ativo = (href: string) => (href === "/coop" ? atual === "/coop" || atual.startsWith("/coop/semana") || atual.startsWith("/coop/nova") : atual.startsWith(href));
+  const rapido = atual.endsWith("/rapido");
+  const ativo = (href: string) =>
+    href === "/coop/galpao" ? rapido : href === "/coop" ? !rapido && (atual === "/coop" || atual.startsWith("/coop/semana") || atual.startsWith("/coop/nova")) : atual.startsWith(href);
   return (
     <nav>
       {ITENS.map(([href, texto]) => (

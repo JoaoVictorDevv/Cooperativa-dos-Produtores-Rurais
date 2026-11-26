@@ -74,6 +74,17 @@ Seus dados ficam na pasta `dados-cooperativa` e **não mudam** ao atualizar.
 
 No próprio PC o atalho entra direto, sem PIN.
 
+## Modo galpão (celular)
+
+No celular, toque em **Galpão** no menu: abre sozinho o dia certo da semana certa (domingo ou segunda).
+1. Toque no seu nome em "Quem está conferindo" (fica lembrado no celular).
+2. Toque no produtor. Veio igual ao pedido? **✓ Veio tudo certo**.
+3. Senão, em cada produto: peso da **balança**, e **+ / −** nas caixas grandes e pequenas. O líquido vai
+   diminuindo na hora. Mais de uma pesagem? **+ Somar outra pesagem**. Produto ruim? **Recusar uma parte**.
+4. **Salvar** (ou **Não veio**). Já entra na semana, no mapa e no pagamento.
+
+Entrega extra e ajustes finos continuam na tela completa do galpão (no computador).
+
 ## Escala do galpão
 
 Em **Cadastro → Escala do galpão**: quem trabalha em cada dia, a hora e a diária (a diária só aparece no app).

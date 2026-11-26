@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { kg } from "@/lib/coop/numeros";
 import { diaDaEscala, escalaDe, gruposDoDia, juntarNomes } from "@/lib/coop/escala";
 import { carregarSemana } from "../../../../dados";
-import { Galpao, type CartaoProdutor } from "./Galpao";
+import { Galpao } from "./Galpao";
+import { cartoesDoGalpao } from "./cartoes";
 
 export const metadata = { title: "Galpão" };
 
@@ -11,8 +12,6 @@ export default async function PaginaGalpao({ params }: PageProps<"/coop/semana/[
   const { data, dia } = await params;
   if (dia !== "1" && dia !== "2") notFound();
   const { cad, sem, r } = await carregarSemana(data);
-  const campo = dia === "1" ? "planejado1" : "planejado2";
-  const digitado = dia === "1" ? sem.entrega1 : sem.entrega2;
   const nomeDia = sem.diasGalpao[dia === "1" ? 0 : 1];
   const rotasDoDia = dia === "1" ? "rotas de segunda" : "rotas de terça";
   const escalaDia = diaDaEscala(escalaDe(cad), nomeDia);
@@ -20,22 +19,7 @@ export default async function PaginaGalpao({ params }: PageProps<"/coop/semana/[
   // "Quem conferiu": primeiro quem está na escala do dia.
   const equipe = [...new Set([...escalados, ...(cad.equipe ?? [])])];
 
-  const cartoes: CartaoProdutor[] = cad.produtores
-    .map((p) => ({
-      id: p.id,
-      nome: p.nome,
-      curto: p.curto,
-      lancado: Boolean(digitado[p.id] && Object.keys(digitado[p.id]).length),
-      recebimento: sem.recebimento?.[dia]?.[p.id] ?? null,
-      itens: cad.produtos.map((pr) => ({
-        produto: pr.nome,
-        unidade: pr.unidade,
-        planejado: r.produtores[p.id][pr.nome][campo],
-        entregue: digitado[p.id]?.[pr.nome] ?? null,
-        extra: sem.extra[p.id]?.[pr.nome] ?? null,
-      })),
-    }))
-    .filter((c) => c.itens.some((i) => i.planejado > 0.004 || i.entregue !== null || i.extra !== null));
+  const cartoes = cartoesDoGalpao(cad, sem, r, dia);
 
   const faltas = cad.produtos
     .map((p) => {
@@ -57,9 +41,14 @@ export default async function PaginaGalpao({ params }: PageProps<"/coop/semana/[
             {cad.pesoCaixa.grande} kg e pequena {cad.pesoCaixa.pequena} kg. Veio produto ruim? Ponha os kg em <strong>Recusado</strong>: sai sozinho do que o produtor recebe. Anote quem conferiu e a hora.
           </p>
         </div>
-        <Link className="botao claro" href={`/coop/semana/${data}/imprimir/produtores?dia=${dia}`}>
-          🖨 Romaneios dos produtores (papel)
-        </Link>
+        <div className="botoes">
+          <Link className="botao" href={`/coop/semana/${data}/galpao/${dia}/rapido`}>
+            📱 Modo galpão (celular)
+          </Link>
+          <Link className="botao claro" href={`/coop/semana/${data}/imprimir/produtores?dia=${dia}`}>
+            🖨 Romaneios dos produtores (papel)
+          </Link>
+        </div>
       </div>
       {escalaDia && escalaDia.pessoas.length > 0 && (
         <div className="hoje-galpao">

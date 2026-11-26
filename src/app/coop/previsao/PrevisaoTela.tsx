@@ -25,11 +25,7 @@ export function PrevisaoTela({ data, produtores, produtos, inicial }: { data: st
   const dia = (d: number) => new Date(ref.getTime() + d * 86400000);
   const domingo = ref.getUTCDay() === 0 ? ref : dia(-((ref.getUTCDay() + 7) % 7));
   const segunda = new Date(domingo.getTime() + 86400000);
-  // Prazo da nutrição: a terça antes da entrega (RESUMO, 04/11).
-  let terca = new Date(domingo.getTime() - 86400000);
-  while (terca.getUTCDay() !== 2) terca = new Date(terca.getTime() - 86400000);
   const [dias, setDias] = useState(`${NOME_DIA[domingo.getUTCDay()]} ${dd(domingo)} e ${NOME_DIA[segunda.getUTCDay()]} ${dd(segunda)}`);
-  const [prazo, setPrazo] = useState(`terça ${dd(terca)}`);
   const [obs, setObs] = useState((inicial?.observacoes ?? []).join("\n"));
   const [e, setE] = useState<Estado>(() =>
     Object.fromEntries(
@@ -85,15 +81,11 @@ export function PrevisaoTela({ data, produtores, produtos, inicial }: { data: st
             Dias no galpão
             <input data-livre type="text" value={dias} onChange={(ev) => setDias(ev.target.value)} style={{ width: 260 }} />
           </label>
-          <label className="campo">
-            Prazo da nutrição
-            <input data-livre type="text" value={prazo} onChange={(ev) => setPrazo(ev.target.value)} style={{ width: 160 }} />
-          </label>
         </div>
-        <p className="discreto">Texto: “{perguntaPrevisao({ curto: "Fulano" }, dataBr.slice(0, 5), dias, prazo)}”</p>
+        <p className="discreto">Texto: “{perguntaPrevisao({ curto: "Fulano" }, dataBr.slice(0, 5), dias)}”</p>
         <div className="botoes">
           {produtores.map((p) => {
-            const link = linkWhatsApp(p.telefone, perguntaPrevisao(p, dataBr.slice(0, 5), dias, prazo));
+            const link = linkWhatsApp(p.telefone, perguntaPrevisao(p, dataBr.slice(0, 5), dias));
             const ok = responderam.includes(p);
             return link ? (
               <a key={p.id} className={`botao pequeno ${ok ? "claro" : "zap"}`} href={link} target="_blank" rel="noreferrer">

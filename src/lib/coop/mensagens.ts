@@ -53,8 +53,8 @@ export function mensagensDaSemana(cad: Cadastro, sem: Semana, r: ResultadoSemana
   });
 }
 
-export function perguntaPrevisao(produtor: Pick<Produtor, "curto">, entrega: string, dias: string, prazo: string): string {
-  return `Bom dia, ${produtor.curto}! O que você vai ter pra entrega de ${entrega}${dias.trim() ? ` (${dias})` : ""}? Me fala o produto e quantos kg. Precisamos passar essa previsão pra nutrição${prazo.trim() ? ` até ${prazo}` : ""}. Obrigado!`;
+export function perguntaPrevisao(produtor: Pick<Produtor, "curto">, entrega: string, dias: string): string {
+  return `Bom dia, ${produtor.curto}! O que você vai ter pra entrega de ${entrega}${dias.trim() ? ` (${dias})` : ""}? Me fala o produto e quantos kg.`;
 }
 
 // O que foi recusado no galpão (produto ruim), por produto, somando os dois dias.

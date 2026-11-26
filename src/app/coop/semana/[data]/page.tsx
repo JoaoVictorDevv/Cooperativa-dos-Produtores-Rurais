@@ -27,6 +27,8 @@ export default async function ResumoSemana({ params }: PageProps<"/coop/semana/[
   const base = `/coop/semana/${data}`;
   const prev = await previsaoDaSemana(data);
   const faltas = Object.entries(r.faltaNaDivisao).filter(([, v]) => v >= 0.005);
+  // Antes de lançar os dois dias de galpão, perdas e saldo ainda não dizem nada (só assustam).
+  const emAndamento = !itens.filter((i) => i.chave === "dia1" || i.chave === "dia2").every((i) => i.feito);
   return (
     <>
       <h2 style={{ marginTop: 0 }}>O que falta</h2>
@@ -48,6 +50,7 @@ export default async function ResumoSemana({ params }: PageProps<"/coop/semana/[
         </p>
       )}
       <h2>Números da semana</h2>
+      {emAndamento && <p className="discreto">Semana em andamento: cobrar e pagar contam só o que já foi lançado no galpão. Perdas e saldo aparecem quando os dois dias estiverem lançados.</p>}
       <div className="grade">
         <div className="numero">
           <small>Pedido (já com os cortes)</small>
@@ -65,14 +68,29 @@ export default async function ResumoSemana({ params }: PageProps<"/coop/semana/[
           <small>Taxa de logística (R$ {kg(cad.taxaLogistica)}/kg)</small>
           <strong>{reais(r.resumo.taxaLogistica)}</strong>
         </div>
-        <Link href={`${base}/perdas`} className={`numero${perdas.total > 0.004 ? " ruim" : ""}`}>
-          <small>Perdas (Prefeitura não pagou) — ver de onde veio ›</small>
-          <strong>{r.resumo.entregasLancadasKg > 0 ? reais(perdas.total) : "sem entrega ainda"}</strong>
-        </Link>
-        <div className={`numero ${r.balanco.saldo >= 0 ? "bom" : "ruim"}`}>
-          <small>Saldo (balanço)</small>
-          <strong>{reais(r.balanco.saldo)}</strong>
-        </div>
+        {emAndamento ? (
+          <>
+            <div className="numero espera">
+              <small>Perdas (Prefeitura não pagou)</small>
+              <strong>depois do galpão</strong>
+            </div>
+            <div className="numero espera">
+              <small>Saldo (balanço)</small>
+              <strong>depois do galpão</strong>
+            </div>
+          </>
+        ) : (
+          <>
+            <Link href={`${base}/perdas`} className={`numero${perdas.total > 0.004 ? " ruim" : ""}`}>
+              <small>Perdas (Prefeitura não pagou) — ver de onde veio ›</small>
+              <strong>{reais(perdas.total)}</strong>
+            </Link>
+            <div className={`numero ${r.balanco.saldo >= 0 ? "bom" : "ruim"}`}>
+              <small>Saldo (balanço)</small>
+              <strong>{reais(r.balanco.saldo)}</strong>
+            </div>
+          </>
+        )}
         {r.balanco.administrativoFalta > 0 && (
           <div className="numero ruim">
             <small>Administrativo que ficou faltando (já contado no custo)</small>
