@@ -12,7 +12,7 @@ export function motoristasDe(cad: Cadastro): Record<string, string> {
 export function tituloComMotorista(titulo: string, motoristas: Record<string, string>): string {
   const n = titulo.match(/ROTA\s+(\d+)/i)?.[1];
   const nome = n ? motoristas[n]?.trim() : "";
-  if (!nome) return titulo;
+  if (!nome || /SEM CAMINH/i.test(titulo)) return titulo; // rota que não rodou na semana
   const NOME = nome.toUpperCase();
   if (/MOTORISTA\s+[^·]+/i.test(titulo)) return titulo.replace(/MOTORISTA\s+[^·]+?(\s*·|$)/i, `MOTORISTA ${NOME}$1`);
   return titulo.replace(/(ROTA\s+\d+[^·]*·[^·]+)/i, `$1 · MOTORISTA ${NOME}`);

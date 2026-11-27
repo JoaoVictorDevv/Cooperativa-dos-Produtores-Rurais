@@ -334,7 +334,8 @@ export async function lerPlanilha(arquivo: string | Buffer | ArrayBuffer): Promi
     rotas,
     regraPrimeiroDia: f11.includes("MAX(0") ? "corrigida" : "modelo",
     folhaSoNoDia: /IF\(C6>0\.004,C8,/.test(f13.replace(/\s/g, "")),
-    excedenteRestoUltima: /-N\(G283\)/.test(formula(aba("MAPA DE MONTAGEM").getCell("M283")) ?? ""),
+    // v103: a última rota fica com o resto (M283; com 3 caminhões, K283).
+    excedenteRestoUltima: ["M283", "K283"].some((ref) => /-N\(G283\)/.test(formula(aba("MAPA DE MONTAGEM").getCell(ref)) ?? "")),
     ajusteEntrega,
   };
   return { cadastro, semana, avisos };
