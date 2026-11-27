@@ -46,7 +46,7 @@ export default async function PaginaGalpao({ params }: PageProps<"/coop/semana/[
             📱 Modo galpão (celular)
           </Link>
           <Link className="botao claro" href={`/coop/semana/${data}/imprimir/produtores?dia=${dia}`}>
-            🖨 Romaneios dos produtores (papel)
+            📄 Romaneios de todos os produtores
           </Link>
         </div>
       </div>

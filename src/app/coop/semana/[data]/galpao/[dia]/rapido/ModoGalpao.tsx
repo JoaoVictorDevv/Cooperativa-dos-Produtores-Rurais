@@ -224,6 +224,10 @@ function Produtor({ data, dia, c, caixa, quem, voltar }: { data: string; dia: "1
         </button>
         <div style={{ textAlign: "right" }}>
           <h2>{c.nome}</h2>
+          <Link className="discreto" href={`/coop/semana/${data}/imprimir/produtores?dia=${dia}&produtor=${encodeURIComponent(c.id)}`}>
+            📄 Ver romaneio
+          </Link>
+          {c.recebimento?.hora && " · "}
           {c.recebimento?.hora && (
             <span className="discreto">
               Chegou {c.recebimento.hora}
