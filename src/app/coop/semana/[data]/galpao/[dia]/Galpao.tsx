@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { arred, kg } from "@/lib/coop/numeros";
 import type { Recebimento } from "@/lib/coop/tipos";
@@ -132,7 +133,10 @@ function Cartao({ data, dia, c, caixa }: { data: string; dia: "1" | "2"; c: Cart
         <div>
           <strong style={{ fontSize: 17 }}>{c.nome}</strong> {c.lancado ? <span className="etiqueta verde">Lançado</span> : <span className="etiqueta amarela">Falta lançar</span>}{" "}
           {c.recebimento?.hora && <span className="etiqueta">Chegou {c.recebimento.hora}{c.recebimento.conferente ? ` · ${c.recebimento.conferente}` : ""}</span>}{" "}
-          {c.recebimento?.qualidade === "ruim" && <span className="etiqueta vermelha">Qualidade ruim</span>}
+          {c.recebimento?.qualidade === "ruim" && <span className="etiqueta vermelha">Qualidade ruim</span>}{" "}
+          <Link className="discreto nao-imprimir" href={`/coop/semana/${data}/imprimir/produtores?dia=${dia}&produtor=${encodeURIComponent(c.id)}`}>
+            📄 Ver romaneio
+          </Link>
         </div>
         <div className="botoes nao-imprimir">
           <label className="discreto">
