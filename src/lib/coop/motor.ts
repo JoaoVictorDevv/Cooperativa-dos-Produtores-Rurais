@@ -6,7 +6,7 @@
 // pagamento dos produtores, resumo e balanço.
 
 import { arred, arredBaixo, soma } from "./numeros";
-import type { Cadastro, DiaRota, PorProdutorProduto, Semana } from "./tipos";
+import type { Cadastro, DiaRota, PorProdutorProduto, Rota, Semana } from "./tipos";
 
 const EPS = 0.000001;
 
@@ -297,7 +297,10 @@ export function calcularSemana(cad: Cadastro, sem: Semana): ResultadoSemana {
   const excedente: Record<DiaRota, ExcedenteDia> = { SEG: { folhas: [], legumes: [] }, TER: { folhas: [], legumes: [] } };
   for (const dia of ["SEG", "TER"] as const) {
     const rotasDia = sem.rotas.filter((r) => r.dia === dia);
-    const numeradas = rotasDia.filter((r) => /-\d+$/.test(r.id));
+    // Rota sem nenhuma escola com pedido (ex.: 30/11, rota 4 "sem caminhão nesta semana") fica fora da
+    // divisão do excedente: a sobra vai para a última rota que rodou (na planilha, coluna K em vez da M).
+    const temPedido = (r: Rota) => r.paradas.some((pa) => Object.values(sem.pedidoEscolas[pa.codigo] ?? {}).some((v) => v > 0));
+    const numeradas = rotasDia.filter((r) => /-\d+$/.test(r.id) && temPedido(r));
     const escolasDia = [...new Set(rotasDia.flatMap((r) => r.paradas.map((pa) => pa.codigo)))];
     for (const produto of ordemColunas) {
       if (pedidoTotal[produto] <= 0) continue;

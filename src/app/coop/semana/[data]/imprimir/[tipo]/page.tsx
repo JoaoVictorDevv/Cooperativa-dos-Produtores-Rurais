@@ -299,6 +299,8 @@ function MapaImpresso({ cad, sem, r, dia, rota }: P & { dia: DiaRota; rota?: str
     <>
       {rotas.map((ro) => {
         const paradas = ro.paradas.filter((pa) => produtos.some((p) => env(pa.codigo, p.nome) > 0.0001));
+        // Rota que não rodou na semana (ex.: 30/11 com 3 caminhões): não imprime folha vazia.
+        if (!paradas.length && !rota) return null;
         const totais = produtos.map((p) => paradas.reduce((t, pa) => t + env(pa.codigo, p.nome), 0));
         const peso = totais.reduce((a, b) => a + b, 0);
         const nomeDia = ro.titulo.split(" — ")[0];
